@@ -29,8 +29,9 @@
     <string name="title_devices">Devices</string>
     <string name="no_accounts">Please add a Google account through Settings</string>
     <string name="no_devices">Loading devices</string>
-    <string name="no_actions">No supported actions</string>
+    <string name="loading_actions">Loading actions</string>
     <string name="preference_account_name">account_name</string>
     <string name="preference_gcm_registration">gcm_registration</string>
+    <string name="btn_deregister">Deregister</string>
 
 </resources>

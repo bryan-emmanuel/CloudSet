@@ -20,6 +20,8 @@
 package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -51,7 +53,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.Toast;
 
 public class CloudSetMain extends FragmentActivity implements
 ActionBar.TabListener {
@@ -79,7 +81,6 @@ ActionBar.TabListener {
 	private static final int FRAGMENT_DEVICES = 1;
 
 	private static String accountName = null;
-	private static boolean isRegistering = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -122,6 +123,28 @@ ActionBar.TabListener {
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		setIntent(intent);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		Intent intent = getIntent();
+		if (intent != null) {
+			String action = intent.getAction();
+			if (action != null) {
+				if (action.equals(ACTION_GCM_ERROR)) {
+					Toast.makeText(getApplicationContext(), "Error occurred during device registration", Toast.LENGTH_SHORT).show();
+				} else if (action.equals(ACTION_GCM_REGISTERED)) {
+				} else if (action.equals(ACTION_GCM_UNREGISTERED)) {	
+				}
+			}
+		}
 
 		// check if the account is setup
 		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
@@ -129,27 +152,7 @@ ActionBar.TabListener {
 				&& (sp.getString(getString(R.string.preference_gcm_registration), null) != null)) {
 			accountName = sp.getString(getString(R.string.preference_account_name), null);
 		}
-	}
-
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		String action = intent.getAction();
-		if (action != null) {
-			if (action.equals(ACTION_GCM_ERROR)) {
-				isRegistering = false;
-			} else if (action.equals(ACTION_GCM_REGISTERED)) {
-				isRegistering = false;
-				((DevicesFragment) getSupportFragmentManager().findFragmentById(FRAGMENT_DEVICES)).loadDevices();
-			} else if (action.equals(ACTION_GCM_UNREGISTERED)) {
-				isRegistering = false;
-			}
-		}
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
+		
 		if (accountName == null) {
 			mViewPager.setCurrentItem(FRAGMENT_ACCOUNT);
 		} else {
@@ -252,7 +255,6 @@ ActionBar.TabListener {
 			.commit();
 
 			// register with GCM, this is an asynchronous operation
-			isRegistering = true;
 			GCMIntentService.register(getActivity().getApplicationContext());
 
 			// move to the devices tab
@@ -280,7 +282,8 @@ ActionBar.TabListener {
 
 		GoogleAccountCredential credential = null;
 
-		ArrayAdapter<Device> adapter;
+		ArrayAdapter<String> adapter;
+		ArrayList<Device> devices = new ArrayList<Device>();
 
 		public DevicesFragment() {
 		}
@@ -289,25 +292,7 @@ ActionBar.TabListener {
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			final View rootView = inflater.inflate(R.layout.devices, container, false);
-			adapter = new ArrayAdapter<Device>(getActivity(), R.layout.device_list_item, new ArrayList<Device>()) {
-
-				@Override
-				public View getView(int position, View convertView, ViewGroup parent){
-					View row;
-					if (convertView == null) {
-						row = (View) (LayoutInflater.from(parent.getContext().getApplicationContext())).inflate(R.layout.device_list_item, null);
-					} else {
-						row = (View) convertView;
-					}
-					Device device = adapter.getItem(position);
-					TextView tv = (TextView) row.findViewById(R.id.model);
-					tv.setText(device.getModel());
-					tv = (TextView) row.findViewById(R.id.registration);
-					tv.setText(device.getDeviceRegistrationID());
-					return row;
-				}
-
-			};
+			adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
 			return rootView;
 		}
 
@@ -315,9 +300,13 @@ ActionBar.TabListener {
 		public void onResume() {
 			super.onResume();
 			setListAdapter(adapter);
-			if (!isRegistering) {
-				loadDevices();
-			}
+			loadDevices();
+		}
+
+		@Override
+		public void onListItemClick(ListView list, View view, int position, long id) {
+			super.onListItemClick(list, view, position, id);
+			startActivity(new Intent(getActivity().getApplicationContext(), DeviceActions.class).putExtra(DeviceActions.EXTRA_DEVICE_REGISTRATION, devices.get(position).getDeviceRegistrationID()));
 		}
 
 		public void loadDevices() {
@@ -338,8 +327,8 @@ ActionBar.TabListener {
 						DeviceEndpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 
 						try {
-							adapter.clear();
-							adapter.addAll(endpoint.list().execute().getItems());
+							devices.clear();
+							devices.addAll(endpoint.list().execute().getItems());
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -349,6 +338,15 @@ ActionBar.TabListener {
 
 					@Override
 					protected void onPostExecute(Void result) {
+						adapter.clear();
+						for (Device device : devices) {
+							try {
+								adapter.add(URLDecoder.decode(device.getModel(), "UTF-8"));
+							} catch (UnsupportedEncodingException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
 						adapter.notifyDataSetChanged();
 					}
 

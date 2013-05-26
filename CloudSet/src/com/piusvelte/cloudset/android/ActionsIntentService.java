@@ -40,6 +40,8 @@ public class ActionsIntentService extends IntentService {
 
 	private static PowerManager.WakeLock sWakeLock;
 	private static final Object LOCK = ActionsIntentService.class;
+	public static final String[] ACTIONS = new String[]{WifiManager.WIFI_STATE_CHANGED_ACTION, BluetoothAdapter.ACTION_STATE_CHANGED, ActionReceiver.VOLUME_CHANGED_ACTION};
+	public static final String[] ACTION_NAMES = new String[]{"Wi-Fi", "Bluetooth", "Volume"};
 
 	public ActionsIntentService() {
 		super("ActionsIntentService");

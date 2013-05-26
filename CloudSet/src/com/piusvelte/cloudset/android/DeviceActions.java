@@ -20,6 +20,7 @@
 package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -29,10 +30,8 @@ import com.piusvelte.cloudset.gwt.server.deviceEndpoint.DeviceEndpoint;
 import com.piusvelte.cloudset.gwt.server.deviceEndpoint.model.Device;
 
 import android.app.ListActivity;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -49,8 +48,7 @@ public class DeviceActions extends ListActivity {
 
 	private String registration = null;
 	private DeviceEndpoint endpoint = null;
-	private String[] actions = new String[]{WifiManager.WIFI_STATE_CHANGED_ACTION, BluetoothAdapter.ACTION_STATE_CHANGED, ActionReceiver.VOLUME_CHANGED_ACTION};
-	private String[] actionNames = new String[]{"Wi-Fi", "Bluetooth", "Volume"};
+	private ArrayList<String> actions = new ArrayList<String>();
 	private ArrayAdapter<String> adapter;
 	private Device device;
 
@@ -91,10 +89,10 @@ public class DeviceActions extends ListActivity {
 						row = (View) convertView;
 					}
 					
-					String action = actions[position];
+					String action = actions.get(position);
 					
 					TextView tv = (TextView) row.findViewById(R.id.action);
-					tv.setText(actionNames[position]);
+					tv.setText(ActionsIntentService.ACTION_NAMES[position]);
 					
 					CheckBox cb = (CheckBox) row.findViewById(R.id.enabled);
 					cb.setEnabled(device.getActions().contains(action));
@@ -122,17 +120,17 @@ public class DeviceActions extends ListActivity {
 		super.onListItemClick(list, view, position, id);
 		
 		//TODO, enable/disable actions
-		String action = this.actions[position];
-		List<String> actions = device.getActions();
+		String action = this.actions.get(position);
+		List<String> deviceActions = device.getActions();
 		
 		CheckBox cb = (CheckBox) view.findViewById(R.id.enabled);
 		if (cb.isChecked()) {
-			actions.add(action);
+			deviceActions.add(action);
 		} else {
-			actions.remove(action);
+			deviceActions.remove(action);
 		}
 		
-		device.setActions(actions);
+		device.setActions(deviceActions);
 		
 		updateDevice();
 		
@@ -154,6 +152,10 @@ public class DeviceActions extends ListActivity {
 
 			@Override
 			protected void onPostExecute(Void result) {
+				adapter.clear();
+				for (String action : ActionsIntentService.ACTIONS) {
+					adapter.add(action);
+				}
 				adapter.notifyDataSetChanged();
 			}
 

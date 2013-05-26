@@ -21,6 +21,7 @@ package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -214,6 +215,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				Device device = getEndpoint(context).add(
 						(new Device())
 						.setDeviceRegistrationID(registration)
+						.setActions(new ArrayList<String>())
 						.setTimestamp(System.currentTimeMillis())
 						.setModel(URLEncoder.encode(android.os.Build.MODEL,
 								"UTF-8"))).execute();

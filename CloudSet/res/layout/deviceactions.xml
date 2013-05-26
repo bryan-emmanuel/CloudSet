@@ -36,6 +36,6 @@
         android:id="@android:id/empty"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/no_actions" />
+        android:text="@string/loading_actions" />
 
 </LinearLayout>

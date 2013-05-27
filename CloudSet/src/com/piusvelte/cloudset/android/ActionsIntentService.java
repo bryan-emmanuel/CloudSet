@@ -37,17 +37,22 @@ import android.os.AsyncTask;
 import android.os.PowerManager;
 
 public class ActionsIntentService extends IntentService {
+	
+	public static final String VOLUME_CHANGED_ACTION = "android.media.VOLUME_CHANGED_ACTION";
+	public static final String EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
+	public static final String EXTRA_VOLUME_STREAM_VALUE = "android.media.EXTRA_VOLUME_STREAM_VALUE";
+	public static final String[] ACTIONS = new String[]{WifiManager.WIFI_STATE_CHANGED_ACTION, BluetoothAdapter.ACTION_STATE_CHANGED, VOLUME_CHANGED_ACTION};
+	public static final String[] ACTION_NAMES = new String[]{"Wi-Fi", "Bluetooth", "Volume"};
 
 	private static PowerManager.WakeLock sWakeLock;
 	private static final Object LOCK = ActionsIntentService.class;
-	public static final String[] ACTIONS = new String[]{WifiManager.WIFI_STATE_CHANGED_ACTION, BluetoothAdapter.ACTION_STATE_CHANGED, ActionReceiver.VOLUME_CHANGED_ACTION};
-	public static final String[] ACTION_NAMES = new String[]{"Wi-Fi", "Bluetooth", "Volume"};
+	private static final String TAG = "ActionsIntentService";
 
 	public ActionsIntentService() {
-		super("ActionsIntentService");
+		super(TAG);
 	}
 
-	static void serviceIntent(Context context, Intent intent) {
+	public static void serviceIntent(Context context, Intent intent) {
 		synchronized(LOCK) {
 			if (sWakeLock == null) {
 				PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -79,9 +84,9 @@ public class ActionsIntentService extends IntentService {
 				} else {
 					sWakeLock.release();
 				}
-			} else if (action.equals(ActionReceiver.VOLUME_CHANGED_ACTION)) {
-				int type = intent.getIntExtra(ActionReceiver.EXTRA_VOLUME_STREAM_TYPE, -1);
-				int value = intent.getIntExtra(ActionReceiver.EXTRA_VOLUME_STREAM_VALUE, -1);
+			} else if (action.equals(VOLUME_CHANGED_ACTION)) {
+				int type = intent.getIntExtra(EXTRA_VOLUME_STREAM_TYPE, -1);
+				int value = intent.getIntExtra(EXTRA_VOLUME_STREAM_VALUE, -1);
 				if ((type > -1) && (value > -1)) {
 					sendAction(action, Integer.toString(type) + ";" + Integer.toString(value));
 				} else {

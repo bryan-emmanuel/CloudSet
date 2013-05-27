@@ -157,7 +157,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				} else {
 					Log.d(TAG, "WiFi not supported on this device");
 				}
-			} else if (action.equals(ActionReceiver.VOLUME_CHANGED_ACTION)) {
+			} else if (action.equals(ActionsIntentService.VOLUME_CHANGED_ACTION)) {
 				AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 				if (audioManager != null) {
 					int idx = value.indexOf(";");

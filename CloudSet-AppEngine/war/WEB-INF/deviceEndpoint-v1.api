@@ -47,30 +47,6 @@
         "body" : "autoTemplate(backendResponse)"
       }
     },
-    "deviceendpoint.deviceEndpoint.addAction" : {
-      "path" : "addAction/{id}/{action}",
-      "httpMethod" : "POST",
-      "scopes" : [ ],
-      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
-      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.addAction",
-      "request" : {
-        "parameters" : {
-          "id" : {
-            "type" : "string",
-            "required" : true
-          },
-          "action" : {
-            "type" : "string",
-            "required" : true
-          }
-        },
-        "body" : "empty"
-      },
-      "response" : {
-        "body" : "autoTemplate(backendResponse)"
-      }
-    },
     "deviceendpoint.deviceEndpoint.list" : {
       "path" : "device",
       "httpMethod" : "GET",
@@ -87,6 +63,30 @@
           "limit" : {
             "type" : "int32",
             "required" : false
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "deviceendpoint.deviceEndpoint.addAction" : {
+      "path" : "addAction/{id}/{action}",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.addAction",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          },
+          "action" : {
+            "type" : "string",
+            "required" : true
           }
         },
         "body" : "empty"
@@ -216,14 +216,14 @@
           "$ref" : "Device"
         }
       },
-      "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.addAction" : {
-        "response" : {
-          "$ref" : "Device"
-        }
-      },
       "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.list" : {
         "response" : {
           "$ref" : "DeviceCollection"
+        }
+      },
+      "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.addAction" : {
+        "response" : {
+          "$ref" : "Device"
         }
       },
       "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.update" : {

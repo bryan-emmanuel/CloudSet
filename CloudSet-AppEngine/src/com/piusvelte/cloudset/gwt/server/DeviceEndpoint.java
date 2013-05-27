@@ -44,17 +44,17 @@ public class DeviceEndpoint {
 	@SuppressWarnings({ "unchecked" })
 	public List<Device> list(
 			User user,
-			@Nullable @Named("setting") String setting,
+			@Nullable @Named("setting") String action,
 			@Nullable @Named("limit") Integer limit) throws OAuthRequestException {
 		if (user != null) {
 			List<Device> devices;
 			EntityManager mgr = getEntityManager();
 			try {
 				Query query;
-				if (setting != null) {
-					query = mgr.createQuery("select from Device as Device where nickname = :nickname and settings in (:settings)")
+				if (action != null) {
+					query = mgr.createQuery("select from Device as Device where nickname = :nickname and actions in (:actions)")
 							.setParameter("nickname", user.getNickname())
-							.setParameter("settings", setting);
+							.setParameter("actions", action);
 				} else {
 					query = mgr.createQuery("select from Device as Device where nickname = :nickname")
 							.setParameter("nickname", user.getNickname());

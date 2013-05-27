@@ -40,31 +40,32 @@ audiences = {Ids.ANDROID_AUDIENCE})
 public class ActionEndpoint {
 
 	private static final DeviceEndpoint endpoint = new DeviceEndpoint();
-	
+
 	public void add(User user, Action action)
 			throws IOException {
 		Sender sender = new Sender(Ids.API_KEY);
 
-		action.setTimestamp(System.currentTimeMillis());
-
 		EntityManager mgr = getEntityManager();
-		try {
-			mgr.persist(action);
-		} finally {
-			mgr.close();
-		}
 
 		List<Device> devices;
 		try {
 			devices = endpoint.list(user, action.getName(), null);
-			for (Device device : devices) {
-				if (!device.getDeviceRegistrationID().equals(action.getDevice())) {
-					doSendViaGcm(user, action.getName(), action.getValue(), sender, device);
+			if ((devices != null) && (devices.size() > 0)) {
+				
+				action.setTimestamp(System.currentTimeMillis());
+				mgr.persist(action);
+				
+				for (Device device : devices) {
+					if (!device.getDeviceRegistrationID().equals(action.getDevice())) {
+						doSendViaGcm(user, action.getName(), action.getValue(), sender, device);
+					}
 				}
 			}
 		} catch (OAuthRequestException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			mgr.close();
 		}
 	}
 

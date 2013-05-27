@@ -144,9 +144,6 @@ ActionBar.TabListener {
 				} else if (action.equals(ACTION_GCM_UNREGISTERED)) {	
 				}
 			}
-		} else {
-			// make sure that the receiver is registered
-			sendBroadcast(new Intent(Intent.ACTION_PACKAGE_REPLACED).addCategory(getPackageName()));
 		}
 
 		// check if the account is setup

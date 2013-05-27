@@ -49,11 +49,13 @@
         </receiver>
         <receiver android:name=".ActionReceiver">
 			<intent-filter>
-				<action android:name="android.intent.action.BOOT_COMPLETED" />
+				<action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
 			</intent-filter>
 			<intent-filter>
-				<action android:name="android.intent.action.PACKAGE_REPLACED" />
-				<data android:scheme="package" android:path="com.piusvelte.cloudset.android" />
+				<action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.media.VOLUME_CHANGED_ACTION" />
 			</intent-filter>
 		</receiver>
 </application>

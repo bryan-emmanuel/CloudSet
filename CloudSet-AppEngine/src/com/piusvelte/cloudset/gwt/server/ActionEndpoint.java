@@ -29,23 +29,19 @@ import com.google.android.gcm.server.Message;
 import com.google.android.gcm.server.Result;
 import com.google.android.gcm.server.Sender;
 import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.users.User;
 
-@Api(name = "actionEndpoint",
+@Api(name = "actionendpoint",
 namespace = @ApiNamespace(ownerDomain = "piusvelte.com", ownerName = "piusvelte.com", packagePath = "cloudset.gwt.server"),
 clientIds = {Ids.WEB_CLIENT_ID, Ids.ANDROID_CLIENT_ID},
 audiences = {Ids.ANDROID_AUDIENCE})
 public class ActionEndpoint {
 
 	private static final DeviceEndpoint endpoint = new DeviceEndpoint();
-
-	@ApiMethod(name = "add",
-			httpMethod = "PUT",
-			path = "setting")
-	public void set(User user, Action action)
+	
+	public void add(User user, Action action)
 			throws IOException {
 		Sender sender = new Sender(Ids.API_KEY);
 
@@ -60,7 +56,7 @@ public class ActionEndpoint {
 
 		List<Device> devices;
 		try {
-			devices = endpoint.listDevice(user, action.getName(), null);
+			devices = endpoint.list(user, action.getName(), null);
 			for (Device device : devices) {
 				if (!device.getDeviceRegistrationID().equals(action.getDevice())) {
 					doSendViaGcm(user, action.getName(), action.getValue(), sender, device);
@@ -79,9 +75,9 @@ public class ActionEndpoint {
 			String canonicalRegId = result.getCanonicalRegistrationId();
 			if (canonicalRegId != null) {
 				try {
-					endpoint.removeDevice(user, device.getDeviceRegistrationID());
+					endpoint.remove(user, device.getDeviceRegistrationID());
 					device.setDeviceRegistrationID(canonicalRegId);
-					endpoint.addDevice(user, device);
+					endpoint.add(user, device);
 				} catch (OAuthRequestException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -91,7 +87,7 @@ public class ActionEndpoint {
 			String error = result.getErrorCodeName();
 			if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
 				try {
-					endpoint.removeDevice(user, device.getDeviceRegistrationID());
+					endpoint.remove(user, device.getDeviceRegistrationID());
 				} catch (OAuthRequestException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

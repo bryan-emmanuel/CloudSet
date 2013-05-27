@@ -2,7 +2,7 @@
   "extends" : "thirdParty.api",
   "abstract" : false,
   "root" : "https://cloud-set.appspot.com/_ah/api",
-  "name" : "actionEndpoint",
+  "name" : "actionendpoint",
   "version" : "v1",
   "defaultVersion" : false,
   "adapter" : {
@@ -27,13 +27,13 @@
   "ownerName" : "piusvelte.com",
   "packagePath" : "cloudset.gwt.server",
   "methods" : {
-    "actionEndpoint.add" : {
-      "path" : "setting",
-      "httpMethod" : "PUT",
+    "actionendpoint.actionEndpoint.add" : {
+      "path" : "add",
+      "httpMethod" : "POST",
       "scopes" : [ ],
       "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
       "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.ActionEndpoint.set",
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.ActionEndpoint.add",
       "request" : {
         "body" : "autoTemplate(backendRequest)",
         "bodyName" : "resource"
@@ -97,7 +97,7 @@
       }
     },
     "methods" : {
-      "com.piusvelte.cloudset.gwt.server.ActionEndpoint.set" : {
+      "com.piusvelte.cloudset.gwt.server.ActionEndpoint.add" : {
         "request" : {
           "$ref" : "Action"
         }

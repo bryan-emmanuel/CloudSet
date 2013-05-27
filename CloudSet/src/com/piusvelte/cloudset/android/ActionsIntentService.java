@@ -24,8 +24,8 @@ import java.io.IOException;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.piusvelte.cloudset.gwt.server.actionEndpoint.ActionEndpoint;
-import com.piusvelte.cloudset.gwt.server.actionEndpoint.model.Action;
+import com.piusvelte.cloudset.gwt.server.actionendpoint.Actionendpoint;
+import com.piusvelte.cloudset.gwt.server.actionendpoint.model.Action;
 
 import android.app.IntentService;
 import android.bluetooth.BluetoothAdapter;
@@ -59,7 +59,7 @@ public class ActionsIntentService extends IntentService {
 		context.startService(intent);
 	}
 
-	private ActionEndpoint endpoint;
+	private Actionendpoint endpoint;
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
@@ -104,10 +104,10 @@ public class ActionsIntentService extends IntentService {
 
 		if ((accountName != null) && (registration != null)) {
 
-			GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(getApplicationContext(), "server:client_id:" + getString(R.string.client_id));
+			GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(this, "server:client_id:" + getString(R.string.client_id));
 			credential.setSelectedAccountName(accountName);
 
-			ActionEndpoint.Builder endpointBuilder = new ActionEndpoint.Builder(
+			Actionendpoint.Builder endpointBuilder = new Actionendpoint.Builder(
 					AndroidHttp.newCompatibleTransport(),
 					new JacksonFactory(),
 					credential);
@@ -122,7 +122,7 @@ public class ActionsIntentService extends IntentService {
 						action.setName(params[0]);
 						action.setValue(params[1]);
 						action.setDevice(params[2]);
-						endpoint.add(action).execute();
+						endpoint.actionEndpoint().add(action).execute();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

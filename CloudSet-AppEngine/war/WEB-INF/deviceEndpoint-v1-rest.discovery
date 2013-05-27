@@ -1,9 +1,9 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/KF3_VGEzPueK5r8IppwSkN5yMpE\"",
+ "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/4BSCTpDzkkG_R1WNlYDTsMgma-w\"",
  "discoveryVersion": "v1",
- "id": "deviceEndpoint:v1",
- "name": "deviceEndpoint",
+ "id": "deviceendpoint:v1",
+ "name": "deviceendpoint",
  "version": "v1",
  "description": "This is an API",
  "ownerDomain": "piusvelte.com",
@@ -14,10 +14,10 @@
   "x32": "http://www.google.com/images/icons/product/search-32.gif"
  },
  "protocol": "rest",
- "baseUrl": "https://cloud-set.appspot.com/_ah/api/deviceEndpoint/v1/",
- "basePath": "/_ah/api/deviceEndpoint/v1/",
+ "baseUrl": "https://cloud-set.appspot.com/_ah/api/deviceendpoint/v1/",
+ "basePath": "/_ah/api/deviceendpoint/v1/",
  "rootUrl": "https://cloud-set.appspot.com/_ah/api/",
- "servicePath": "deviceEndpoint/v1/",
+ "servicePath": "deviceendpoint/v1/",
  "batchPath": "batch",
  "parameters": {
   "alt": {
@@ -103,106 +103,155 @@
    }
   }
  },
- "methods": {
-  "add": {
-   "id": "deviceEndpoint.add",
-   "path": "device",
-   "httpMethod": "PUT",
-   "request": {
-    "$ref": "Device"
-   },
-   "response": {
-    "$ref": "Device"
-   }
-  },
-  "get": {
-   "id": "deviceEndpoint.get",
-   "path": "device/{id}",
-   "httpMethod": "GET",
-   "parameters": {
-    "id": {
-     "type": "string",
-     "required": true,
-     "location": "path"
-    }
-   },
-   "parameterOrder": [
-    "id"
-   ],
-   "response": {
-    "$ref": "Device"
-   }
-  },
-  "list": {
-   "id": "deviceEndpoint.list",
-   "path": "device",
-   "httpMethod": "GET",
-   "parameters": {
-    "limit": {
-     "type": "integer",
-     "format": "int32",
-     "location": "query"
+ "resources": {
+  "deviceEndpoint": {
+   "methods": {
+    "add": {
+     "id": "deviceendpoint.deviceEndpoint.add",
+     "path": "add",
+     "httpMethod": "POST",
+     "request": {
+      "$ref": "Device"
+     },
+     "response": {
+      "$ref": "Device"
+     }
     },
-    "setting": {
-     "type": "string",
-     "location": "query"
+    "addAction": {
+     "id": "deviceendpoint.deviceEndpoint.addAction",
+     "path": "addAction/{id}/{action}",
+     "httpMethod": "POST",
+     "parameters": {
+      "action": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id",
+      "action"
+     ],
+     "response": {
+      "$ref": "Device"
+     }
+    },
+    "get": {
+     "id": "deviceendpoint.deviceEndpoint.get",
+     "path": "device/{id}",
+     "httpMethod": "GET",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "response": {
+      "$ref": "Device"
+     }
+    },
+    "list": {
+     "id": "deviceendpoint.deviceEndpoint.list",
+     "path": "device",
+     "httpMethod": "GET",
+     "parameters": {
+      "limit": {
+       "type": "integer",
+       "format": "int32",
+       "location": "query"
+      },
+      "setting": {
+       "type": "string",
+       "location": "query"
+      }
+     },
+     "response": {
+      "$ref": "DeviceCollection"
+     }
+    },
+    "patch": {
+     "id": "deviceendpoint.deviceEndpoint.patch",
+     "path": "device",
+     "httpMethod": "PATCH",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "request": {
+      "$ref": "Device"
+     },
+     "response": {
+      "$ref": "Device"
+     }
+    },
+    "remove": {
+     "id": "deviceendpoint.deviceEndpoint.remove",
+     "path": "remove/{id}",
+     "httpMethod": "DELETE",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "response": {
+      "$ref": "Device"
+     }
+    },
+    "removeAction": {
+     "id": "deviceendpoint.deviceEndpoint.removeAction",
+     "path": "action/{id}/{action}",
+     "httpMethod": "DELETE",
+     "parameters": {
+      "action": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id",
+      "action"
+     ],
+     "response": {
+      "$ref": "Device"
+     }
+    },
+    "update": {
+     "id": "deviceendpoint.deviceEndpoint.update",
+     "path": "device",
+     "httpMethod": "PUT",
+     "request": {
+      "$ref": "Device"
+     },
+     "response": {
+      "$ref": "Device"
+     }
     }
-   },
-   "response": {
-    "$ref": "DeviceCollection"
-   }
-  },
-  "patch": {
-   "id": "deviceEndpoint.patch",
-   "path": "device/{id}",
-   "httpMethod": "PATCH",
-   "parameters": {
-    "id": {
-     "type": "string",
-     "required": true,
-     "location": "path"
-    }
-   },
-   "parameterOrder": [
-    "id"
-   ],
-   "request": {
-    "$ref": "Device"
-   },
-   "response": {
-    "$ref": "Device"
-   }
-  },
-  "remove": {
-   "id": "deviceEndpoint.remove",
-   "path": "device/{id}",
-   "httpMethod": "DELETE",
-   "parameters": {
-    "id": {
-     "type": "string",
-     "required": true,
-     "location": "path"
-    }
-   },
-   "parameterOrder": [
-    "id"
-   ],
-   "response": {
-    "$ref": "Device"
-   }
-  },
-  "update": {
-   "id": "deviceEndpoint.update",
-   "path": "device/{id}",
-   "httpMethod": "POST",
-   "parameterOrder": [
-    "id"
-   ],
-   "request": {
-    "$ref": "Device"
-   },
-   "response": {
-    "$ref": "Device"
    }
   }
  }

@@ -1,17 +1,17 @@
 {
   "files": [
     {
-      "path": "cloud-set-actionEndpoint-v1-20130525033712-java-1.14.2-beta-sources.jar", 
+      "path": "cloud-set-actionendpoint-v1-20130527023506-java-1.14.2-beta-sources.jar", 
       "type": "source"
     }, 
     {
-      "path": "cloud-set-actionEndpoint-v1-20130525033712-java-1.14.2-beta.jar.properties", 
+      "path": "cloud-set-actionendpoint-v1-20130527023506-java-1.14.2-beta.jar.properties", 
       "type": "android.properties"
     }
   ], 
   "kind": "discovery#directoryItem", 
   "moduleName": "com.piusvelte.cloudset.gwt.server", 
-  "name": "actionEndpoint", 
+  "name": "actionendpoint", 
   "language": "java", 
   "proguard-config": "proguard-google-api-client.txt", 
   "version": "v1", 
@@ -689,7 +689,7 @@
     }
   ], 
   "language_version": "1.14.2-beta", 
-  "revision": 20130525033712, 
-  "id": "actionEndpoint:v1", 
+  "revision": 20130527023506, 
+  "id": "actionendpoint:v1", 
   "modulePath": "com/piusvelte/cloudset/gwt/server"
 }

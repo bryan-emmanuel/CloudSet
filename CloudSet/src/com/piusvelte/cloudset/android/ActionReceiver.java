@@ -25,24 +25,29 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
 public class ActionReceiver extends BroadcastReceiver {
 	
 	public static final String VOLUME_CHANGED_ACTION = "android.media.VOLUME_CHANGED_ACTION";
 	public static final String EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
 	public static final String EXTRA_VOLUME_STREAM_VALUE = "android.media.EXTRA_VOLUME_STREAM_VALUE";
+	
+	private static final String TAG = "ActionReceiver";
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
 		if (action != null) {
-			if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
+			if (action.equals(Intent.ACTION_BOOT_COMPLETED) || action.equals(Intent.ACTION_PACKAGE_REPLACED)) {
+				Log.d(TAG, "register receiver");
 				IntentFilter filter = new IntentFilter();
 				filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 				filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 				filter.addAction(VOLUME_CHANGED_ACTION);
 				context.registerReceiver(this, filter);
 			} else {
+				Log.d(TAG, "action received: " + action);
 				ActionsIntentService.serviceIntent(context, intent);
 			}
 		}

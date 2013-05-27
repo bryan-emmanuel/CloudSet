@@ -19,6 +19,7 @@
  */
 package com.piusvelte.cloudset.gwt.server;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -56,11 +57,34 @@ public class Device {
 	}
 	
 	public void addAction(String action) {
-		actions.add(action);
+		if (actions == null) {
+			List<String> newActions = new ArrayList<String>();
+			newActions.add(action);
+			actions = newActions;
+		} else if (!actions.contains(action)) {
+			List<String> newActions = new ArrayList<String>();
+			for (String a : actions) {
+				newActions.add(a);
+			}
+			newActions.add(action);
+			actions = newActions;
+		}
 	}
 	
 	public void removeAction(String action) {
-		actions.remove(action);
+		if ((actions != null) && actions.contains(action)) {
+			List<String> newActions = new ArrayList<String>();
+			for (String a : actions) {
+				if (!a.equals(action)) {
+					newActions.add(a);
+				}
+			}
+			if (newActions.isEmpty()) {
+				actions = null;
+			} else {
+				actions = newActions;
+			}
+		}
 	}
 
 	public String getModel() {

@@ -22,7 +22,6 @@ package com.piusvelte.cloudset.gwt.server;
 import com.piusvelte.cloudset.gwt.server.EMF;
 
 import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.users.User;
@@ -36,25 +35,14 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-@Api(name = "deviceEndpoint",
+@Api(name = "deviceendpoint",
 namespace = @ApiNamespace(ownerDomain = "piusvelte.com", ownerName = "piusvelte.com", packagePath = "cloudset.gwt.server"),
 clientIds = {Ids.WEB_CLIENT_ID, Ids.ANDROID_CLIENT_ID},
 audiences = {Ids.ANDROID_AUDIENCE})
 public class DeviceEndpoint {
-
-	/**
-	 * This method lists all the entities inserted in datastore.
-	 * It uses HTTP GET method and paging support.
-	 *
-	 * @return A CollectionResponse class containing the list of all entities
-	 * persisted and a cursor to the next page.
-	 * @throws OAuthRequestException 
-	 */
+	
 	@SuppressWarnings({ "unchecked" })
-	@ApiMethod(name = "list",
-	httpMethod = "GET",
-	path = "device")
-	public List<Device> listDevice(
+	public List<Device> list(
 			User user,
 			@Nullable @Named("setting") String setting,
 			@Nullable @Named("limit") Integer limit) throws OAuthRequestException {
@@ -84,44 +72,23 @@ public class DeviceEndpoint {
 			throw new OAuthRequestException("Invalid user.");
 		}
 	}
-
-	/**
-	 * This method gets the entity having primary key id. It uses HTTP GET method.
-	 *
-	 * @param id the primary key of the java bean.
-	 * @return The entity with primary key id.
-	 * @throws OAuthRequestException 
-	 */
-	@ApiMethod(name = "get",
-			httpMethod = "GET",
-			path = "device/{id}")
-	public Device getDevice(User user, @Named("id") String id) throws OAuthRequestException {
+	
+	public Device get(User user, @Named("id") String id) throws OAuthRequestException {
 		if (user != null) {
 			EntityManager mgr = getEntityManager();
-			Device deviceinfo = null;
+			Device device = null;
 			try {
-				deviceinfo = mgr.find(Device.class, id);
+				device = mgr.find(Device.class, id);
 			} finally {
 				mgr.close();
 			}
-			return deviceinfo;
+			return device;
 		} else {
 			throw new OAuthRequestException("Invalid user.");
 		}
 	}
-
-	/**
-	 * This inserts a new entity into App Engine datastore. If the entity already
-	 * exists in the datastore, an exception is thrown.
-	 * It uses HTTP POST method.
-	 *
-	 * @param deviceinfo the entity to be inserted.
-	 * @return The inserted entity.
-	 */
-	@ApiMethod(name = "add",
-			httpMethod = "PUT",
-			path = "device")
-	public Device addDevice(User user, Device device) throws OAuthRequestException {
+	
+	public Device add(User user, Device device) throws OAuthRequestException {
 		if (user != null) {
 			device.setNickname(user.getNickname());
 			EntityManager mgr = getEntityManager();
@@ -138,19 +105,42 @@ public class DeviceEndpoint {
 			throw new OAuthRequestException("Invalid user.");
 		}
 	}
-
-	/**
-	 * This method is used for updating an existing entity. If the entity does not
-	 * exist in the datastore, an exception is thrown.
-	 * It uses HTTP PUT method.
-	 *
-	 * @param device the entity to be updated.
-	 * @return The updated entity.
-	 */
-	@ApiMethod(name = "update",
-			httpMethod = "POST",
-			path = "device/{id}")
-	public Device updateDevice(User user, Device device) throws OAuthRequestException {
+	
+	public Device addAction(User user, @Named("id") String id, @Named("action") String action) throws OAuthRequestException {
+		if (user != null) {
+			EntityManager mgr = getEntityManager();
+			Device device = null;
+			try {
+				device = mgr.find(Device.class, id);
+				device.addAction(action);
+				mgr.persist(device);
+			} finally {
+				mgr.close();
+			}
+			return device;
+		} else {
+			throw new OAuthRequestException("Invalid user.");
+		}
+	}
+	
+	public Device removeAction(User user, @Named("id") String id, @Named("action") String action) throws OAuthRequestException {
+		if (user != null) {
+			EntityManager mgr = getEntityManager();
+			Device device = null;
+			try {
+				device = mgr.find(Device.class, id);
+				device.removeAction(action);
+				mgr.persist(device);
+			} finally {
+				mgr.close();
+			}
+			return device;
+		} else {
+			throw new OAuthRequestException("Invalid user.");
+		}
+	}
+	
+	public Device update(User user, Device device) throws OAuthRequestException {
 		if (user != null) {
 			EntityManager mgr = getEntityManager();
 			try {
@@ -166,18 +156,8 @@ public class DeviceEndpoint {
 			throw new OAuthRequestException("Invalid user.");
 		}
 	}
-
-	/**
-	 * This method removes the entity with primary key id.
-	 * It uses HTTP DELETE method.
-	 *
-	 * @param id the primary key of the entity to be deleted.
-	 * @return The deleted entity.
-	 */
-	@ApiMethod(name = "remove",
-			httpMethod = "DELETE",
-			path = "device/{id}")
-	public Device removeDevice(User user, @Named("id") String id) throws OAuthRequestException {
+	
+	public Device remove(User user, @Named("id") String id) throws OAuthRequestException {
 		if (user != null) {
 			EntityManager mgr = getEntityManager();
 			Device device = null;

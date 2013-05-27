@@ -1,9 +1,9 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/rlc9umpcm3WjlHcK_WjMaxG5kcw\"",
+ "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/cWgPEEGIU1R5gjG7FUQkpDEn3Bc\"",
  "discoveryVersion": "v1",
- "id": "actionEndpoint:v1",
- "name": "actionEndpoint",
+ "id": "actionendpoint:v1",
+ "name": "actionendpoint",
  "version": "v1",
  "description": "This is an API",
  "ownerDomain": "piusvelte.com",
@@ -115,8 +115,8 @@
   }
  },
  "methods": {
-  "actionEndpoint.add": {
-   "id": "actionEndpoint.add",
+  "actionendpoint.actionEndpoint.add": {
+   "id": "actionendpoint.actionEndpoint.add",
    "parameters": {
     "resource": {
      "$ref": "Action"

@@ -1,9 +1,9 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/KF3_VGEzPueK5r8IppwSkN5yMpE\"",
+ "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/4BSCTpDzkkG_R1WNlYDTsMgma-w\"",
  "discoveryVersion": "v1",
- "id": "deviceEndpoint:v1",
- "name": "deviceEndpoint",
+ "id": "deviceendpoint:v1",
+ "name": "deviceendpoint",
  "version": "v1",
  "description": "This is an API",
  "ownerDomain": "piusvelte.com",
@@ -102,8 +102,8 @@
   }
  },
  "methods": {
-  "deviceEndpoint.add": {
-   "id": "deviceEndpoint.add",
+  "deviceendpoint.deviceEndpoint.add": {
+   "id": "deviceendpoint.deviceEndpoint.add",
    "parameters": {
     "resource": {
      "$ref": "Device"
@@ -116,8 +116,28 @@
     "$ref": "Device"
    }
   },
-  "deviceEndpoint.get": {
-   "id": "deviceEndpoint.get",
+  "deviceendpoint.deviceEndpoint.addAction": {
+   "id": "deviceendpoint.deviceEndpoint.addAction",
+   "parameters": {
+    "action": {
+     "type": "string",
+     "required": true
+    },
+    "id": {
+     "type": "string",
+     "required": true
+    }
+   },
+   "parameterOrder": [
+    "id",
+    "action"
+   ],
+   "returns": {
+    "$ref": "Device"
+   }
+  },
+  "deviceendpoint.deviceEndpoint.get": {
+   "id": "deviceendpoint.deviceEndpoint.get",
    "allowGet": true,
    "parameters": {
     "id": {
@@ -132,8 +152,8 @@
     "$ref": "Device"
    }
   },
-  "deviceEndpoint.list": {
-   "id": "deviceEndpoint.list",
+  "deviceendpoint.deviceEndpoint.list": {
+   "id": "deviceendpoint.deviceEndpoint.list",
    "allowGet": true,
    "parameters": {
     "limit": {
@@ -148,8 +168,8 @@
     "$ref": "DeviceCollection"
    }
   },
-  "deviceEndpoint.patch": {
-   "id": "deviceEndpoint.patch",
+  "deviceendpoint.deviceEndpoint.patch": {
+   "id": "deviceendpoint.deviceEndpoint.patch",
    "supportsPatch": true,
    "parameters": {
     "actions": {
@@ -183,8 +203,8 @@
     "$ref": "Device"
    }
   },
-  "deviceEndpoint.remove": {
-   "id": "deviceEndpoint.remove",
+  "deviceendpoint.deviceEndpoint.remove": {
+   "id": "deviceendpoint.deviceEndpoint.remove",
    "parameters": {
     "id": {
      "type": "string",
@@ -198,16 +218,35 @@
     "$ref": "Device"
    }
   },
-  "deviceEndpoint.update": {
-   "id": "deviceEndpoint.update",
+  "deviceendpoint.deviceEndpoint.removeAction": {
+   "id": "deviceendpoint.deviceEndpoint.removeAction",
+   "parameters": {
+    "action": {
+     "type": "string",
+     "required": true
+    },
+    "id": {
+     "type": "string",
+     "required": true
+    }
+   },
+   "parameterOrder": [
+    "id",
+    "action"
+   ],
+   "returns": {
+    "$ref": "Device"
+   }
+  },
+  "deviceendpoint.deviceEndpoint.update": {
+   "id": "deviceendpoint.deviceEndpoint.update",
    "parameters": {
     "resource": {
      "$ref": "Device"
     }
    },
    "parameterOrder": [
-    "resource",
-    "id"
+    "resource"
    ],
    "returns": {
     "$ref": "Device"

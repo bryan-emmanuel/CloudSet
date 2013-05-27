@@ -1,17 +1,17 @@
 {
   "files": [
     {
-      "path": "cloud-set-deviceEndpoint-v1-20130525033745-java-1.14.2-beta-sources.jar", 
+      "path": "cloud-set-deviceendpoint-v1-20130527023513-java-1.14.2-beta-sources.jar", 
       "type": "source"
     }, 
     {
-      "path": "cloud-set-deviceEndpoint-v1-20130525033745-java-1.14.2-beta.jar.properties", 
+      "path": "cloud-set-deviceendpoint-v1-20130527023513-java-1.14.2-beta.jar.properties", 
       "type": "android.properties"
     }
   ], 
   "kind": "discovery#directoryItem", 
   "moduleName": "com.piusvelte.cloudset.gwt.server", 
-  "name": "deviceEndpoint", 
+  "name": "deviceendpoint", 
   "language": "java", 
   "proguard-config": "proguard-google-api-client.txt", 
   "version": "v1", 
@@ -689,7 +689,7 @@
     }
   ], 
   "language_version": "1.14.2-beta", 
-  "revision": 20130525033745, 
-  "id": "deviceEndpoint:v1", 
+  "revision": 20130527023513, 
+  "id": "deviceendpoint:v1", 
   "modulePath": "com/piusvelte/cloudset/gwt/server"
 }

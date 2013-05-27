@@ -1,9 +1,9 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/rlc9umpcm3WjlHcK_WjMaxG5kcw\"",
+ "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/cWgPEEGIU1R5gjG7FUQkpDEn3Bc\"",
  "discoveryVersion": "v1",
- "id": "actionEndpoint:v1",
- "name": "actionEndpoint",
+ "id": "actionendpoint:v1",
+ "name": "actionendpoint",
  "version": "v1",
  "description": "This is an API",
  "ownerDomain": "piusvelte.com",
@@ -14,10 +14,10 @@
   "x32": "http://www.google.com/images/icons/product/search-32.gif"
  },
  "protocol": "rest",
- "baseUrl": "https://cloud-set.appspot.com/_ah/api/actionEndpoint/v1/",
- "basePath": "/_ah/api/actionEndpoint/v1/",
+ "baseUrl": "https://cloud-set.appspot.com/_ah/api/actionendpoint/v1/",
+ "basePath": "/_ah/api/actionendpoint/v1/",
  "rootUrl": "https://cloud-set.appspot.com/_ah/api/",
- "servicePath": "actionEndpoint/v1/",
+ "servicePath": "actionendpoint/v1/",
  "batchPath": "batch",
  "parameters": {
   "alt": {
@@ -116,13 +116,17 @@
    }
   }
  },
- "methods": {
-  "add": {
-   "id": "actionEndpoint.add",
-   "path": "setting",
-   "httpMethod": "PUT",
-   "request": {
-    "$ref": "Action"
+ "resources": {
+  "actionEndpoint": {
+   "methods": {
+    "add": {
+     "id": "actionendpoint.actionEndpoint.add",
+     "path": "add",
+     "httpMethod": "POST",
+     "request": {
+      "$ref": "Action"
+     }
+    }
    }
   }
  }

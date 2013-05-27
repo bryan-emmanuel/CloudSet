@@ -30,8 +30,8 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.piusvelte.cloudset.gwt.server.deviceEndpoint.DeviceEndpoint;
-import com.piusvelte.cloudset.gwt.server.deviceEndpoint.model.Device;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Device;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -144,6 +144,9 @@ ActionBar.TabListener {
 				} else if (action.equals(ACTION_GCM_UNREGISTERED)) {	
 				}
 			}
+		} else {
+			// make sure that the receiver is registered
+			sendBroadcast(new Intent(Intent.ACTION_PACKAGE_REPLACED).addCategory(getPackageName()));
 		}
 
 		// check if the account is setup
@@ -320,16 +323,17 @@ ActionBar.TabListener {
 					@Override
 					protected Void doInBackground(Void... params) {
 
-						DeviceEndpoint.Builder endpointBuilder = new DeviceEndpoint.Builder(
+						Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
 								AndroidHttp.newCompatibleTransport(),
 								new JacksonFactory(),
 								credential);
-						DeviceEndpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+						Deviceendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 
 						try {
 							devices.clear();
-							devices.addAll(endpoint.list().execute().getItems());
+							devices.addAll(endpoint.deviceEndpoint().list().execute().getItems());
 						} catch (IOException e) {
+							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 

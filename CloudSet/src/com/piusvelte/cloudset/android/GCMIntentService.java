@@ -37,8 +37,8 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
 
-import com.piusvelte.cloudset.gwt.server.deviceEndpoint.DeviceEndpoint;
-import com.piusvelte.cloudset.gwt.server.deviceEndpoint.model.Device;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Device;
 
 /**
  * This class is started up as a service of the Android application. It listens
@@ -61,7 +61,7 @@ import com.piusvelte.cloudset.gwt.server.deviceEndpoint.model.Device;
  */
 public class GCMIntentService extends GCMBaseIntentService {
 
-	private DeviceEndpoint endpoint;
+	private Deviceendpoint endpoint;
 
 	protected static final String PROJECT_NUMBER = "205428532443";
 
@@ -91,7 +91,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		super(PROJECT_NUMBER);
 	}
 
-	private DeviceEndpoint getEndpoint(Context context) {
+	private Deviceendpoint getEndpoint(Context context) {
 		if (endpoint == null) {
 			String accountName = null;
 			SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.app_name), MODE_PRIVATE);
@@ -99,10 +99,11 @@ public class GCMIntentService extends GCMBaseIntentService {
 				accountName = sp.getString(context.getString(R.string.preference_account_name), null);
 			}
 
-			GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(getApplicationContext(), "server:client_id:" + context.getString(R.string.client_id));
+			GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(context,
+					"server:client_id:" + context.getString(R.string.client_id));
 			credential.setSelectedAccountName(accountName);
 
-			DeviceEndpoint.Builder endpointBuilder = new DeviceEndpoint.Builder(
+			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
 					AndroidHttp.newCompatibleTransport(),
 					new JacksonFactory(),
 					credential);
@@ -193,7 +194,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 			 * Using cloud endpoints, see if the device has already been
 			 * registered with the backend
 			 */
-			Device device = getEndpoint(context).get(registration)
+			Device device = getEndpoint(context).deviceEndpoint().get(registration)
 					.execute();
 
 			if (device != null && registration.equals(device.getDeviceRegistrationID())) {
@@ -212,7 +213,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				 * product information over to the backend. Then, we'll be
 				 * registered.
 				 */
-				Device device = getEndpoint(context).add(
+				Device device = getEndpoint(context).deviceEndpoint().add(
 						(new Device())
 						.setDeviceRegistrationID(registration)
 						.setActions(new ArrayList<String>())
@@ -251,7 +252,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		if (registrationId != null && registrationId.length() > 0) {
 			try {
-				getEndpoint(context).remove(registrationId).execute();
+				getEndpoint(context).deviceEndpoint().remove(registrationId).execute();
 			} catch (IOException e) {
 				Log.e(GCMIntentService.class.getName(),
 						"Exception received when attempting to unregister with server at "

@@ -217,23 +217,22 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 				@Override
 				protected void onPostExecute(Void result) {
-					((DevicesFragment) getSupportFragmentManager().findFragmentById(FRAGMENT_SUBSCRIPTIONS)).reloadAdapter(devices);
-					((DevicesFragment) getSupportFragmentManager().findFragmentById(FRAGMENT_SUBSCRIBERS)).reloadAdapter(devices);
+					subscriptionsFragment.reloadAdapter(devices);
+					subscribersFragment.reloadAdapter(devices);
 				}
 
 			}).execute();
 
 		} else {
 			devices.clear();
-			((DevicesFragment) getSupportFragmentManager().findFragmentById(FRAGMENT_SUBSCRIPTIONS)).reloadAdapter(devices);
-			((DevicesFragment) getSupportFragmentManager().findFragmentById(FRAGMENT_SUBSCRIBERS)).reloadAdapter(devices);
+			subscriptionsFragment.reloadAdapter(devices);
+			subscribersFragment.reloadAdapter(devices);
 		}
 	}
-
-	/**
-	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-	 * one of the sections/tabs/pages.
-	 */
+	
+	private DevicesFragment subscriptionsFragment;
+	private DevicesFragment subscribersFragment;
+	
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
 		public SectionsPagerAdapter(FragmentManager fm) {
@@ -245,17 +244,17 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 			if (position == FRAGMENT_ACCOUNT) {
 				return new AccountsFragment();
 			} else if (position == FRAGMENT_SUBSCRIPTIONS) {
-				DevicesFragment sf = new DevicesFragment();
+				subscriptionsFragment = new DevicesFragment();
 				Bundle b = new Bundle();
 				b.putBoolean(ARGUMENT_ISSUBSCRIPTIONS, true);
-				sf.setArguments(b);
-				return sf;
+				subscriptionsFragment.setArguments(b);
+				return subscriptionsFragment;
 			} else if (position == FRAGMENT_SUBSCRIBERS) {
-				DevicesFragment sf = new DevicesFragment();
+				subscribersFragment = new DevicesFragment();
 				Bundle b = new Bundle();
 				b.putBoolean(ARGUMENT_ISSUBSCRIPTIONS, false);
-				sf.setArguments(b);
-				return sf;
+				subscribersFragment.setArguments(b);
+				return subscribersFragment;
 			}
 			return null;
 		}

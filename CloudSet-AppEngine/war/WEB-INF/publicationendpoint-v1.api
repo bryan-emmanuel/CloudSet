@@ -1,0 +1,67 @@
+{
+  "extends" : "thirdParty.api",
+  "abstract" : false,
+  "root" : "https://cloud-set.appspot.com/_ah/api",
+  "name" : "publicationendpoint",
+  "version" : "v1",
+  "defaultVersion" : false,
+  "adapter" : {
+    "bns" : "https://cloud-set.appspot.com/_ah/spi",
+    "deadline" : 10.0,
+    "type" : "lily"
+  },
+  "auth" : {
+    "allowCookieAuth" : false
+  },
+  "frontendLimits" : {
+    "unregisteredUserQps" : -1,
+    "unregisteredQps" : -1,
+    "unregisteredDaily" : -1,
+    "rules" : [ ]
+  },
+  "cacheControl" : {
+    "type" : "no-cache",
+    "maxAge" : 0
+  },
+  "ownerDomain" : "piusvelte.com",
+  "ownerName" : "piusvelte.com",
+  "packagePath" : "cloudset.gwt.server",
+  "methods" : {
+    "publicationendpoint.publicationEndpoint.publish" : {
+      "path" : "publish/{publisher}/{action}/{value}",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.PublicationEndpoint.publish",
+      "request" : {
+        "parameters" : {
+          "publisher" : {
+            "type" : "string",
+            "required" : true
+          },
+          "action" : {
+            "type" : "string",
+            "required" : true
+          },
+          "value" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "empty"
+      }
+    }
+  },
+  "descriptor" : {
+    "schemas" : {
+    },
+    "methods" : {
+      "com.piusvelte.cloudset.gwt.server.PublicationEndpoint.publish" : {
+      }
+    }
+  }
+}

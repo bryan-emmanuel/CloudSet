@@ -24,8 +24,7 @@ import java.io.IOException;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.piusvelte.cloudset.gwt.server.actionendpoint.Actionendpoint;
-import com.piusvelte.cloudset.gwt.server.actionendpoint.model.Action;
+import com.piusvelte.cloudset.gwt.server.publicationendpoint.Publicationendpoint;
 
 import android.app.IntentService;
 import android.bluetooth.BluetoothAdapter;
@@ -64,7 +63,7 @@ public class ActionsIntentService extends IntentService {
 		context.startService(intent);
 	}
 
-	private Actionendpoint endpoint;
+	private Publicationendpoint endpoint;
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
@@ -112,7 +111,7 @@ public class ActionsIntentService extends IntentService {
 			GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(this, "server:client_id:" + getString(R.string.client_id));
 			credential.setSelectedAccountName(accountName);
 
-			Actionendpoint.Builder endpointBuilder = new Actionendpoint.Builder(
+			Publicationendpoint.Builder endpointBuilder = new Publicationendpoint.Builder(
 					AndroidHttp.newCompatibleTransport(),
 					new JacksonFactory(),
 					credential);
@@ -123,11 +122,7 @@ public class ActionsIntentService extends IntentService {
 				@Override
 				protected Void doInBackground(String... params) {
 					try {
-						Action action = new Action();
-						action.setName(params[0]);
-						action.setValue(params[1]);
-						action.setDevice(params[2]);
-						endpoint.actionEndpoint().add(action).execute();
+						endpoint.publicationEndpoint().publish(params[2], params[0], params[1]).execute();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

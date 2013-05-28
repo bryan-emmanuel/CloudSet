@@ -5,7 +5,7 @@
   <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
   <init-param>
    <param-name>services</param-name>
-   <param-value>com.piusvelte.cloudset.gwt.server.ActionEndpoint,com.piusvelte.cloudset.gwt.server.DeviceEndpoint</param-value>
+   <param-value>com.piusvelte.cloudset.gwt.server.PublicationEndpoint,com.piusvelte.cloudset.gwt.server.SubscriberEndpoint</param-value>
   </init-param>
  </servlet>
  <servlet-mapping>

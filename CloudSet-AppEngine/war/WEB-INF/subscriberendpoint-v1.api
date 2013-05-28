@@ -1,0 +1,291 @@
+{
+  "extends" : "thirdParty.api",
+  "abstract" : false,
+  "root" : "https://cloud-set.appspot.com/_ah/api",
+  "name" : "subscriberendpoint",
+  "version" : "v1",
+  "defaultVersion" : false,
+  "adapter" : {
+    "bns" : "https://cloud-set.appspot.com/_ah/spi",
+    "deadline" : 10.0,
+    "type" : "lily"
+  },
+  "auth" : {
+    "allowCookieAuth" : false
+  },
+  "frontendLimits" : {
+    "unregisteredUserQps" : -1,
+    "unregisteredQps" : -1,
+    "unregisteredDaily" : -1,
+    "rules" : [ ]
+  },
+  "cacheControl" : {
+    "type" : "no-cache",
+    "maxAge" : 0
+  },
+  "ownerDomain" : "piusvelte.com",
+  "ownerName" : "piusvelte.com",
+  "packagePath" : "cloudset.gwt.server",
+  "methods" : {
+    "subscriberendpoint.subscriberEndpoint.get" : {
+      "path" : "subscriber/{id}",
+      "httpMethod" : "GET",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.get",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "subscriberendpoint.subscriberEndpoint.subscribe" : {
+      "path" : "subscribe/{id}/{publisher}/{action}",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.subscribe",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          },
+          "publisher" : {
+            "type" : "string",
+            "required" : true
+          },
+          "action" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "subscriberendpoint.subscriberEndpoint.remove" : {
+      "path" : "remove/{id}",
+      "httpMethod" : "DELETE",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.remove",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "subscriberendpoint.subscriberEndpoint.unsubscribe" : {
+      "path" : "unsubscribe/{id}",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.unsubscribe",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "autoTemplate(backendRequest)",
+        "bodyName" : "resource"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "subscriberendpoint.subscriberEndpoint.add" : {
+      "path" : "add",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.add",
+      "request" : {
+        "body" : "autoTemplate(backendRequest)",
+        "bodyName" : "resource"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "subscriberendpoint.subscriberEndpoint.update" : {
+      "path" : "subscriber",
+      "httpMethod" : "PUT",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.update",
+      "request" : {
+        "body" : "autoTemplate(backendRequest)",
+        "bodyName" : "resource"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "subscriberendpoint.subscriberEndpoint.subscribers" : {
+      "path" : "subscribers/{id}",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.subscribers",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    }
+  },
+  "descriptor" : {
+    "schemas" : {
+      "Subscriber" : {
+        "id" : "Subscriber",
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "int64"
+          },
+          "nickname" : {
+            "type" : "string"
+          },
+          "model" : {
+            "type" : "string"
+          },
+          "subscriptions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "Key"
+            }
+          },
+          "actions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Key" : {
+        "id" : "Key",
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string"
+          },
+          "appId" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "parent" : {
+            "$ref" : "Key"
+          },
+          "complete" : {
+            "type" : "boolean"
+          },
+          "namespace" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SubscriberCollection" : {
+        "id" : "SubscriberCollection",
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "Subscriber"
+            }
+          }
+        }
+      }
+    },
+    "methods" : {
+      "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.get" : {
+        "response" : {
+          "$ref" : "Subscriber"
+        }
+      },
+      "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.subscribe" : {
+        "response" : {
+          "$ref" : "Subscriber"
+        }
+      },
+      "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.remove" : {
+        "response" : {
+          "$ref" : "Subscriber"
+        }
+      },
+      "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.unsubscribe" : {
+        "request" : {
+          "$ref" : "Key"
+        },
+        "response" : {
+          "$ref" : "Subscriber"
+        }
+      },
+      "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.add" : {
+        "request" : {
+          "$ref" : "Subscriber"
+        },
+        "response" : {
+          "$ref" : "Subscriber"
+        }
+      },
+      "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.update" : {
+        "request" : {
+          "$ref" : "Subscriber"
+        },
+        "response" : {
+          "$ref" : "Subscriber"
+        }
+      },
+      "com.piusvelte.cloudset.gwt.server.SubscriberEndpoint.subscribers" : {
+        "response" : {
+          "$ref" : "SubscriberCollection"
+        }
+      }
+    }
+  }
+}

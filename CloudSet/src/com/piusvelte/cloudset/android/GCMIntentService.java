@@ -36,9 +36,8 @@ import com.google.android.gcm.GCMRegistrar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
-
-import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
-import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Device;
+import com.piusvelte.cloudset.gwt.server.subscriberendpoint.Subscriberendpoint;
+import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Subscriber;
 
 /**
  * This class is started up as a service of the Android application. It listens
@@ -61,7 +60,7 @@ import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Device;
  */
 public class GCMIntentService extends GCMBaseIntentService {
 
-	private Deviceendpoint endpoint;
+	private Subscriberendpoint endpoint;
 
 	protected static final String PROJECT_NUMBER = "205428532443";
 
@@ -91,7 +90,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		super(PROJECT_NUMBER);
 	}
 
-	private Deviceendpoint getEndpoint(Context context) {
+	private Subscriberendpoint getEndpoint(Context context) {
 		if (endpoint == null) {
 			String accountName = null;
 			SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.app_name), MODE_PRIVATE);
@@ -103,7 +102,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 					"server:client_id:" + context.getString(R.string.client_id));
 			credential.setSelectedAccountName(accountName);
 
-			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
+			Subscriberendpoint.Builder endpointBuilder = new Subscriberendpoint.Builder(
 					AndroidHttp.newCompatibleTransport(),
 					new JacksonFactory(),
 					credential);
@@ -194,10 +193,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 			 * Using cloud endpoints, see if the device has already been
 			 * registered with the backend
 			 */
-			Device device = getEndpoint(context).deviceEndpoint().get(registration)
+			Subscriber subscriber = getEndpoint(context).subscriberEndpoint().get(registration)
 					.execute();
 
-			if (device != null && registration.equals(device.getDeviceRegistrationID())) {
+			if (subscriber != null && registration.equals(subscriber.getId())) {
 				alreadyRegisteredWithEndpointServer = true;
 				sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED);
 			}
@@ -213,14 +212,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 				 * product information over to the backend. Then, we'll be
 				 * registered.
 				 */
-				Device device = getEndpoint(context).deviceEndpoint().add(
-						(new Device())
-						.setDeviceRegistrationID(registration)
+				Subscriber subscriber = getEndpoint(context).subscriberEndpoint().add(
+						(new Subscriber())
+						.setId(registration)
 						.setActions(new ArrayList<String>())
 						.setTimestamp(System.currentTimeMillis())
 						.setModel(URLEncoder.encode(android.os.Build.MODEL,
 								"UTF-8"))).execute();
-				if ((device != null) && registration.equals(device.getDeviceRegistrationID())) {
+				if ((subscriber != null) && registration.equals(subscriber.getId())) {
 					// registered and stored in the backend, store locally
 					context.getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
 					.edit()
@@ -252,7 +251,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		if (registrationId != null && registrationId.length() > 0) {
 			try {
-				getEndpoint(context).deviceEndpoint().remove(registrationId).execute();
+				getEndpoint(context).subscriberEndpoint().remove(registrationId).execute();
 			} catch (IOException e) {
 				Log.e(GCMIntentService.class.getName(),
 						"Exception received when attempting to unregister with server at "

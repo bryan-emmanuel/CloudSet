@@ -34,7 +34,7 @@
                 <action android:name="com.piusvelte.cloudset.android.action.GCM_ERROR"/>
             </intent-filter>
         </activity>
-        <activity android:name=".DeviceActions"/>
+        <activity android:name=".Actions"/>
         <service android:name=".GCMIntentService"/>
         <service android:name=".ActionsIntentService"/>
         <receiver android:name="com.google.android.gcm.GCMBroadcastReceiver" android:permission="com.google.android.c2dm.permission.SEND">

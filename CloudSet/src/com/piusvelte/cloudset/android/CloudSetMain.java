@@ -30,8 +30,8 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
-import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Device;
+import com.piusvelte.cloudset.gwt.server.subscriberendpoint.Subscriberendpoint;
+import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Subscriber;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -78,9 +78,13 @@ ActionBar.TabListener {
 	public static final String ACTION_GCM_ERROR = "com.piusvelte.cloudset.android.action.GCM_ERROR";
 
 	private static final int FRAGMENT_ACCOUNT = 0;
-	private static final int FRAGMENT_DEVICES = 1;
+	private static final int FRAGMENT_SUBSCRIPTIONS = 1;
+	private static final int FRAGMENT_SUBSCRIBERS = 2;
+	
+	private static final String ARGUMENT_ISSUBSCRIPTIONS = "issubscriptions";
 
 	private static String accountName = null;
+	private static String registrationId = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -151,12 +155,13 @@ ActionBar.TabListener {
 		if ((sp.getString(getString(R.string.preference_account_name), null) != null)
 				&& (sp.getString(getString(R.string.preference_gcm_registration), null) != null)) {
 			accountName = sp.getString(getString(R.string.preference_account_name), null);
+			registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
 		}
 		
 		if (accountName == null) {
 			mViewPager.setCurrentItem(FRAGMENT_ACCOUNT);
 		} else {
-			mViewPager.setCurrentItem(FRAGMENT_DEVICES);
+			mViewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
 		}
 	}
 
@@ -197,18 +202,27 @@ ActionBar.TabListener {
 
 		@Override
 		public Fragment getItem(int position) {
-			switch (position) {
-			case FRAGMENT_ACCOUNT:
+			if (position == FRAGMENT_ACCOUNT) {
 				return new AccountsFragment();
-			case FRAGMENT_DEVICES:
-				return new DevicesFragment();
+			} else if (position == FRAGMENT_SUBSCRIPTIONS) {
+				SubscriptsFragment sf = new SubscriptsFragment();
+				Bundle b = new Bundle();
+				b.putBoolean(ARGUMENT_ISSUBSCRIPTIONS, true);
+				sf.setArguments(b);
+				return sf;
+			} else if (position == FRAGMENT_SUBSCRIBERS) {
+				SubscriptsFragment sf = new SubscriptsFragment();
+				Bundle b = new Bundle();
+				b.putBoolean(ARGUMENT_ISSUBSCRIPTIONS, false);
+				sf.setArguments(b);
+				return sf;
 			}
 			return null;
 		}
 
 		@Override
 		public int getCount() {
-			return 2;
+			return 3;
 		}
 
 		@Override
@@ -217,8 +231,10 @@ ActionBar.TabListener {
 			switch (position) {
 			case FRAGMENT_ACCOUNT:
 				return getString(R.string.title_accounts).toUpperCase(l);
-			case FRAGMENT_DEVICES:
-				return getString(R.string.title_devices).toUpperCase(l);
+			case FRAGMENT_SUBSCRIPTIONS:
+				return getString(R.string.title_subscriptions).toUpperCase(l);
+			case FRAGMENT_SUBSCRIBERS:
+				return getString(R.string.title_subscribers).toUpperCase(l);
 			}
 			return null;
 		}
@@ -258,7 +274,7 @@ ActionBar.TabListener {
 			GCMIntentService.register(getActivity().getApplicationContext());
 
 			// move to the devices tab
-			((ViewPager) getActivity().findViewById(R.id.pager)).setCurrentItem(FRAGMENT_DEVICES);
+			((ViewPager) getActivity().findViewById(R.id.pager)).setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
 		}
 
 		@Override
@@ -278,20 +294,23 @@ ActionBar.TabListener {
 
 	}
 
-	public static class DevicesFragment extends ListFragment {
+	public static class SubscriptsFragment extends ListFragment {
 
 		GoogleAccountCredential credential = null;
 
 		ArrayAdapter<String> adapter;
-		ArrayList<Device> devices = new ArrayList<Device>();
+		ArrayList<Subscriber> subscriptions = new ArrayList<Subscriber>();
+		
+		boolean isSubscriptions;
 
-		public DevicesFragment() {
+		public SubscriptsFragment() {
 		}
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			final View rootView = inflater.inflate(R.layout.devices, container, false);
+			isSubscriptions = getArguments().getBoolean(ARGUMENT_ISSUBSCRIPTIONS);
+			final View rootView = inflater.inflate(isSubscriptions ? R.layout.subscriptions : R.layout.subscribers, container, false);
 			adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
 			return rootView;
 		}
@@ -306,7 +325,18 @@ ActionBar.TabListener {
 		@Override
 		public void onListItemClick(ListView list, View view, int position, long id) {
 			super.onListItemClick(list, view, position, id);
-			startActivity(new Intent(getActivity().getApplicationContext(), DeviceActions.class).putExtra(DeviceActions.EXTRA_DEVICE_REGISTRATION, devices.get(position).getDeviceRegistrationID()));
+			String publisher;
+			String subscriber;
+			if (isSubscriptions) {
+				publisher = subscriptions.get(position).getId();
+				subscriber = registrationId;
+			} else {
+				publisher = registrationId;
+				subscriber = subscriptions.get(position).getId();
+			}
+			startActivity(new Intent(getActivity().getApplicationContext(), Actions.class)
+			.putExtra(Actions.EXTRA_PUBLISHER, publisher)
+			.putExtra(Actions.EXTRA_SUBSCRIBER, subscriber));
 		}
 
 		public void loadDevices() {
@@ -320,15 +350,15 @@ ActionBar.TabListener {
 					@Override
 					protected Void doInBackground(Void... params) {
 
-						Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
+						Subscriberendpoint.Builder endpointBuilder = new Subscriberendpoint.Builder(
 								AndroidHttp.newCompatibleTransport(),
 								new JacksonFactory(),
 								credential);
-						Deviceendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+						Subscriberendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 
 						try {
-							devices.clear();
-							devices.addAll(endpoint.deviceEndpoint().list().execute().getItems());
+							subscriptions.clear();
+							subscriptions.addAll(endpoint.subscriberEndpoint().subscribers(registrationId).execute().getItems());
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -340,9 +370,9 @@ ActionBar.TabListener {
 					@Override
 					protected void onPostExecute(Void result) {
 						adapter.clear();
-						for (Device device : devices) {
+						for (Subscriber subscriber : subscriptions) {
 							try {
-								adapter.add(URLDecoder.decode(device.getModel(), "UTF-8"));
+								adapter.add(URLDecoder.decode(subscriber.getModel(), "UTF-8"));
 							} catch (UnsupportedEncodingException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();

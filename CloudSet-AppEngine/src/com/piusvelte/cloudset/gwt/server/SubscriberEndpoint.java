@@ -50,8 +50,8 @@ public class SubscriberEndpoint {
 			List<Subscriber> subscribers;
 			EntityManager mgr = getEntityManager();
 			try {
-				Query query = mgr.createQuery("select from Subscriber as Subscriber where nickname = :nickname and id != :id")
-						.setParameter("nickname", user.getNickname())
+				Query query = mgr.createQuery("select from Subscriber as Subscriber where account = :account and id <> :id")
+						.setParameter("account", user.getNickname())
 						.setParameter("id", id);
 				subscribers = query.getResultList();
 			} finally {
@@ -89,7 +89,7 @@ public class SubscriberEndpoint {
 
 	public Subscriber add(User user, Subscriber subscriber) throws OAuthRequestException {
 		if (user != null) {
-			subscriber.setNickname(user.getNickname());
+			subscriber.setAccount(user.getNickname());
 			EntityManager mgr = getEntityManager();
 			try {
 				if (containsSubscriber(subscriber)) {
@@ -156,12 +156,30 @@ public class SubscriberEndpoint {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public Subscriber remove(User user, @Named("id") String id) throws OAuthRequestException {
 		if (user != null) {
 			EntityManager mgr = getEntityManager();
 			Subscriber subscriber = null;
 			try {
 				subscriber = mgr.find(Subscriber.class, id);
+				// need to clean up everything
+				Query query = mgr.createQuery("select from Publication as Publication where publisher = :publisher")
+						.setParameter("publisher", subscriber.getID());
+				List<Publication> publications = query.getResultList();
+				if (publications != null) {
+					for (Publication publication : publications) {
+						// update subscriptions
+						query = mgr.createQuery("select from Subscriber as Subscriber where subscriptions in (:publication)")
+								.setParameter("publication", publication.getKey());
+						List<Subscriber> subscribers = query.getResultList();
+						for (Subscriber s : subscribers) {
+							s.removeSubscription(publication.getKey());
+							mgr.persist(s);
+						}
+						mgr.remove(publication);
+					}
+				}
 				mgr.remove(subscriber);
 			} finally {
 				mgr.close();

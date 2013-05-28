@@ -44,6 +44,10 @@ public class Subscriber {
 	
 	private long timestamp;
 	
+	// user's account
+	private String account;
+	
+	// nickname for the device
 	private String nickname;
 	
 	// android.os.Build.MODEL
@@ -133,5 +137,13 @@ public class Subscriber {
 
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
+	}
+
+	public String getAccount() {
+		return account;
+	}
+
+	public void setAccount(String account) {
+		this.account = account;
 	}
 }

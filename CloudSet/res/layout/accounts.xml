@@ -41,5 +41,16 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/no_accounts" />
+    
+    <TextView
+        android:id="@+id/account"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"/>
+    
+    <Button
+        android:id="@+id/deregister"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_deregister"/>
 
 </LinearLayout>

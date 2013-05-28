@@ -252,6 +252,11 @@ public class GCMIntentService extends GCMBaseIntentService {
 		if (registrationId != null && registrationId.length() > 0) {
 			try {
 				getEndpoint(context).subscriberEndpoint().remove(registrationId).execute();
+				context.getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
+				.edit()
+				.putString(getString(R.string.preference_account_name), null)
+				.putString(getString(R.string.preference_gcm_registration), null)
+				.commit();
 			} catch (IOException e) {
 				Log.e(GCMIntentService.class.getName(),
 						"Exception received when attempting to unregister with server at "

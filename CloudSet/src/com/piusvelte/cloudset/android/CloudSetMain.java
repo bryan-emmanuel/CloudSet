@@ -20,12 +20,9 @@
 package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -33,10 +30,9 @@ import com.google.api.client.json.jackson.JacksonFactory;
 import com.piusvelte.cloudset.gwt.server.subscriberendpoint.Subscriberendpoint;
 import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Subscriber;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -45,18 +41,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.ListFragment;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.Toast;
 
 public class CloudSetMain extends FragmentActivity implements
-ActionBar.TabListener {
+ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.DevicesListener {
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -76,16 +66,18 @@ ActionBar.TabListener {
 	public static final String ACTION_GCM_REGISTERED = "com.piusvelte.cloudset.android.action.GCM_REGISTERED";
 	public static final String ACTION_GCM_UNREGISTERED = "com.piusvelte.cloudset.android.action.GCM_UNREGISTERED";
 	public static final String ACTION_GCM_ERROR = "com.piusvelte.cloudset.android.action.GCM_ERROR";
+	
+	public static final String ARGUMENT_ISSUBSCRIPTIONS = "issubscriptions";
 
 	private static final int FRAGMENT_ACCOUNT = 0;
 	private static final int FRAGMENT_SUBSCRIPTIONS = 1;
 	private static final int FRAGMENT_SUBSCRIBERS = 2;
+
+	private String account;
+	private String registrationId;
+	private GoogleAccountCredential credential;
+	private ArrayList<Subscriber> devices = new ArrayList<Subscriber>();
 	
-	private static final String ARGUMENT_ISSUBSCRIPTIONS = "issubscriptions";
-
-	private static String accountName = null;
-	private static String registrationId = null;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -127,6 +119,7 @@ ActionBar.TabListener {
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+		
 	}
 
 	@Override
@@ -154,11 +147,13 @@ ActionBar.TabListener {
 		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
 		if ((sp.getString(getString(R.string.preference_account_name), null) != null)
 				&& (sp.getString(getString(R.string.preference_gcm_registration), null) != null)) {
-			accountName = sp.getString(getString(R.string.preference_account_name), null);
+			account = sp.getString(getString(R.string.preference_account_name), null);
 			registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
 		}
 		
-		if (accountName == null) {
+		loadDevices();
+		
+		if (!hasRegistration()) {
 			mViewPager.setCurrentItem(FRAGMENT_ACCOUNT);
 		} else {
 			mViewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
@@ -190,6 +185,51 @@ ActionBar.TabListener {
 			FragmentTransaction fragmentTransaction) {
 	}
 
+	public void loadDevices() {
+		if (hasRegistration()) {
+			
+			if (credential == null) {
+				credential = GoogleAccountCredential.usingAudience(getApplicationContext(), "server:client_id:" + getString(R.string.client_id));
+				credential.setSelectedAccountName(account);
+			}
+			
+			(new AsyncTask<String, Void, Void>() {
+
+				@Override
+				protected Void doInBackground(String... params) {
+
+					Subscriberendpoint.Builder endpointBuilder = new Subscriberendpoint.Builder(
+							AndroidHttp.newCompatibleTransport(),
+							new JacksonFactory(),
+							credential);
+					Subscriberendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+
+					try {
+						devices.clear();
+						devices.addAll(endpoint.subscriberEndpoint().subscribers(registrationId).execute().getItems());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					return null;
+				}
+
+				@Override
+				protected void onPostExecute(Void result) {
+					((DevicesFragment) getSupportFragmentManager().findFragmentById(FRAGMENT_SUBSCRIPTIONS)).reloadAdapter(devices);
+					((DevicesFragment) getSupportFragmentManager().findFragmentById(FRAGMENT_SUBSCRIBERS)).reloadAdapter(devices);
+				}
+
+			}).execute();
+
+		} else {
+			devices.clear();
+			((DevicesFragment) getSupportFragmentManager().findFragmentById(FRAGMENT_SUBSCRIPTIONS)).reloadAdapter(devices);
+			((DevicesFragment) getSupportFragmentManager().findFragmentById(FRAGMENT_SUBSCRIBERS)).reloadAdapter(devices);
+		}
+	}
+
 	/**
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
 	 * one of the sections/tabs/pages.
@@ -205,13 +245,13 @@ ActionBar.TabListener {
 			if (position == FRAGMENT_ACCOUNT) {
 				return new AccountsFragment();
 			} else if (position == FRAGMENT_SUBSCRIPTIONS) {
-				SubscriptsFragment sf = new SubscriptsFragment();
+				DevicesFragment sf = new DevicesFragment();
 				Bundle b = new Bundle();
 				b.putBoolean(ARGUMENT_ISSUBSCRIPTIONS, true);
 				sf.setArguments(b);
 				return sf;
 			} else if (position == FRAGMENT_SUBSCRIBERS) {
-				SubscriptsFragment sf = new SubscriptsFragment();
+				DevicesFragment sf = new DevicesFragment();
 				Bundle b = new Bundle();
 				b.putBoolean(ARGUMENT_ISSUBSCRIPTIONS, false);
 				sf.setArguments(b);
@@ -240,152 +280,35 @@ ActionBar.TabListener {
 		}
 	}
 
-	public static class AccountsFragment extends ListFragment {
-
-		ArrayAdapter<String> adapter;
-
-		public AccountsFragment() {
-
-		}
-
-		private void getAccountNames() {
-			adapter.clear();
-			AccountManager accountManager = AccountManager.get(getActivity().getApplicationContext());
-			Account[] accounts = accountManager.getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
-			String[] names = new String[accounts.length];
-			for (int i = 0; i < names.length; i++) {
-				adapter.add(accounts[i].name);
-			}
-			adapter.notifyDataSetChanged();
-		}
-
-		@Override
-		public void onListItemClick(ListView list, View view, int position, long id) {
-			super.onListItemClick(list, view, position, id);
-			accountName = adapter.getItem(position);
-
-			// store the account
-			getActivity().getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
-			.edit()
-			.putString(getString(R.string.preference_account_name), accountName)
-			.commit();
-
-			// register with GCM, this is an asynchronous operation
-			GCMIntentService.register(getActivity().getApplicationContext());
-
-			// move to the devices tab
-			((ViewPager) getActivity().findViewById(R.id.pager)).setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
-		}
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			final View rootView = inflater.inflate(R.layout.accounts, container, false);
-			adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
-			return rootView;
-		}
-
-		@Override
-		public void onResume() {
-			super.onResume();
-			setListAdapter(adapter);
-			getAccountNames();
-		}
-
+	@Override
+	public String getAccount() {
+		return account;
 	}
 
-	public static class SubscriptsFragment extends ListFragment {
+	@Override
+	public void setAccount(String account) {
 
-		GoogleAccountCredential credential = null;
-
-		ArrayAdapter<String> adapter;
-		ArrayList<Subscriber> subscriptions = new ArrayList<Subscriber>();
+		this.account = account;
 		
-		boolean isSubscriptions;
+		// store the account
+		getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE)
+		.edit()
+		.putString(getString(R.string.preference_account_name), account)
+		.commit();
 
-		public SubscriptsFragment() {
-		}
+		// register with GCM, this is an asynchronous operation
+		GCMIntentService.register(getApplicationContext());
+		
+	}
 
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			isSubscriptions = getArguments().getBoolean(ARGUMENT_ISSUBSCRIPTIONS);
-			final View rootView = inflater.inflate(isSubscriptions ? R.layout.subscriptions : R.layout.subscribers, container, false);
-			adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
-			return rootView;
-		}
+	@Override
+	public boolean hasRegistration() {
+		return (account != null) && (registrationId != null);
+	}
 
-		@Override
-		public void onResume() {
-			super.onResume();
-			setListAdapter(adapter);
-			loadDevices();
-		}
-
-		@Override
-		public void onListItemClick(ListView list, View view, int position, long id) {
-			super.onListItemClick(list, view, position, id);
-			String publisher;
-			String subscriber;
-			if (isSubscriptions) {
-				publisher = subscriptions.get(position).getId();
-				subscriber = registrationId;
-			} else {
-				publisher = registrationId;
-				subscriber = subscriptions.get(position).getId();
-			}
-			startActivity(new Intent(getActivity().getApplicationContext(), Actions.class)
-			.putExtra(Actions.EXTRA_PUBLISHER, publisher)
-			.putExtra(Actions.EXTRA_SUBSCRIBER, subscriber));
-		}
-
-		public void loadDevices() {
-			if (accountName != null) {
-
-				credential = GoogleAccountCredential.usingAudience(getActivity().getApplicationContext(), "server:client_id:" + getActivity().getString(R.string.client_id));
-				credential.setSelectedAccountName(accountName);
-
-				(new AsyncTask<Void, Void, Void>() {
-
-					@Override
-					protected Void doInBackground(Void... params) {
-
-						Subscriberendpoint.Builder endpointBuilder = new Subscriberendpoint.Builder(
-								AndroidHttp.newCompatibleTransport(),
-								new JacksonFactory(),
-								credential);
-						Subscriberendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
-
-						try {
-							subscriptions.clear();
-							subscriptions.addAll(endpoint.subscriberEndpoint().subscribers(registrationId).execute().getItems());
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-						return null;
-					}
-
-					@Override
-					protected void onPostExecute(Void result) {
-						adapter.clear();
-						for (Subscriber subscriber : subscriptions) {
-							try {
-								adapter.add(URLDecoder.decode(subscriber.getModel(), "UTF-8"));
-							} catch (UnsupportedEncodingException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						adapter.notifyDataSetChanged();
-					}
-
-				}).execute();
-
-			}
-		}
-
+	@Override
+	public String getRegistration() {
+		return registrationId;
 	}
 
 }

@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/Te9zF91QV17-Ipe4NRTCvw0hndk\"",
+ "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/1yKt0rdMKjULgDgDX2WpUwreL3k\"",
  "discoveryVersion": "v1",
  "id": "subscriberendpoint:v1",
  "name": "subscriberendpoint",
@@ -95,6 +95,9 @@
    "id": "Subscriber",
    "type": "object",
    "properties": {
+    "account": {
+     "type": "string"
+    },
     "actions": {
      "type": "array",
      "items": {
@@ -170,6 +173,9 @@
    "id": "subscriberendpoint.subscriberEndpoint.patch",
    "supportsPatch": true,
    "parameters": {
+    "account": {
+     "type": "string"
+    },
     "actions": {
      "type": "array",
      "items": {

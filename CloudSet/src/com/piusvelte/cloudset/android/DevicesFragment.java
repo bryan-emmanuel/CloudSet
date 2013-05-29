@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Subscriber;
 
@@ -39,6 +40,7 @@ public class DevicesFragment extends ListFragment {
 
 	ArrayAdapter<String> adapter;
 	ArrayList<Subscriber> devices;
+	TextView empty;
 	
 	boolean isSubscriptions;
 
@@ -69,6 +71,7 @@ public class DevicesFragment extends ListFragment {
 			Bundle savedInstanceState) {
 		isSubscriptions = getArguments().getBoolean(CloudSetMain.ARGUMENT_ISSUBSCRIPTIONS);
 		final View rootView = inflater.inflate(isSubscriptions ? R.layout.devices : R.layout.devices, container, false);
+		empty = (TextView) rootView.findViewById(android.R.id.empty);
 		adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
 		return rootView;
 	}
@@ -106,6 +109,11 @@ public class DevicesFragment extends ListFragment {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+		if (adapter.isEmpty()) {
+			empty.setText(R.string.no_devices);
+		} else {
+			empty.setText(R.string.loading_devices);
 		}
 		adapter.notifyDataSetChanged();
 	}

@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/1yKt0rdMKjULgDgDX2WpUwreL3k\"",
+ "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/Y5iNshnaz-iUJOFBTyttcqQp9MY\"",
  "discoveryVersion": "v1",
  "id": "subscriberendpoint:v1",
  "name": "subscriberendpoint",
@@ -91,18 +91,46 @@
     }
    }
   },
+  "Publication": {
+   "id": "Publication",
+   "type": "object",
+   "properties": {
+    "action": {
+     "type": "string"
+    },
+    "key": {
+     "$ref": "Key"
+    },
+    "publisher": {
+     "type": "string"
+    },
+    "timestamp": {
+     "type": "string",
+     "format": "int64"
+    },
+    "value": {
+     "type": "string"
+    }
+   }
+  },
+  "PublicationCollection": {
+   "id": "PublicationCollection",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "Publication"
+     }
+    }
+   }
+  },
   "Subscriber": {
    "id": "Subscriber",
    "type": "object",
    "properties": {
     "account": {
      "type": "string"
-    },
-    "actions": {
-     "type": "array",
-     "items": {
-      "type": "string"
-     }
     },
     "id": {
      "type": "string"
@@ -176,12 +204,6 @@
     "account": {
      "type": "string"
     },
-    "actions": {
-     "type": "array",
-     "items": {
-      "type": "string"
-     }
-    },
     "id": {
      "type": "string"
     },
@@ -231,22 +253,22 @@
      "type": "string",
      "required": true
     },
-    "id": {
+    "publisher": {
      "type": "string",
      "required": true
     },
-    "publisher": {
+    "subscriber": {
      "type": "string",
      "required": true
     }
    },
    "parameterOrder": [
-    "id",
+    "subscriber",
     "publisher",
     "action"
    ],
    "returns": {
-    "$ref": "Subscriber"
+    "$ref": "PublicationCollection"
    }
   },
   "subscriberendpoint.subscriberEndpoint.subscribers": {
@@ -264,23 +286,43 @@
     "$ref": "SubscriberCollection"
    }
   },
-  "subscriberendpoint.subscriberEndpoint.unsubscribe": {
-   "id": "subscriberendpoint.subscriberEndpoint.unsubscribe",
+  "subscriberendpoint.subscriberEndpoint.subscriptions": {
+   "id": "subscriberendpoint.subscriberEndpoint.subscriptions",
    "parameters": {
-    "id": {
+    "publisher": {
      "type": "string",
      "required": true
     },
+    "subscriber": {
+     "type": "string",
+     "required": true
+    }
+   },
+   "parameterOrder": [
+    "subscriber",
+    "publisher"
+   ],
+   "returns": {
+    "$ref": "PublicationCollection"
+   }
+  },
+  "subscriberendpoint.subscriberEndpoint.unsubscribe": {
+   "id": "subscriberendpoint.subscriberEndpoint.unsubscribe",
+   "parameters": {
     "resource": {
      "$ref": "Key"
+    },
+    "subscriber": {
+     "type": "string",
+     "required": true
     }
    },
    "parameterOrder": [
     "resource",
-    "id"
+    "subscriber"
    ],
    "returns": {
-    "$ref": "Subscriber"
+    "$ref": "PublicationCollection"
    }
   },
   "subscriberendpoint.subscriberEndpoint.update": {

@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/xpuUnNv9taJ2W2pmGc-H4Kk1Hvk\"",
+ "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/xpuUnNv9taJ2W2pmGc-H4Kk1Hvk\"",
  "discoveryVersion": "v1",
  "id": "publicationendpoint:v1",
  "name": "publicationendpoint",

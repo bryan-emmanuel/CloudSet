@@ -27,7 +27,7 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.piusvelte.cloudset.gwt.server.subscriberendpoint.Subscriberendpoint;
-import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Subscriber;
+import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Publication;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -44,10 +44,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class Actions extends ListActivity {
-	
+
 	// load the actions for the subscription to this device
 
-	private static final String TAG = "DeviceActions";
+	private static final String TAG = "Actions";
 	public static final String EXTRA_PUBLISHER = "com.piusvelte.cloudset.android.EXTRA_PUBLISHER";
 	public static final String EXTRA_SUBSCRIBER = "com.piusvelte.cloudset.android.EXTRA_SUBSCRIBER";
 
@@ -55,7 +55,8 @@ public class Actions extends ListActivity {
 	private String subscriberId;
 	private Subscriberendpoint endpoint = null;
 	private ArrayAdapter<String> adapter;
-	private Subscriber subscriber;
+	// subscriptions, filtered on the publisherId
+	private List<Publication> publications;
 	private ArrayList<String> actions = new ArrayList<String>();
 
 	@Override
@@ -99,26 +100,30 @@ public class Actions extends ListActivity {
 					} else {
 						row = (View) convertView;
 					}
-
 					String action = ActionsIntentService.ACTIONS[position];
-					
-					Log.d(TAG, "action: " + action);
 
 					TextView tv = (TextView) row.findViewById(R.id.action);
 					tv.setText(ActionsIntentService.ACTION_NAMES[position]);
 
-					if ((subscriber != null) && (subscriber.getActions() != null)) {
-						
-						CheckBox cb = (CheckBox) row.findViewById(R.id.enabled);
-						cb.setChecked(subscriber.getActions().contains(action));
-						
-					}
+					CheckBox cb = (CheckBox) row.findViewById(R.id.enabled);
+					cb.setChecked(isSubscribedTo(action));
 
 					return row;
 				}
 
 			};
 		}
+	}
+	
+	private boolean isSubscribedTo(String action) {
+		if (publications != null) {
+			for (Publication publication : publications) {
+				if (publication.getAction().equals(action)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -148,7 +153,7 @@ public class Actions extends ListActivity {
 			@Override
 			protected Void doInBackground(String... params) {
 				try {
-					subscriber = endpoint.subscriberEndpoint().get(subscriberId).execute();
+					publications = endpoint.subscriberEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
 				} catch (IOException e) {
 					Log.e(TAG, e.toString());
 				}
@@ -168,37 +173,33 @@ public class Actions extends ListActivity {
 	}
 
 	private void updateDevice(String action, boolean add) {
-		if (subscriber != null) {
-			(new AsyncTask<String, Void, Void>() {
+		(new AsyncTask<String, Void, Void>() {
 
-				@Override
-				protected Void doInBackground(String... params) {
-					try {
-						if (Boolean.parseBoolean(params[1])) {
-							// find the Key for the action
-							List<String> actions = subscriber.getActions();
-							for (int i = 0, s = actions.size(); i < s; i++) {
-								if (actions.get(i).equals(params[0])) {
-									subscriber = endpoint.subscriberEndpoint().unsubscribe(subscriberId, subscriber.getSubscriptions().get(i)).execute();
-									break;
-								}
+			@Override
+			protected Void doInBackground(String... params) {
+				try {
+					if (Boolean.parseBoolean(params[1])) {
+						for (int i = 0, s = publications.size(); i < s; i++) {
+							Publication pulication = publications.get(i);
+							if (pulication.getAction().equals(params[0])) {
+								publications = endpoint.subscriberEndpoint().unsubscribe(subscriberId, pulication.getKey()).execute().getItems();
 							}
-						} else {
-							subscriber = endpoint.subscriberEndpoint().subscribe(subscriberId, publisherId, params[0]).execute();
 						}
-					} catch (IOException e) {
-						Log.e(TAG, e.toString());
+					} else {
+						publications = endpoint.subscriberEndpoint().subscribe(subscriberId, publisherId, params[0]).execute().getItems();
 					}
-					return null;
+				} catch (IOException e) {
+					Log.e(TAG, e.toString());
 				}
+				return null;
+			}
 
-				@Override
-				protected void onPostExecute(Void result) {
-					adapter.notifyDataSetChanged();
-				}
+			@Override
+			protected void onPostExecute(Void result) {
+				adapter.notifyDataSetChanged();
+			}
 
-			}).execute(action, Boolean.toString(add));
-		}
+		}).execute(action, Boolean.toString(add));
 	}
 
 }

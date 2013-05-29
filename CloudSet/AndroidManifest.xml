@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?><manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" package="com.piusvelte.cloudset.android">
 
-    <uses-sdk android:minSdkVersion="11" android:targetSdkVersion="17"/>
+   <uses-sdk android:minSdkVersion="11" android:targetSdkVersion="17"/>
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.INTERNET"/>
    <permission android:name="com.piusvelte.cloudset.android.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
 
    <uses-permission android:name="com.piusvelte.cloudset.android.permission.C2D_MESSAGE"/>
@@ -56,6 +56,9 @@
 			</intent-filter>
 			<intent-filter>
 				<action android:name="android.media.VOLUME_CHANGED_ACTION" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.media.RINGER_MODE_CHANGED" />
 			</intent-filter>
 		</receiver>
 </application>

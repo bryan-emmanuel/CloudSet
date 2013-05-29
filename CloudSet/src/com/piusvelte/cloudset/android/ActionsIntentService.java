@@ -31,6 +31,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.PowerManager;
@@ -40,8 +41,8 @@ public class ActionsIntentService extends IntentService {
 	public static final String VOLUME_CHANGED_ACTION = "android.media.VOLUME_CHANGED_ACTION";
 	public static final String EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
 	public static final String EXTRA_VOLUME_STREAM_VALUE = "android.media.EXTRA_VOLUME_STREAM_VALUE";
-	public static final String[] ACTIONS = new String[]{WifiManager.WIFI_STATE_CHANGED_ACTION, BluetoothAdapter.ACTION_STATE_CHANGED, VOLUME_CHANGED_ACTION};
-	public static final String[] ACTION_NAMES = new String[]{"Wi-Fi", "Bluetooth", "Volume"};
+	public static final String[] ACTIONS = new String[]{WifiManager.WIFI_STATE_CHANGED_ACTION, BluetoothAdapter.ACTION_STATE_CHANGED, VOLUME_CHANGED_ACTION, AudioManager.RINGER_MODE_CHANGED_ACTION};
+	public static final String[] ACTION_NAMES = new String[]{"Wi-Fi", "Bluetooth", "Volume", "Ringer"};
 
 	private static PowerManager.WakeLock sWakeLock;
 	private static final Object LOCK = ActionsIntentService.class;
@@ -91,6 +92,9 @@ public class ActionsIntentService extends IntentService {
 				} else {
 					sWakeLock.release();
 				}
+			} else if (action.equals(AudioManager.RINGER_MODE_CHANGED_ACTION)) {
+				sendAction(action,
+						Integer.toString(intent.getIntExtra(AudioManager.EXTRA_RINGER_MODE, AudioManager.RINGER_MODE_NORMAL)));
 			} else {
 				sWakeLock.release();
 			}

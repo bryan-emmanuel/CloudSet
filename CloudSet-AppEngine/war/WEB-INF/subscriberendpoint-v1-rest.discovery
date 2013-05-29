@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"_eRzJ5rb6y2Sm1GT1st-3xOUuXg/1yKt0rdMKjULgDgDX2WpUwreL3k\"",
+ "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/Y5iNshnaz-iUJOFBTyttcqQp9MY\"",
  "discoveryVersion": "v1",
  "id": "subscriberendpoint:v1",
  "name": "subscriberendpoint",
@@ -93,18 +93,46 @@
     }
    }
   },
+  "Publication": {
+   "id": "Publication",
+   "type": "object",
+   "properties": {
+    "action": {
+     "type": "string"
+    },
+    "key": {
+     "$ref": "Key"
+    },
+    "publisher": {
+     "type": "string"
+    },
+    "timestamp": {
+     "type": "string",
+     "format": "int64"
+    },
+    "value": {
+     "type": "string"
+    }
+   }
+  },
+  "PublicationCollection": {
+   "id": "PublicationCollection",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "Publication"
+     }
+    }
+   }
+  },
   "Subscriber": {
    "id": "Subscriber",
    "type": "object",
    "properties": {
     "account": {
      "type": "string"
-    },
-    "actions": {
-     "type": "array",
-     "items": {
-      "type": "string"
-     }
     },
     "id": {
      "type": "string"
@@ -213,15 +241,10 @@
     },
     "subscribe": {
      "id": "subscriberendpoint.subscriberEndpoint.subscribe",
-     "path": "subscribe/{id}/{publisher}/{action}",
+     "path": "subscribe/{subscriber}/{publisher}/{action}",
      "httpMethod": "POST",
      "parameters": {
       "action": {
-       "type": "string",
-       "required": true,
-       "location": "path"
-      },
-      "id": {
        "type": "string",
        "required": true,
        "location": "path"
@@ -230,15 +253,20 @@
        "type": "string",
        "required": true,
        "location": "path"
+      },
+      "subscriber": {
+       "type": "string",
+       "required": true,
+       "location": "path"
       }
      },
      "parameterOrder": [
-      "id",
+      "subscriber",
       "publisher",
       "action"
      ],
      "response": {
-      "$ref": "Subscriber"
+      "$ref": "PublicationCollection"
      }
     },
     "subscribers": {
@@ -259,25 +287,49 @@
       "$ref": "SubscriberCollection"
      }
     },
-    "unsubscribe": {
-     "id": "subscriberendpoint.subscriberEndpoint.unsubscribe",
-     "path": "unsubscribe/{id}",
+    "subscriptions": {
+     "id": "subscriberendpoint.subscriberEndpoint.subscriptions",
+     "path": "subscriptions/{subscriber}/{publisher}",
      "httpMethod": "POST",
      "parameters": {
-      "id": {
+      "publisher": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "subscriber": {
        "type": "string",
        "required": true,
        "location": "path"
       }
      },
      "parameterOrder": [
-      "id"
+      "subscriber",
+      "publisher"
+     ],
+     "response": {
+      "$ref": "PublicationCollection"
+     }
+    },
+    "unsubscribe": {
+     "id": "subscriberendpoint.subscriberEndpoint.unsubscribe",
+     "path": "unsubscribe/{subscriber}",
+     "httpMethod": "POST",
+     "parameters": {
+      "subscriber": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "subscriber"
      ],
      "request": {
       "$ref": "Key"
      },
      "response": {
-      "$ref": "Subscriber"
+      "$ref": "PublicationCollection"
      }
     },
     "update": {

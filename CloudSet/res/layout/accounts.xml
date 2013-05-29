@@ -29,7 +29,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
-    tools:context=".MainActivity$AccountsFragment" >
+    tools:context=".AccountsFragment" >
 
     <ListView
         android:id="@android:id/list"
@@ -45,7 +45,9 @@
     <TextView
         android:id="@+id/account"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:padding="6dp"/>
     
     <Button
         android:id="@+id/deregister"

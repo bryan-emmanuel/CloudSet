@@ -26,7 +26,6 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.Transient;
 
 import com.google.appengine.api.datastore.Key;
 
@@ -56,17 +55,6 @@ public class Subscriber {
 	// subscriptions
 	@OneToMany(fetch = FetchType.EAGER)
 	private List<Key> subscriptions;
-	
-	@Transient
-	private List<String> actions;
-
-	public List<String> getActions() {
-		return actions;
-	}
-
-	public void setActions(List<String> actions) {
-		this.actions = actions;
-	}
 
 	public List<Key> getSubscriptions() {
 		return subscriptions;

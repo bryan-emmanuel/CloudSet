@@ -19,7 +19,7 @@
 package com.piusvelte.cloudset.gwt.server.subscriberendpoint.model;
 
 /**
- * Model definition for SubscriberCollection.
+ * Model definition for PublicationCollection.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the . For a detailed explanation see:
@@ -29,43 +29,37 @@ package com.piusvelte.cloudset.gwt.server.subscriberendpoint.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class SubscriberCollection extends com.google.api.client.json.GenericJson {
+public final class PublicationCollection extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
    */
   @com.google.api.client.util.Key
-  private java.util.List<Subscriber> items;
-
-  static {
-    // hack to force ProGuard to consider Subscriber used, since otherwise it would be stripped out
-    // see http://code.google.com/p/google-api-java-client/issues/detail?id=528
-    com.google.api.client.util.Data.nullOf(Subscriber.class);
-  }
+  private java.util.List<Publication> items;
 
   /**
    * @return value or {@code null} for none
    */
-  public java.util.List<Subscriber> getItems() {
+  public java.util.List<Publication> getItems() {
     return items;
   }
 
   /**
    * @param items items or {@code null} for none
    */
-  public SubscriberCollection setItems(java.util.List<Subscriber> items) {
+  public PublicationCollection setItems(java.util.List<Publication> items) {
     this.items = items;
     return this;
   }
 
   @Override
-  public SubscriberCollection set(String fieldName, Object value) {
-    return (SubscriberCollection) super.set(fieldName, value);
+  public PublicationCollection set(String fieldName, Object value) {
+    return (PublicationCollection) super.set(fieldName, value);
   }
 
   @Override
-  public SubscriberCollection clone() {
-    return (SubscriberCollection) super.clone();
+  public PublicationCollection clone() {
+    return (PublicationCollection) super.clone();
   }
 
 }

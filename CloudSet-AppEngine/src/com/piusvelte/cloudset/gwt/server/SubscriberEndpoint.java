@@ -69,15 +69,6 @@ public class SubscriberEndpoint {
 			Subscriber subscriber = null;
 			try {
 				subscriber = mgr.find(Subscriber.class, id);
-				List<Key> subscriptions = subscriber.getSubscriptions();
-				if (subscriptions != null) {
-					ArrayList<String> actions = new ArrayList<String>();
-					for (Key subscription : subscriptions) {
-						Publication publication = mgr.find(Publication.class, subscription);
-						actions.add(publication.getAction());
-					}
-					subscriber.setActions(actions);
-				}
 			} finally {
 				mgr.close();
 			}
@@ -104,36 +95,86 @@ public class SubscriberEndpoint {
 			throw new OAuthRequestException("Invalid user.");
 		}
 	}
-
-	public Subscriber subscribe(User user, @Named("id") String id, @Named("publisher") String publisher, @Named("action") String action) throws OAuthRequestException {
+	
+	public List<Publication> subscriptions(User user, @Named("subscriber") String subscriberId, @Named("publisher") String publisherId) throws OAuthRequestException {
 		if (user != null) {
 			EntityManager mgr = getEntityManager();
-			Subscriber subscriber = null;
+			List<Publication> publications = new ArrayList<Publication>();
+			Subscriber subscriber;
 			try {
-				subscriber = mgr.find(Subscriber.class, id);
-				subscriber.addSubscription(getPublication(publisher, action));
-				mgr.persist(subscriber);
+				subscriber = mgr.find(Subscriber.class, subscriberId);
+				List<Key> subscriptions = subscriber.getSubscriptions();
+				if (subscriptions != null) {
+					// filter on the publisher
+					for (Key subscription : subscriptions) {
+						Publication publication = mgr.find(Publication.class, subscription);
+						if (publication.getPublisher().equals(publisherId)) {
+							publications.add(publication);
+						}
+					}
+				}
 			} finally {
 				mgr.close();
 			}
-			return subscriber;
+			return publications;
 		} else {
 			throw new OAuthRequestException("Invalid user.");
 		}
 	}
 
-	public Subscriber unsubscribe(User user, @Named("id") String id, Key subscription) throws OAuthRequestException {
+	public List<Publication> subscribe(User user, @Named("subscriber") String subscriberId, @Named("publisher") String publisherId, @Named("action") String action) throws OAuthRequestException {
 		if (user != null) {
 			EntityManager mgr = getEntityManager();
+			List<Publication> publications = new ArrayList<Publication>();
 			Subscriber subscriber = null;
 			try {
-				subscriber = mgr.find(Subscriber.class, id);
-				subscriber.removeSubscription(subscription);
+				subscriber = mgr.find(Subscriber.class, subscriberId);
+				subscriber.addSubscription(getPublication(publisherId, action));
 				mgr.persist(subscriber);
+				List<Key> subscriptions = subscriber.getSubscriptions();
+				if (subscriptions != null) {
+					// filter on the publisher
+					for (Key subscription : subscriptions) {
+						Publication publication = mgr.find(Publication.class, subscription);
+						if (publication.getPublisher().equals(publisherId)) {
+							publications.add(publication);
+						}
+					}
+				}
 			} finally {
 				mgr.close();
 			}
-			return subscriber;
+			return publications;
+		} else {
+			throw new OAuthRequestException("Invalid user.");
+		}
+	}
+
+	public List<Publication> unsubscribe(User user, @Named("subscriber") String subscriberId, Key publicationKey) throws OAuthRequestException {
+		if (user != null) {
+			EntityManager mgr = getEntityManager();
+			List<Publication> publications = new ArrayList<Publication>();
+			Subscriber subscriber = null;
+			try {
+				subscriber = mgr.find(Subscriber.class, subscriberId);
+				Publication publication = mgr.find(Publication.class, publicationKey);
+				String publisherId = publication.getPublisher();
+				subscriber.removeSubscription(publicationKey);
+				mgr.persist(subscriber);
+				List<Key> subscriptions = subscriber.getSubscriptions();
+				if (subscriptions != null) {
+					// filter on the publisher
+					for (Key subscription : subscriptions) {
+						publication = mgr.find(Publication.class, subscription);
+						if (publication.getPublisher().equals(publisherId)) {
+							publications.add(publication);
+						}
+					}
+				}
+			} finally {
+				mgr.close();
+			}
+			return publications;
 		} else {
 			throw new OAuthRequestException("Invalid user.");
 		}

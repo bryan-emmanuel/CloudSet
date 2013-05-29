@@ -29,7 +29,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
-    tools:context=".MainActivity$AccountsFragment" >
+    tools:context=".DevicesFragment" >
 
     <ListView
         android:id="@android:id/list"
@@ -40,6 +40,6 @@
         android:id="@android:id/empty"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/no_devices" />
+        android:text="@string/loading_devices" />
 
 </LinearLayout>

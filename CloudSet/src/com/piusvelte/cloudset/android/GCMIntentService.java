@@ -21,7 +21,6 @@ package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -162,7 +161,18 @@ public class GCMIntentService extends GCMBaseIntentService {
 					int idx = value.indexOf(";");
 					int streamType = Integer.parseInt(value.substring(0, idx++));
 					int streamValue = Integer.parseInt(value.substring(idx));
+					Log.d(TAG, "set audio, stream=" + streamType + ", value=" + streamValue);
 					audioManager.setStreamVolume(streamType, streamValue, AudioManager.FLAG_PLAY_SOUND);
+				} else {
+					Log.d(TAG, "Audio not supported on this device");
+				}
+			} else if (action.equals(AudioManager.RINGER_MODE_CHANGED_ACTION)) {
+				AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+				if (audioManager != null) {
+					int mode = Integer.parseInt(value);
+					if (audioManager.getRingerMode() != mode) {
+						audioManager.setRingerMode(mode);
+					}
 				} else {
 					Log.d(TAG, "Audio not supported on this device");
 				}
@@ -215,10 +225,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 				Subscriber subscriber = getEndpoint(context).subscriberEndpoint().add(
 						(new Subscriber())
 						.setId(registration)
-						.setActions(new ArrayList<String>())
 						.setTimestamp(System.currentTimeMillis())
-						.setModel(URLEncoder.encode(android.os.Build.MODEL,
-								"UTF-8"))).execute();
+						.setModel(URLEncoder.encode(android.os.Build.MODEL, "UTF-8"))).execute();
 				if ((subscriber != null) && registration.equals(subscriber.getId())) {
 					// registered and stored in the backend, store locally
 					context.getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)

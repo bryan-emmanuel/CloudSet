@@ -19,7 +19,7 @@
 package com.piusvelte.cloudset.gwt.server.subscriberendpoint.model;
 
 /**
- * Model definition for Subscriber.
+ * Model definition for Publication.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the . For a detailed explanation see:
@@ -29,37 +29,25 @@ package com.piusvelte.cloudset.gwt.server.subscriberendpoint.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class Subscriber extends com.google.api.client.json.GenericJson {
+public final class Publication extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
    */
   @com.google.api.client.util.Key
-  private java.lang.String account;
+  private java.lang.String action;
 
   /**
    * The value may be {@code null}.
    */
   @com.google.api.client.util.Key
-  private java.lang.String id;
+  private Key key;
 
   /**
    * The value may be {@code null}.
    */
   @com.google.api.client.util.Key
-  private java.lang.String model;
-
-  /**
-   * The value may be {@code null}.
-   */
-  @com.google.api.client.util.Key
-  private java.lang.String nickname;
-
-  /**
-   * The value may be {@code null}.
-   */
-  @com.google.api.client.util.Key
-  private java.util.List<Key> subscriptions;
+  private java.lang.String publisher;
 
   /**
    * The value may be {@code null}.
@@ -68,77 +56,53 @@ public final class Subscriber extends com.google.api.client.json.GenericJson {
   private java.lang.Long timestamp;
 
   /**
+   * The value may be {@code null}.
+   */
+  @com.google.api.client.util.Key
+  private java.lang.String value;
+
+  /**
    * @return value or {@code null} for none
    */
-  public java.lang.String getAccount() {
-    return account;
+  public java.lang.String getAction() {
+    return action;
   }
 
   /**
-   * @param account account or {@code null} for none
+   * @param action action or {@code null} for none
    */
-  public Subscriber setAccount(java.lang.String account) {
-    this.account = account;
+  public Publication setAction(java.lang.String action) {
+    this.action = action;
     return this;
   }
 
   /**
    * @return value or {@code null} for none
    */
-  public java.lang.String getId() {
-    return id;
+  public Key getKey() {
+    return key;
   }
 
   /**
-   * @param id id or {@code null} for none
+   * @param key key or {@code null} for none
    */
-  public Subscriber setId(java.lang.String id) {
-    this.id = id;
+  public Publication setKey(Key key) {
+    this.key = key;
     return this;
   }
 
   /**
    * @return value or {@code null} for none
    */
-  public java.lang.String getModel() {
-    return model;
+  public java.lang.String getPublisher() {
+    return publisher;
   }
 
   /**
-   * @param model model or {@code null} for none
+   * @param publisher publisher or {@code null} for none
    */
-  public Subscriber setModel(java.lang.String model) {
-    this.model = model;
-    return this;
-  }
-
-  /**
-   * @return value or {@code null} for none
-   */
-  public java.lang.String getNickname() {
-    return nickname;
-  }
-
-  /**
-   * @param nickname nickname or {@code null} for none
-   */
-  public Subscriber setNickname(java.lang.String nickname) {
-    this.nickname = nickname;
-    return this;
-  }
-
-  /**
-   * @return value or {@code null} for none
-   */
-  public java.util.List<Key> getSubscriptions() {
-    return subscriptions;
-  }
-
-  /**
-   * @param subscriptions subscriptions or {@code null} for none
-   */
-  public Subscriber setSubscriptions(java.util.List<Key> subscriptions) {
-    this.subscriptions = subscriptions;
+  public Publication setPublisher(java.lang.String publisher) {
+    this.publisher = publisher;
     return this;
   }
 
@@ -152,19 +116,34 @@ public final class Subscriber extends com.google.api.client.json.GenericJson {
   /**
    * @param timestamp timestamp or {@code null} for none
    */
-  public Subscriber setTimestamp(java.lang.Long timestamp) {
+  public Publication setTimestamp(java.lang.Long timestamp) {
     this.timestamp = timestamp;
     return this;
   }
 
-  @Override
-  public Subscriber set(String fieldName, Object value) {
-    return (Subscriber) super.set(fieldName, value);
+  /**
+   * @return value or {@code null} for none
+   */
+  public java.lang.String getValue() {
+    return value;
+  }
+
+  /**
+   * @param value value or {@code null} for none
+   */
+  public Publication setValue(java.lang.String value) {
+    this.value = value;
+    return this;
   }
 
   @Override
-  public Subscriber clone() {
-    return (Subscriber) super.clone();
+  public Publication set(String fieldName, Object value) {
+    return (Publication) super.set(fieldName, value);
+  }
+
+  @Override
+  public Publication clone() {
+    return (Publication) super.clone();
   }
 
 }

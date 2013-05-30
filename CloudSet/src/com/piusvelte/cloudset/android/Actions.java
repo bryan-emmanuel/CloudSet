@@ -116,7 +116,6 @@ public class Actions extends ListActivity {
 	}
 	
 	private boolean isSubscribedTo(String action) {
-		Log.d(TAG, "isSubscribedTo: " + action);
 		if (publications != null) {
 			for (Publication publication : publications) {
 				if (publication.getAction().equals(action)) {
@@ -197,7 +196,6 @@ public class Actions extends ListActivity {
 
 			@Override
 			protected void onPostExecute(Void result) {
-				Log.d(TAG, "publications updated");
 				adapter.notifyDataSetChanged();
 			}
 

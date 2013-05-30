@@ -179,6 +179,12 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	public void onTabSelected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
 		viewPager.setCurrentItem(tab.getPosition());
+
+		if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
+			subscriptionsFragment.reloadAdapter();
+		} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
+			subscribersFragment.reloadAdapter();
+		}
 	}
 
 	@Override
@@ -198,8 +204,6 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 				credential = GoogleAccountCredential.usingAudience(getApplicationContext(), "server:client_id:" + getString(R.string.client_id));
 				credential.setSelectedAccountName(account);
 			}
-
-			Log.d(TAG, "loadDevices");
 
 			(new AsyncTask<String, Void, Void>() {
 

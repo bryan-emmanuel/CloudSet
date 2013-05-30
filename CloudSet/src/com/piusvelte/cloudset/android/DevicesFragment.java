@@ -34,39 +34,39 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class DevicesFragment extends ListFragment {
-	
+
 	private static final String TAG = "DevicesFragment";
 
 	ArrayAdapter<String> adapter;
 	TextView empty;
-	
+
 	boolean isSubscriptions;
 
 	public DevicesFragment() {
 	}
-	
+
 	DevicesListener callback;
-	
+
 	public interface DevicesListener {
-		
+
 		public String getRegistration();
-		
+
 		public String getDeviceId(int which);
-		
+
 		public void loadDeviceModels(ArrayAdapter<String> adapter);
-		
+
 	}
-	
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-        	callback = (DevicesListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement DevicesListener");
-        }
-    }
+
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		try {
+			callback = (DevicesListener) activity;
+		} catch (ClassCastException e) {
+			throw new ClassCastException(activity.toString()
+					+ " must implement DevicesListener");
+		}
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -87,30 +87,35 @@ public class DevicesFragment extends ListFragment {
 	@Override
 	public void onListItemClick(ListView list, View view, int position, long id) {
 		super.onListItemClick(list, view, position, id);
-		String publisher;
-		String subscriber;
-		if (isSubscriptions) {
-			publisher = callback.getDeviceId(position);
-			subscriber = callback.getRegistration();
-		} else {
-			publisher = callback.getRegistration();
-			subscriber = callback.getDeviceId(position);
+		if (callback != null) {
+			String publisher;
+			String subscriber;
+			if (isSubscriptions) {
+				publisher = callback.getDeviceId(position);
+				subscriber = callback.getRegistration();
+			} else {
+				publisher = callback.getRegistration();
+				subscriber = callback.getDeviceId(position);
+			}
+			startActivity(new Intent(getActivity().getApplicationContext(), Actions.class)
+			.putExtra(Actions.EXTRA_PUBLISHER, publisher)
+			.putExtra(Actions.EXTRA_SUBSCRIBER, subscriber));
 		}
-		startActivity(new Intent(getActivity().getApplicationContext(), Actions.class)
-		.putExtra(Actions.EXTRA_PUBLISHER, publisher)
-		.putExtra(Actions.EXTRA_SUBSCRIBER, subscriber));
 	}
-	
+
 	public void reloadAdapter() {
-		Log.d(TAG, "reloadAdapter");
-		adapter.clear();
-		callback.loadDeviceModels(adapter);
-		if (adapter.isEmpty()) {
-			empty.setText(R.string.no_devices);
-		} else {
-			empty.setText(R.string.loading_devices);
+		if (adapter != null) {
+			adapter.clear();
+			if (callback != null) {
+				callback.loadDeviceModels(adapter);
+			}
+			if (adapter.isEmpty()) {
+				empty.setText(R.string.no_devices);
+			} else {
+				empty.setText(R.string.loading_devices);
+			}
+			adapter.notifyDataSetChanged();
 		}
-		adapter.notifyDataSetChanged();
 	}
 
 }

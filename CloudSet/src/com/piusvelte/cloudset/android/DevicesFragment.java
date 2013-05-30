@@ -19,14 +19,13 @@
  */
 package com.piusvelte.cloudset.android;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,12 +33,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Subscriber;
-
 public class DevicesFragment extends ListFragment {
+	
+	private static final String TAG = "DevicesFragment";
 
 	ArrayAdapter<String> adapter;
-	ArrayList<Subscriber> devices;
 	TextView empty;
 	
 	boolean isSubscriptions;
@@ -52,6 +50,10 @@ public class DevicesFragment extends ListFragment {
 	public interface DevicesListener {
 		
 		public String getRegistration();
+		
+		public String getDeviceId(int which);
+		
+		public void loadDeviceModels(ArrayAdapter<String> adapter);
 		
 	}
 	
@@ -88,28 +90,21 @@ public class DevicesFragment extends ListFragment {
 		String publisher;
 		String subscriber;
 		if (isSubscriptions) {
-			publisher = devices.get(position).getId();
+			publisher = callback.getDeviceId(position);
 			subscriber = callback.getRegistration();
 		} else {
 			publisher = callback.getRegistration();
-			subscriber = devices.get(position).getId();
+			subscriber = callback.getDeviceId(position);
 		}
 		startActivity(new Intent(getActivity().getApplicationContext(), Actions.class)
 		.putExtra(Actions.EXTRA_PUBLISHER, publisher)
 		.putExtra(Actions.EXTRA_SUBSCRIBER, subscriber));
 	}
 	
-	public void reloadAdapter(ArrayList<Subscriber> devices) {
-		this.devices = devices;
+	public void reloadAdapter() {
+		Log.d(TAG, "reloadAdapter");
 		adapter.clear();
-		for (Subscriber device : devices) {
-			try {
-				adapter.add(URLDecoder.decode(device.getModel(), "UTF-8"));
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		callback.loadDeviceModels(adapter);
 		if (adapter.isEmpty()) {
 			empty.setText(R.string.no_devices);
 		} else {

@@ -20,6 +20,8 @@
 package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -31,10 +33,13 @@ import com.piusvelte.cloudset.gwt.server.subscriberendpoint.Subscriberendpoint;
 import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Subscriber;
 
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnClickListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -42,31 +47,25 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 public class CloudSetMain extends FragmentActivity implements
 ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.DevicesListener {
 
-	/**
-	 * The {@link android.support.v4.view.PagerAdapter} that will provide
-	 * fragments for each of the sections. We use a
-	 * {@link android.support.v4.app.FragmentPagerAdapter} derivative, which
-	 * will keep every loaded fragment in memory. If this becomes too memory
-	 * intensive, it may be best to switch to a
-	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-	 */
-	SectionsPagerAdapter mSectionsPagerAdapter;
+	private static final String TAG = "CloudSetMain";
 
-	/**
-	 * The {@link ViewPager} that will host the section contents.
-	 */
-	ViewPager mViewPager;
+	SectionsPagerAdapter sectionsPagerAdapter;
+
+	ViewPager viewPager;
 
 	public static final String ACTION_GCM_REGISTERED = "com.piusvelte.cloudset.android.action.GCM_REGISTERED";
 	public static final String ACTION_GCM_UNREGISTERED = "com.piusvelte.cloudset.android.action.GCM_UNREGISTERED";
 	public static final String ACTION_GCM_ERROR = "com.piusvelte.cloudset.android.action.GCM_ERROR";
-	
+
 	public static final String ARGUMENT_ISSUBSCRIPTIONS = "issubscriptions";
 
 	private static final int FRAGMENT_ACCOUNT = 0;
@@ -77,49 +76,37 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	private String registrationId;
 	private GoogleAccountCredential credential;
 	private ArrayList<Subscriber> devices = new ArrayList<Subscriber>();
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		GooglePlayServicesUtil.getOpenSourceSoftwareLicenseInfo(getApplicationContext());
-		
+
 		setContentView(R.layout.activity_main);
 
-		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-		// Create the adapter that will return a fragment for each of the three
-		// primary sections of the app.
-		mSectionsPagerAdapter = new SectionsPagerAdapter(
+		sectionsPagerAdapter = new SectionsPagerAdapter(
 				getSupportFragmentManager());
 
-		// Set up the ViewPager with the sections adapter.
-		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mSectionsPagerAdapter);
+		viewPager = (ViewPager) findViewById(R.id.pager);
+		viewPager.setAdapter(sectionsPagerAdapter);
 
-		// When swiping between different sections, select the corresponding
-		// tab. We can also use ActionBar.Tab#select() to do this if we have
-		// a reference to the Tab.
-		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+		viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
 				actionBar.setSelectedNavigationItem(position);
 			}
 		});
 
-		// For each of the sections in the app, add a tab to the action bar.
-		for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
-			// Create a tab with text corresponding to the page title defined by
-			// the adapter. Also specify this Activity object, which implements
-			// the TabListener interface, as the callback (listener) for when
-			// this tab is selected.
+		for (int i = 0; i < sectionsPagerAdapter.getCount(); i++) {
 			actionBar.addTab(actionBar.newTab()
-					.setText(mSectionsPagerAdapter.getPageTitle(i))
+					.setText(sectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
-		
+
 	}
 
 	@Override
@@ -150,13 +137,13 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 			account = sp.getString(getString(R.string.preference_account_name), null);
 			registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
 		}
-		
+
 		loadDevices();
-		
+
 		if (!hasRegistration()) {
-			mViewPager.setCurrentItem(FRAGMENT_ACCOUNT);
+			viewPager.setCurrentItem(FRAGMENT_ACCOUNT);
 		} else {
-			mViewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
+			viewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
 		}
 	}
 
@@ -168,11 +155,30 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	}
 
 	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.action_about) {
+			(new AlertDialog.Builder(this))
+			.setTitle(R.string.about_title)
+			.setMessage(R.string.about_message)
+			.setPositiveButton(android.R.string.ok, new OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface arg0, int arg1) {
+					arg0.cancel();
+				}
+
+			})
+			.setCancelable(true)
+			.show();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
 	public void onTabSelected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
-		// When the given tab is selected, switch to the corresponding page in
-		// the ViewPager.
-		mViewPager.setCurrentItem(tab.getPosition());
+		viewPager.setCurrentItem(tab.getPosition());
 	}
 
 	@Override
@@ -187,12 +193,14 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 	public void loadDevices() {
 		if (hasRegistration()) {
-			
+
 			if (credential == null) {
 				credential = GoogleAccountCredential.usingAudience(getApplicationContext(), "server:client_id:" + getString(R.string.client_id));
 				credential.setSelectedAccountName(account);
 			}
-			
+
+			Log.d(TAG, "loadDevices");
+
 			(new AsyncTask<String, Void, Void>() {
 
 				@Override
@@ -217,22 +225,28 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 				@Override
 				protected void onPostExecute(Void result) {
-					subscriptionsFragment.reloadAdapter(devices);
-					subscribersFragment.reloadAdapter(devices);
+					if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) {
+						subscriptionsFragment.reloadAdapter();
+					} else if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) {
+						subscribersFragment.reloadAdapter();
+					}
 				}
 
 			}).execute();
 
 		} else {
 			devices.clear();
-			subscriptionsFragment.reloadAdapter(devices);
-			subscribersFragment.reloadAdapter(devices);
+			if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) {
+				subscriptionsFragment.reloadAdapter();
+			} else if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) {
+				subscribersFragment.reloadAdapter();
+			}
 		}
 	}
-	
+
 	private DevicesFragment subscriptionsFragment;
 	private DevicesFragment subscribersFragment;
-	
+
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
 		public SectionsPagerAdapter(FragmentManager fm) {
@@ -288,7 +302,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	public void setAccount(String account) {
 
 		this.account = account;
-		
+
 		// store the account
 		getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE)
 		.edit()
@@ -297,7 +311,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 		// register with GCM, this is an asynchronous operation
 		GCMIntentService.register(getApplicationContext());
-		
+
 	}
 
 	@Override
@@ -308,6 +322,28 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	@Override
 	public String getRegistration() {
 		return registrationId;
+	}
+
+	@Override
+	public String getDeviceId(int which) {
+		if ((devices != null) && (which < devices.size())) {
+			return devices.get(which).getId();
+		}
+		return null;
+	}
+
+	@Override
+	public void loadDeviceModels(ArrayAdapter<String> adapter) {
+		if (devices != null) {
+			for (Subscriber device : devices) {
+				try {
+					adapter.add(URLDecoder.decode(device.getModel(), "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 }

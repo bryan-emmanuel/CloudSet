@@ -161,7 +161,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 					int idx = value.indexOf(";");
 					int streamType = Integer.parseInt(value.substring(0, idx++));
 					int streamValue = Integer.parseInt(value.substring(idx));
-					Log.d(TAG, "set audio, stream=" + streamType + ", value=" + streamValue);
 					audioManager.setStreamVolume(streamType, streamValue, AudioManager.FLAG_PLAY_SOUND);
 				} else {
 					Log.d(TAG, "Audio not supported on this device");

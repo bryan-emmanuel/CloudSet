@@ -140,10 +140,10 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 		loadDevices();
 
-		if (!hasRegistration()) {
-			viewPager.setCurrentItem(FRAGMENT_ACCOUNT);
-		} else {
+		if (hasRegistration()) {
 			viewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
+		} else {
+			viewPager.setCurrentItem(FRAGMENT_ACCOUNT);
 		}
 	}
 
@@ -181,9 +181,9 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 		viewPager.setCurrentItem(tab.getPosition());
 
 		if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
-			subscriptionsFragment.reloadAdapter();
+			subscriptionsFragment.reloadAdapter(null);
 		} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
-			subscribersFragment.reloadAdapter();
+			subscribersFragment.reloadAdapter(null);
 		}
 	}
 
@@ -199,16 +199,18 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 	public void loadDevices() {
 		if (hasRegistration()) {
+			
+			Log.d(TAG, "loading devices");
 
 			if (credential == null) {
 				credential = GoogleAccountCredential.usingAudience(getApplicationContext(), "server:client_id:" + getString(R.string.client_id));
 				credential.setSelectedAccountName(account);
 			}
 
-			(new AsyncTask<String, Void, Void>() {
+			(new AsyncTask<String, Void, String>() {
 
 				@Override
-				protected Void doInBackground(String... params) {
+				protected String doInBackground(String... params) {
 
 					Subscriberendpoint.Builder endpointBuilder = new Subscriberendpoint.Builder(
 							AndroidHttp.newCompatibleTransport(),
@@ -222,17 +224,18 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
+						return "error connecting to cloud-set.appengine.com, please check your connection";
 					}
 
 					return null;
 				}
 
 				@Override
-				protected void onPostExecute(Void result) {
+				protected void onPostExecute(String result) {
 					if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
-						subscriptionsFragment.reloadAdapter();
+						subscriptionsFragment.reloadAdapter(result);
 					} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
-						subscribersFragment.reloadAdapter();
+						subscribersFragment.reloadAdapter(result);
 					}
 				}
 
@@ -241,9 +244,9 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 		} else {
 			devices.clear();
 			if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
-				subscriptionsFragment.reloadAdapter();
+				subscriptionsFragment.reloadAdapter(null);
 			} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
-				subscribersFragment.reloadAdapter();
+				subscribersFragment.reloadAdapter(null);
 			}
 		}
 	}

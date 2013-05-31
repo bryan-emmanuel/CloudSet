@@ -103,17 +103,26 @@ public class DevicesFragment extends ListFragment {
 		}
 	}
 
-	public void reloadAdapter() {
+	public void reloadAdapter(String error) {
 		if (adapter != null) {
+
+			Log.d(TAG, "reloading adapter");
+
 			adapter.clear();
-			if (callback != null) {
-				callback.loadDeviceModels(adapter);
-			}
-			if (adapter.isEmpty()) {
-				empty.setText(R.string.no_devices);
+
+			if (error != null) {
+				empty.setText(error);
 			} else {
-				empty.setText(R.string.loading_devices);
+				if (callback != null) {
+					callback.loadDeviceModels(adapter);
+				}
+				if (adapter.isEmpty()) {
+					empty.setText(R.string.no_devices);
+				} else {
+					empty.setText(R.string.loading_devices);
+				}
 			}
+			
 			adapter.notifyDataSetChanged();
 		}
 	}

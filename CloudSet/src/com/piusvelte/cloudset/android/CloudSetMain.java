@@ -229,9 +229,9 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 				@Override
 				protected void onPostExecute(Void result) {
-					if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) {
+					if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
 						subscriptionsFragment.reloadAdapter();
-					} else if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) {
+					} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
 						subscribersFragment.reloadAdapter();
 					}
 				}
@@ -240,9 +240,9 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 		} else {
 			devices.clear();
-			if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) {
+			if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
 				subscriptionsFragment.reloadAdapter();
-			} else if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) {
+			} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
 				subscribersFragment.reloadAdapter();
 			}
 		}

@@ -28,28 +28,15 @@
   "packagePath" : "cloudset.gwt.server",
   "methods" : {
     "publicationendpoint.publicationEndpoint.publish" : {
-      "path" : "publish/{publisher}/{action}/{value}",
+      "path" : "publish",
       "httpMethod" : "POST",
       "scopes" : [ ],
       "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
       "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
       "rosyMethod" : "com.piusvelte.cloudset.gwt.server.PublicationEndpoint.publish",
       "request" : {
-        "parameters" : {
-          "publisher" : {
-            "type" : "string",
-            "required" : true
-          },
-          "action" : {
-            "type" : "string",
-            "required" : true
-          },
-          "value" : {
-            "type" : "string",
-            "required" : true
-          }
-        },
-        "body" : "empty"
+        "body" : "autoTemplate(backendRequest)",
+        "bodyName" : "resource"
       },
       "response" : {
         "body" : "empty"
@@ -58,9 +45,77 @@
   },
   "descriptor" : {
     "schemas" : {
+      "Publication" : {
+        "id" : "Publication",
+        "type" : "object",
+        "properties" : {
+          "key" : {
+            "$ref" : "Key"
+          },
+          "action" : {
+            "type" : "string"
+          },
+          "extras" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "Extra"
+            }
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "int64"
+          },
+          "publisher" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Key" : {
+        "id" : "Key",
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string"
+          },
+          "appId" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "parent" : {
+            "$ref" : "Key"
+          },
+          "complete" : {
+            "type" : "boolean"
+          },
+          "namespace" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Extra" : {
+        "id" : "Extra",
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        }
+      }
     },
     "methods" : {
       "com.piusvelte.cloudset.gwt.server.PublicationEndpoint.publish" : {
+        "request" : {
+          "$ref" : "Publication"
+        }
       }
     }
   }

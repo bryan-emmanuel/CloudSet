@@ -129,16 +129,16 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	public void onMessage(Context context, Intent intent) {
-		// intent contains the actions extras, "name", and "value"
-		String action = intent.getStringExtra("name");
+		// intent contains the actions extras, "action", and "value"
+		String action = intent.getStringExtra("action");
 		if (action != null) {
-			String value = intent.getStringExtra("value");
 			if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
 				BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
+				int state = Integer.parseInt(intent.getStringExtra(BluetoothAdapter.EXTRA_STATE));
 				if (bt != null) {
-					if (Integer.toString(BluetoothAdapter.STATE_ON).equals(value) && !bt.isEnabled()) {
+					if ((BluetoothAdapter.STATE_ON == state) && !bt.isEnabled()) {
 						bt.enable();
-					} else if (Integer.toString(BluetoothAdapter.STATE_OFF).equals(value) && bt.isEnabled()) {
+					} else if ((BluetoothAdapter.STATE_OFF == state) && bt.isEnabled()) {
 						bt.disable();
 					}
 				} else {
@@ -147,9 +147,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 			} else if (action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION)) {
 				WifiManager wf = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 				if (wf != null) {
-					if (Integer.toString(WifiManager.WIFI_STATE_ENABLED).equals(value) && !wf.isWifiEnabled()) {
+					int state = Integer.parseInt(intent.getStringExtra(WifiManager.EXTRA_WIFI_STATE));
+					if ((WifiManager.WIFI_STATE_ENABLED == state) && !wf.isWifiEnabled()) {
 						wf.setWifiEnabled(true);
-					} else if (Integer.toString(WifiManager.WIFI_STATE_DISABLED).equals(value) && wf.isWifiEnabled()) {
+					} else if ((WifiManager.WIFI_STATE_DISABLED == state) && wf.isWifiEnabled()) {
 						wf.setWifiEnabled(false);
 					}
 				} else {
@@ -158,9 +159,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 			} else if (action.equals(ActionsIntentService.VOLUME_CHANGED_ACTION)) {
 				AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 				if (audioManager != null) {
-					int idx = value.indexOf(";");
-					int streamType = Integer.parseInt(value.substring(0, idx++));
-					int streamValue = Integer.parseInt(value.substring(idx));
+					int streamType = Integer.parseInt(intent.getStringExtra(ActionsIntentService.EXTRA_VOLUME_STREAM_TYPE));
+					int streamValue = Integer.parseInt(intent.getStringExtra(ActionsIntentService.EXTRA_VOLUME_STREAM_VALUE));
 					audioManager.setStreamVolume(streamType, streamValue, AudioManager.FLAG_PLAY_SOUND);
 				} else {
 					Log.d(TAG, "Audio not supported on this device");
@@ -168,7 +168,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 			} else if (action.equals(AudioManager.RINGER_MODE_CHANGED_ACTION)) {
 				AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 				if (audioManager != null) {
-					int mode = Integer.parseInt(value);
+					int mode = Integer.parseInt(intent.getStringExtra(AudioManager.EXTRA_RINGER_MODE));
 					if (audioManager.getRingerMode() != mode) {
 						audioManager.setRingerMode(mode);
 					}

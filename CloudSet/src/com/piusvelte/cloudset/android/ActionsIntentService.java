@@ -20,11 +20,15 @@
 package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.piusvelte.cloudset.gwt.server.publicationendpoint.Publicationendpoint;
+import com.piusvelte.cloudset.gwt.server.publicationendpoint.model.Extra;
+import com.piusvelte.cloudset.gwt.server.publicationendpoint.model.Publication;
 
 import android.app.IntentService;
 import android.bluetooth.BluetoothAdapter;
@@ -73,14 +77,18 @@ public class ActionsIntentService extends IntentService {
 			if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
 				int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
 				if ((state == BluetoothAdapter.STATE_ON) || (state == BluetoothAdapter.STATE_OFF)) {
-					sendAction(action, Integer.toString(state));
+					List<Extra> extras = new ArrayList<Extra>();
+					extras.add(buildExtra(BluetoothAdapter.EXTRA_STATE, state));
+					publish(action, extras);
 				} else {
 					sWakeLock.release();
 				}
 			} else if (action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION)) {
 				int state = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN);
 				if ((state == WifiManager.WIFI_STATE_ENABLED) || (state == WifiManager.WIFI_STATE_DISABLED)) {
-					sendAction(action, Integer.toString(state));
+					List<Extra> extras = new ArrayList<Extra>();
+					extras.add(buildExtra(WifiManager.WIFI_STATE_CHANGED_ACTION, state));
+					publish(action, extras);
 				} else {
 					sWakeLock.release();
 				}
@@ -88,13 +96,17 @@ public class ActionsIntentService extends IntentService {
 				int type = intent.getIntExtra(EXTRA_VOLUME_STREAM_TYPE, -1);
 				int value = intent.getIntExtra(EXTRA_VOLUME_STREAM_VALUE, -1);
 				if ((type > -1) && (value > -1)) {
-					sendAction(action, Integer.toString(type) + ";" + Integer.toString(value));
+					List<Extra> extras = new ArrayList<Extra>();
+					extras.add(buildExtra(EXTRA_VOLUME_STREAM_TYPE, type));
+					extras.add(buildExtra(EXTRA_VOLUME_STREAM_VALUE, value));
+					publish(action, extras);
 				} else {
 					sWakeLock.release();
 				}
 			} else if (action.equals(AudioManager.RINGER_MODE_CHANGED_ACTION)) {
-				sendAction(action,
-						Integer.toString(intent.getIntExtra(AudioManager.EXTRA_RINGER_MODE, AudioManager.RINGER_MODE_NORMAL)));
+				List<Extra> extras = new ArrayList<Extra>();
+				extras.add(buildExtra(AudioManager.EXTRA_RINGER_MODE, intent.getIntExtra(AudioManager.EXTRA_RINGER_MODE, AudioManager.RINGER_MODE_NORMAL)));
+				publish(action, extras);
 			} else {
 				sWakeLock.release();
 			}
@@ -103,7 +115,18 @@ public class ActionsIntentService extends IntentService {
 		}
 	}
 	
-	private void sendAction(String action, String value) {
+	private Extra buildExtra(String name, int value) {
+		return buildExtra(name, Integer.toString(value));
+	}
+	
+	private Extra buildExtra(String name, String value) {
+		Extra extra = new Extra();
+		extra.setName(name);
+		extra.setValue(value);
+		return extra;
+	}
+	
+	private void publish(String action, List<Extra> extras) {
 		String accountName = null;
 		String registration = null;
 		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
@@ -111,6 +134,11 @@ public class ActionsIntentService extends IntentService {
 		registration = sp.getString(getString(R.string.preference_gcm_registration), null);
 
 		if ((accountName != null) && (registration != null)) {
+			
+			Publication publication = new Publication();
+			publication.setPublisher(registration);
+			publication.setAction(action);
+			publication.setExtras(extras);
 
 			GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(this, "server:client_id:" + getString(R.string.client_id));
 			credential.setSelectedAccountName(accountName);
@@ -121,12 +149,12 @@ public class ActionsIntentService extends IntentService {
 					credential);
 			endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 
-			(new AsyncTask<String, Void, Void>() {
+			(new AsyncTask<Publication, Void, Void>() {
 
 				@Override
-				protected Void doInBackground(String... params) {
+				protected Void doInBackground(Publication... publications) {
 					try {
-						endpoint.publicationEndpoint().publish(params[2], params[0], params[1]).execute();
+						endpoint.publicationEndpoint().publish(publications[0]).execute();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -139,7 +167,7 @@ public class ActionsIntentService extends IntentService {
 					sWakeLock.release();
 				}
 
-			}).execute(action, value, registration);
+			}).execute(publication);
 
 		} else {
 			sWakeLock.release();

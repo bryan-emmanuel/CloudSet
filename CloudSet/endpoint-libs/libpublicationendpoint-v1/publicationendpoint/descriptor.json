@@ -1,11 +1,11 @@
 {
   "files": [
     {
-      "path": "cloud-set-publicationendpoint-v1-20130529154548-java-1.14.2-beta-sources.jar", 
+      "path": "cloud-set-publicationendpoint-v1-20130603021734-java-1.14.2-beta-sources.jar", 
       "type": "source"
     }, 
     {
-      "path": "cloud-set-publicationendpoint-v1-20130529154548-java-1.14.2-beta.jar.properties", 
+      "path": "cloud-set-publicationendpoint-v1-20130603021734-java-1.14.2-beta.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -689,7 +689,7 @@
     }
   ], 
   "language_version": "1.14.2-beta", 
-  "revision": 20130529154548, 
+  "revision": 20130603021734, 
   "id": "publicationendpoint:v1", 
   "modulePath": "com/piusvelte/cloudset/gwt/server"
 }

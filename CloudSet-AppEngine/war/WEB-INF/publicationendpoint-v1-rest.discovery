@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/xpuUnNv9taJ2W2pmGc-H4Kk1Hvk\"",
+ "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/wmcidRA-8pYx1EKb6b5fy60FzD8\"",
  "discoveryVersion": "v1",
  "id": "publicationendpoint:v1",
  "name": "publicationendpoint",
@@ -14,10 +14,10 @@
   "x32": "http://www.google.com/images/icons/product/search-32.gif"
  },
  "protocol": "rest",
- "baseUrl": "https://cloud-set.appspot.com/_ah/api/publicationendpoint/v1/publish/",
- "basePath": "/_ah/api/publicationendpoint/v1/publish/",
+ "baseUrl": "https://cloud-set.appspot.com/_ah/api/publicationendpoint/v1/",
+ "basePath": "/_ah/api/publicationendpoint/v1/",
  "rootUrl": "https://cloud-set.appspot.com/_ah/api/",
- "servicePath": "publicationendpoint/v1/publish/",
+ "servicePath": "publicationendpoint/v1/",
  "batchPath": "batch",
  "parameters": {
   "alt": {
@@ -64,35 +64,83 @@
    "location": "query"
   }
  },
+ "schemas": {
+  "Extra": {
+   "id": "Extra",
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "value": {
+     "type": "string"
+    }
+   }
+  },
+  "Key": {
+   "id": "Key",
+   "type": "object",
+   "properties": {
+    "appId": {
+     "type": "string"
+    },
+    "complete": {
+     "type": "boolean"
+    },
+    "id": {
+     "type": "string",
+     "format": "int64"
+    },
+    "kind": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    },
+    "namespace": {
+     "type": "string"
+    },
+    "parent": {
+     "$ref": "Key"
+    }
+   }
+  },
+  "Publication": {
+   "id": "Publication",
+   "type": "object",
+   "properties": {
+    "action": {
+     "type": "string"
+    },
+    "extras": {
+     "type": "array",
+     "items": {
+      "$ref": "Extra"
+     }
+    },
+    "key": {
+     "$ref": "Key"
+    },
+    "publisher": {
+     "type": "string"
+    },
+    "timestamp": {
+     "type": "string",
+     "format": "int64"
+    }
+   }
+  }
+ },
  "resources": {
   "publicationEndpoint": {
    "methods": {
     "publish": {
      "id": "publicationendpoint.publicationEndpoint.publish",
-     "path": "{publisher}/{action}/{value}",
+     "path": "publish",
      "httpMethod": "POST",
-     "parameters": {
-      "action": {
-       "type": "string",
-       "required": true,
-       "location": "path"
-      },
-      "publisher": {
-       "type": "string",
-       "required": true,
-       "location": "path"
-      },
-      "value": {
-       "type": "string",
-       "required": true,
-       "location": "path"
-      }
-     },
-     "parameterOrder": [
-      "publisher",
-      "action",
-      "value"
-     ]
+     "request": {
+      "$ref": "Publication"
+     }
     }
    }
   }

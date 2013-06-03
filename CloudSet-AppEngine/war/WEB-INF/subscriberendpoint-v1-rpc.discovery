@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/Y5iNshnaz-iUJOFBTyttcqQp9MY\"",
+ "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/STZ8iNXJ9Td7tLTuDui3Ux_8SVs\"",
  "discoveryVersion": "v1",
  "id": "subscriberendpoint:v1",
  "name": "subscriberendpoint",
@@ -63,6 +63,18 @@
   }
  },
  "schemas": {
+  "Extra": {
+   "id": "Extra",
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "value": {
+     "type": "string"
+    }
+   }
+  },
   "Key": {
    "id": "Key",
    "type": "object",
@@ -98,6 +110,12 @@
     "action": {
      "type": "string"
     },
+    "extras": {
+     "type": "array",
+     "items": {
+      "$ref": "Extra"
+     }
+    },
     "key": {
      "$ref": "Key"
     },
@@ -107,9 +125,6 @@
     "timestamp": {
      "type": "string",
      "format": "int64"
-    },
-    "value": {
-     "type": "string"
     }
    }
   },

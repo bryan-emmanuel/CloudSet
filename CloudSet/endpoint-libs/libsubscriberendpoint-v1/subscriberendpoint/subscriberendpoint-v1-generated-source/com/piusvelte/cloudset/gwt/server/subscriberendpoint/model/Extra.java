@@ -19,7 +19,7 @@
 package com.piusvelte.cloudset.gwt.server.subscriberendpoint.model;
 
 /**
- * Model definition for SubscriberCollection.
+ * Model definition for Extra.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the . For a detailed explanation see:
@@ -29,37 +29,58 @@ package com.piusvelte.cloudset.gwt.server.subscriberendpoint.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class SubscriberCollection extends com.google.api.client.json.GenericJson {
+public final class Extra extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
    */
   @com.google.api.client.util.Key
-  private java.util.List<Subscriber> items;
+  private java.lang.String name;
+
+  /**
+   * The value may be {@code null}.
+   */
+  @com.google.api.client.util.Key
+  private java.lang.String value;
 
   /**
    * @return value or {@code null} for none
    */
-  public java.util.List<Subscriber> getItems() {
-    return items;
+  public java.lang.String getName() {
+    return name;
   }
 
   /**
-   * @param items items or {@code null} for none
+   * @param name name or {@code null} for none
    */
-  public SubscriberCollection setItems(java.util.List<Subscriber> items) {
-    this.items = items;
+  public Extra setName(java.lang.String name) {
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * @return value or {@code null} for none
+   */
+  public java.lang.String getValue() {
+    return value;
+  }
+
+  /**
+   * @param value value or {@code null} for none
+   */
+  public Extra setValue(java.lang.String value) {
+    this.value = value;
     return this;
   }
 
   @Override
-  public SubscriberCollection set(String fieldName, Object value) {
-    return (SubscriberCollection) super.set(fieldName, value);
+  public Extra set(String fieldName, Object value) {
+    return (Extra) super.set(fieldName, value);
   }
 
   @Override
-  public SubscriberCollection clone() {
-    return (SubscriberCollection) super.clone();
+  public Extra clone() {
+    return (Extra) super.clone();
   }
 
 }

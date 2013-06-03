@@ -19,10 +19,14 @@
  */
 package com.piusvelte.cloudset.gwt.server;
 
+import java.util.List;
+
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 import com.google.appengine.api.datastore.Key;
 
@@ -33,9 +37,26 @@ public class Publication {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Key key;
 
+	public void setKey(Key key) {
+		this.key = key;
+	}
+
 	// setting name
 	private String action;
-	private String value;
+	
+	@OneToMany(fetch = FetchType.EAGER)
+	private List<Extra> extras;
+	
+	
+	
+	public List<Extra> getExtras() {
+		return extras;
+	}
+
+	public void setExtras(List<Extra> extras) {
+		this.extras = extras;
+	}
+
 	private long timestamp;
 	private String publisher;
 
@@ -49,14 +70,6 @@ public class Publication {
 
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String value) {
-		this.value = value;
 	}
 
 	public String getPublisher() {
@@ -74,4 +87,25 @@ public class Publication {
 	public void setAction(String action) {
 		this.action = action;
 	}
+	
+	public static class Extra {
+		
+		private String name;
+		private String value;
+		
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public String getValue() {
+			return value;
+		}
+		public void setValue(String value) {
+			this.value = value;
+		}
+		
+	}
+	
 }

@@ -65,33 +65,17 @@ public class Subscriber {
 	}
 	
 	public void addSubscription(Key subscription) {
-		if (subscription == null) {
-			List<Key> newSubscriptions = new ArrayList<Key>();
-			newSubscriptions.add(subscription);
-			subscriptions = newSubscriptions;
-		} else if (!subscriptions.contains(subscription)) {
-			List<Key> newActions = new ArrayList<Key>();
-			for (Key s : subscriptions) {
-				newActions.add(s);
-			}
-			newActions.add(subscription);
-			subscriptions = newActions;
+		if (subscriptions == null) {
+			subscriptions = new ArrayList<Key>();
+		} else if (subscriptions.contains(subscription)) {
+			return;
 		}
+		subscriptions.add(subscription);
 	}
 	
 	public void removeSubscription(Key subscription) {
-		if ((subscriptions != null) && subscriptions.contains(subscription)) {
-			List<Key> newSubscriptions = new ArrayList<Key>();
-			for (Key s : subscriptions) {
-				if (!s.equals(subscription)) {
-					newSubscriptions.add(s);
-				}
-			}
-			if (newSubscriptions.isEmpty()) {
-				subscriptions = null;
-			} else {
-				subscriptions = newSubscriptions;
-			}
+		if (subscriptions != null) {
+			subscriptions.remove(subscription);
 		}
 	}
 

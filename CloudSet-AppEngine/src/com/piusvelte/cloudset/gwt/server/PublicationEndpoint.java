@@ -22,7 +22,6 @@ package com.piusvelte.cloudset.gwt.server;
 import java.io.IOException;
 import java.util.List;
 
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
@@ -35,6 +34,7 @@ import com.google.api.server.spi.config.ApiNamespace;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.users.User;
+import com.piusvelte.cloudset.gwt.server.Publication.Extra;
 
 @Api(name = "publicationendpoint",
 namespace = @ApiNamespace(ownerDomain = "piusvelte.com", ownerName = "piusvelte.com", packagePath = "cloudset.gwt.server"),
@@ -44,7 +44,7 @@ public class PublicationEndpoint {
 
 	private static final SubscriberEndpoint endpoint = new SubscriberEndpoint();
 
-	public void publish(User user, @Named("publisher") String publisher, @Named("action") String action, @Named("value") String value)
+	public void publish(User user, Publication publication)
 			throws IOException, OAuthRequestException {
 
 		if (user != null) {
@@ -53,13 +53,13 @@ public class PublicationEndpoint {
 			EntityManager mgr = getEntityManager();
 
 			List<Subscriber> subscribers;
-			Publication publication;
 			try {
-				publication = getPublication(publisher, action, value);
+				publication.setKey(getPublicationKey(publication.getPublisher(), publication.getAction()));
+				mgr.persist(publication);
 				subscribers = subscribers(user, publication.getKey());
 				if ((subscribers != null) && (subscribers.size() > 0)) {				
 					for (Subscriber device : subscribers) {
-						doSendViaGcm(user, publication.getAction(), publication.getValue(), sender, device);
+						doSendViaGcm(user, publication.getAction(), publication.getExtras(), sender, device);
 					}
 				}
 			} catch (OAuthRequestException e) {
@@ -73,8 +73,15 @@ public class PublicationEndpoint {
 		}
 	}
 
-	private static Result doSendViaGcm(User user, String name, String value, Sender sender, Subscriber device) throws IOException {
-		Message msg = new Message.Builder().addData("name", name).addData("value", value).build();
+	private static Result doSendViaGcm(User user, String action, List<Extra> extras, Sender sender, Subscriber device) throws IOException {
+		Message.Builder builder = new Message.Builder();
+		builder.addData("action", action);
+		if (extras != null) {
+			for (Extra extra : extras) {
+				builder.addData(extra.getName(), extra.getValue());
+			}
+		}
+		Message msg = builder.build();
 		Result result = sender.send(msg, device.getID(), 5);
 		if (result.getMessageId() != null) {
 			String canonicalRegId = result.getCanonicalRegistrationId();
@@ -104,32 +111,23 @@ public class PublicationEndpoint {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Publication getPublication(String publisher, String action, String value) {
+	private Key getPublicationKey(String publisher, String action) {
 		EntityManager mgr = getEntityManager();
-		Publication publication;
+		Key key = null;
 		try {
 			Query query = mgr.createQuery("select from Publication as Publication where action = :action and publisher = :publisher")
 					.setParameter("action", action)
 					.setParameter("publisher", publisher)
 					.setFirstResult(0)
 					.setMaxResults(1);
-			List<Publication> actions = query.getResultList();
-			if ((actions != null) && (actions.size() > 0)) {
-				publication = actions.get(0);
-				publication.setValue(value);
-			} else {
-				// this shouldn't happen, as the first subscriber triggers the publication to be created
-				publication = new Publication();
-				publication.setAction(action);
-				publication.setPublisher(publisher);
-				publication.setValue(value);
+			List<Publication> publications = query.getResultList();
+			if ((publications != null) && (publications.size() > 0)) {
+				key = publications.get(0).getKey();
 			}
-			publication.setTimestamp(System.currentTimeMillis());
-			mgr.persist(publication);
 		} finally {
 			mgr.close();
 		}
-		return publication;
+		return key;
 	}
 
 	@SuppressWarnings("unchecked")

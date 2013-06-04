@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -75,7 +76,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	private String account;
 	private String registrationId;
 	private GoogleAccountCredential credential;
-	private ArrayList<Subscriber> devices = new ArrayList<Subscriber>();
+	private List<Subscriber> devices = new ArrayList<Subscriber>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -125,7 +126,9 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 				if (action.equals(ACTION_GCM_ERROR)) {
 					Toast.makeText(getApplicationContext(), "Error occurred during device registration", Toast.LENGTH_SHORT).show();
 				} else if (action.equals(ACTION_GCM_REGISTERED)) {
-				} else if (action.equals(ACTION_GCM_UNREGISTERED)) {	
+					Log.d(TAG, "registered");
+				} else if (action.equals(ACTION_GCM_UNREGISTERED)) {
+					Log.d(TAG, "unregistered");	
 				}
 			}
 		}
@@ -199,7 +202,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 	public void loadDevices() {
 		if (hasRegistration()) {
-			
+
 			Log.d(TAG, "loading devices");
 
 			if (credential == null) {
@@ -219,8 +222,11 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 					Subscriberendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 
 					try {
-						devices.clear();
-						devices.addAll(endpoint.subscriberEndpoint().subscribers(registrationId).execute().getItems());
+						devices = endpoint.subscriberEndpoint().subscribers(registrationId).execute().getItems();
+						if (devices == null) {
+							// set to new empty List for the adapter
+							devices = new ArrayList<Subscriber>();
+						}
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -242,7 +248,8 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 			}).execute();
 
 		} else {
-			devices.clear();
+			// set to new empty List for the adapter
+			devices = new ArrayList<Subscriber>();
 			if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
 				subscriptionsFragment.reloadAdapter(null);
 			} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
@@ -308,6 +315,8 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	@Override
 	public void setAccount(String account) {
 
+		Log.d(TAG, "setAccount: " + account);
+
 		this.account = account;
 
 		// store the account
@@ -323,6 +332,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 	@Override
 	public boolean hasRegistration() {
+		Log.d(TAG, "hasRegistration? " + ((account != null) && (registrationId != null)));
 		return (account != null) && (registrationId != null);
 	}
 

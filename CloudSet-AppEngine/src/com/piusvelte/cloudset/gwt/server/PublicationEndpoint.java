@@ -82,13 +82,13 @@ public class PublicationEndpoint {
 			}
 		}
 		Message msg = builder.build();
-		Result result = sender.send(msg, device.getID(), 5);
+		Result result = sender.send(msg, device.getId(), 5);
 		if (result.getMessageId() != null) {
 			String canonicalRegId = result.getCanonicalRegistrationId();
 			if (canonicalRegId != null) {
 				try {
-					endpoint.remove(user, device.getID());
-					device.setID(canonicalRegId);
+					endpoint.remove(user, device.getId());
+					device.setId(canonicalRegId);
 					endpoint.add(user, device);
 				} catch (OAuthRequestException e) {
 					// TODO Auto-generated catch block
@@ -99,7 +99,7 @@ public class PublicationEndpoint {
 			String error = result.getErrorCodeName();
 			if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
 				try {
-					endpoint.remove(user, device.getID());
+					endpoint.remove(user, device.getId());
 				} catch (OAuthRequestException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

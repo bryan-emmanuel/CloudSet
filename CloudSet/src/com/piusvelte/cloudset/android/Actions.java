@@ -179,6 +179,7 @@ public class Actions extends ListActivity {
 			protected Void doInBackground(String... params) {
 				try {
 					if (Boolean.parseBoolean(params[1])) {
+						Log.d(TAG, "unsubscribe: " + params[0]);
 						for (int i = 0, s = publications.size(); i < s; i++) {
 							Publication pulication = publications.get(i);
 							if (pulication.getAction().equals(params[0])) {
@@ -186,6 +187,7 @@ public class Actions extends ListActivity {
 							}
 						}
 					} else {
+						Log.d(TAG, "subscribe: " + params[0]);
 						publications = endpoint.subscriberEndpoint().subscribe(subscriberId, publisherId, params[0]).execute().getItems();
 					}
 				} catch (IOException e) {
@@ -196,6 +198,7 @@ public class Actions extends ListActivity {
 
 			@Override
 			protected void onPostExecute(Void result) {
+				Log.d(TAG, "reload subscriptions");
 				adapter.notifyDataSetChanged();
 			}
 

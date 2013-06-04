@@ -129,7 +129,7 @@ public class SubscriberEndpoint {
 			Subscriber subscriber = null;
 			try {
 				subscriber = mgr.find(Subscriber.class, subscriberId);
-				subscriber.addSubscription(getPublication(publisherId, action));
+				subscriber.addSubscription(getPublicationKey(publisherId, action));
 				mgr.persist(subscriber);
 				List<Key> subscriptions = subscriber.getSubscriptions();
 				if (subscriptions != null) {
@@ -206,7 +206,7 @@ public class SubscriberEndpoint {
 				subscriber = mgr.find(Subscriber.class, id);
 				// need to clean up everything
 				Query query = mgr.createQuery("select from Publication as Publication where publisher = :publisher")
-						.setParameter("publisher", subscriber.getID());
+						.setParameter("publisher", subscriber.getId());
 				List<Publication> publications = query.getResultList();
 				if (publications != null) {
 					for (Publication publication : publications) {
@@ -232,39 +232,43 @@ public class SubscriberEndpoint {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Key getPublication(String publisher, String action) {
+	private Key getPublicationKey(String publisher, String action) {
 		EntityManager mgr = getEntityManager();
-		Key key = null;
+		Publication publication = null;
 		try {
-			Query query = mgr.createQuery("select from Publication as Publication where action = :action and publisher = :publisher")
-					.setParameter("action", action)
+			Query query = mgr.createQuery("select from Publication as Publication where publisher = :publisher and action = :action")
 					.setParameter("publisher", publisher)
-					.setFirstResult(0)
+					.setParameter("action", action)
 					.setMaxResults(1);
-			List<Publication> actions = query.getResultList();
-			if ((actions != null) && (actions.size() > 0)) {
-				key = actions.get(0).getKey();
+			List<Publication> publications = query.getResultList();
+			if ((publications != null) && (publications.size() > 0)) {
+				publication = publications.get(0);
 			} else {
 				// first subscriber triggers the new publication
-				Publication publication = new Publication();
-				publication.setAction(action);
+				publication = new Publication();
 				publication.setPublisher(publisher);
+				publication.setAction(action);
 				publication.setTimestamp(System.currentTimeMillis());
 				mgr.persist(publication);
-				key = getPublication(publisher, action);
 			}
 		} finally {
 			mgr.close();
 		}
-		return key;
+		if (publication != null) {
+			return publication.getKey();
+		} else {
+			return null;
+		}
 	}
+	
+	
 
 	private boolean containsSubscriber(Subscriber subscriber) {
 		EntityManager mgr = getEntityManager();
 		boolean contains = true;
 		try {
 			Subscriber item = mgr.find(Subscriber.class,
-					subscriber.getID());
+					subscriber.getId());
 			if (item == null) {
 				contains = false;
 			}

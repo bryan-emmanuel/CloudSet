@@ -1,11 +1,11 @@
 {
   "files": [
     {
-      "path": "cloud-set-subscriberendpoint-v1-20130603021726-java-1.14.2-beta-sources.jar", 
+      "path": "cloud-set-subscriberendpoint-v1-20130604002930-java-1.14.2-beta-sources.jar", 
       "type": "source"
     }, 
     {
-      "path": "cloud-set-subscriberendpoint-v1-20130603021726-java-1.14.2-beta.jar.properties", 
+      "path": "cloud-set-subscriberendpoint-v1-20130604002930-java-1.14.2-beta.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -689,7 +689,7 @@
     }
   ], 
   "language_version": "1.14.2-beta", 
-  "revision": 20130603021726, 
+  "revision": 20130604002930, 
   "id": "subscriberendpoint:v1", 
   "modulePath": "com/piusvelte/cloudset/gwt/server"
 }

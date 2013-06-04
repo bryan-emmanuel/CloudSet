@@ -190,11 +190,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	public void onRegistered(Context context, String registration) {
-		/*
-		 * This is some special exception-handling code that we're using to work around a problem
-		 * with the DevAppServer and methods that return null in App Engine 1.7.5.
-		 */
-		boolean alreadyRegisteredWithEndpointServer = false;
 
 		try {
 
@@ -205,36 +200,31 @@ public class GCMIntentService extends GCMBaseIntentService {
 			Subscriber subscriber = getEndpoint(context).subscriberEndpoint().get(registration)
 					.execute();
 
-			if (subscriber != null && registration.equals(subscriber.getId())) {
-				alreadyRegisteredWithEndpointServer = true;
-				sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED);
+			if (subscriber != null) {
+				
+				saveRegistration(context, registration);
+
+				if (registration.equals(subscriber.getId())) {
+					sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED);
+					return;
+				}
 			}
 		} catch (IOException e) {
 			// Ignore
 		}
 
 		try {
-			if (!alreadyRegisteredWithEndpointServer) {
-				/*
-				 * We are not registered as yet. Send an endpoint message
-				 * containing the GCM registration id and some of the device's
-				 * product information over to the backend. Then, we'll be
-				 * registered.
-				 */
-				Subscriber subscriber = getEndpoint(context).subscriberEndpoint().add(
-						(new Subscriber())
-						.setId(registration)
-						.setTimestamp(System.currentTimeMillis())
-						.setModel(URLEncoder.encode(android.os.Build.MODEL, "UTF-8"))).execute();
-				if ((subscriber != null) && registration.equals(subscriber.getId())) {
-					// registered and stored in the backend, store locally
-					context.getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
-					.edit()
-					.putString(getString(R.string.preference_gcm_registration), registration)
-					.commit();
+			Subscriber subscriber = getEndpoint(context).subscriberEndpoint().add(
+					(new Subscriber())
+					.setId(registration)
+					.setTimestamp(System.currentTimeMillis())
+					.setModel(URLEncoder.encode(android.os.Build.MODEL, "UTF-8"))).execute();
+			
+			if ((subscriber != null) && registration.equals(subscriber.getId())) {
+				
+				saveRegistration(context, registration);
 
-					sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED);
-				}
+				sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED);
 			}
 		} catch (IOException e) {
 			Log.e(GCMIntentService.class.getName(),
@@ -242,8 +232,15 @@ public class GCMIntentService extends GCMBaseIntentService {
 							+ getEndpoint(context).getRootUrl(), e);
 
 			sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR);
-			return;
 		}
+	}
+	
+	private void saveRegistration(Context context, String registration) {
+		// registered and stored in the backend, store locally
+		context.getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
+		.edit()
+		.putString(getString(R.string.preference_gcm_registration), registration)
+		.commit();
 	}
 
 	/**

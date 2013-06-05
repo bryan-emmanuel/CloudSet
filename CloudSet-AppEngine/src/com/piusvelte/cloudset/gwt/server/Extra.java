@@ -19,9 +19,6 @@
  */
 package com.piusvelte.cloudset.gwt.server;
 
-import javax.persistence.Embeddable;
-
-@Embeddable
 public class Extra {
 	
 	private String name;

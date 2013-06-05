@@ -91,8 +91,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-		sectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
+		sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		viewPager.setAdapter(sectionsPagerAdapter);
@@ -117,14 +116,8 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 		super.onNewIntent(intent);
 		setIntent(intent);
 	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-		
-		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
-		
-		Intent intent = getIntent();
+	
+	private boolean handleGCMIntent(Intent intent, SharedPreferences sp) {
 		if (intent != null) {
 			String action = intent.getAction();
 			if (action != null) {
@@ -137,6 +130,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 					.putString(getString(R.string.preference_account_name), account)
 					.putString(getString(R.string.preference_gcm_registration), registrationId)
 					.commit();
+					return true;
 				} else if (action.equals(ACTION_GCM_REGISTERED) && intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
 					Log.d(TAG, "registered");
 					registrationId = intent.getStringExtra(EXTRA_DEVICE_REGISTRATION);
@@ -144,6 +138,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 					.edit()
 					.putString(getString(R.string.preference_gcm_registration), registrationId)
 					.commit();
+					return true;
 				} else if (action.equals(ACTION_GCM_UNREGISTERED) && intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
 					Log.d(TAG, "unregistered");
 					account = null;
@@ -153,14 +148,21 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 					.putString(getString(R.string.preference_account_name), account)
 					.putString(getString(R.string.preference_gcm_registration), registrationId)
 					.commit();
+					return true;
 				}
-			} else {
-				Log.d(TAG, "null action");
-				account = sp.getString(getString(R.string.preference_account_name), null);
-				registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
 			}
-		} else {
-			Log.d(TAG, "no intent");
+		}
+		return false;
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		
+		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
+		
+		Intent intent = getIntent();
+		if (!handleGCMIntent(intent, sp)) {
 			account = sp.getString(getString(R.string.preference_account_name), null);
 			registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
 		}

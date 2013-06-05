@@ -50,8 +50,8 @@ public class DeviceEndpoint {
 			EntityManager mgr = getEntityManager();
 			try {
 				Query query = mgr.createQuery("select from Device as Device where account = :account and id <> :id")
-							.setParameter("account", user.getNickname())
-							.setParameter("id", publisher);
+						.setParameter("account", user.getNickname())
+						.setParameter("id", publisher);
 				subscribers = query.getResultList();
 			} finally {
 				mgr.close();
@@ -121,18 +121,11 @@ public class DeviceEndpoint {
 
 	public Action subscribe(User user, @Named("subscriber") String subscriberId, @Named("publisher") String publisherId, @Named("action") String action) throws Exception {
 		if (user != null) {
-			EntityManager mgr = getEntityManager();
-			Device subscriber = null;
-			Action publication = getPublication(publisherId, action);
-			if (publication != null) {
-				try {
-					subscriber = mgr.find(Device.class, subscriberId);
-					if (subscriber.subscribe(publication.getId())) {
-						mgr.persist(subscriber);
-					}
-				} finally {
-					mgr.close();
-				}
+			Action publication = null;
+			Long publicationId = getPublicationId(publisherId, action);
+			if (publicationId != null) {
+				addPublicationToSubscriptions(subscriberId, publicationId);
+				publication = addSubscriberToPublication(publicationId, subscriberId);
 			} else {
 				throw new Exception("error creating publication");
 			}
@@ -142,35 +135,72 @@ public class DeviceEndpoint {
 		}
 	}
 
-	public void unsubscribe(User user, @Named("subscriber") String subscriberId, @Named("publication") Long publication) throws OAuthRequestException {
+	private Action addSubscriberToPublication(Long publicationId, String subscriberId) {
+		EntityManager mgr = getEntityManager();
+		Action publication = null;
+		try {
+			publication = mgr.find(Action.class, publicationId);
+			publication.subscribe(subscriberId);
+		} finally {
+			mgr.close();
+		}
+		return publication;
+	}
+
+	private void addPublicationToSubscriptions(String subscriberId, Long publicationId) {
+		EntityManager mgr = getEntityManager();
+		Device subscriber = null;
+		try {
+			subscriber = mgr.find(Device.class, subscriberId);
+			subscriber.subscribe(publicationId);
+		} finally {
+			mgr.close();
+		}
+	}
+
+	public void unsubscribe(User user, @Named("subscriber") String subscriberId, @Named("publication") Long publicationId) throws OAuthRequestException {
 		if (user != null) {
-			EntityManager mgr = getEntityManager();
-			Device subscriber = null;
-			try {
-				subscriber = mgr.find(Device.class, subscriberId);
-				if (subscriber.unsubscribe(publication)) {
-					mgr.persist(subscriber);
-				}
-			} finally {
-				mgr.close();
-			}
+			removeSubscriberFromPublication(publicationId, subscriberId);
+			removePublicationFromSubscriptions(subscriberId, publicationId);
 		} else {
 			throw new OAuthRequestException("Invalid user.");
 		}
 	}
 
-	public Device update(User user, Device subscriber) throws OAuthRequestException {
+	private void removeSubscriberFromPublication(Long publicationId, String subscriberId) {
+		EntityManager mgr = getEntityManager();
+		Action publication = null;
+		try {
+			publication = mgr.find(Action.class, publicationId);
+			publication.unsubscribe(subscriberId);
+		} finally {
+			mgr.close();
+		}
+	}
+
+	private void removePublicationFromSubscriptions(String subscriberId, Long publicationId) {
+		EntityManager mgr = getEntityManager();
+		Device subscriber = null;
+		try {
+			subscriber = mgr.find(Device.class, subscriberId);
+			subscriber.unsubscribe(publicationId);
+		} finally {
+			mgr.close();
+		}
+	}
+
+	public Device update(User user, Device device) throws OAuthRequestException {
 		if (user != null) {
 			EntityManager mgr = getEntityManager();
 			try {
-				if (!containsSubscriber(subscriber)) {
+				if (!containsSubscriber(device)) {
 					throw new EntityNotFoundException("Object does not exist");
 				}
-				mgr.persist(subscriber);
+				mgr.persist(device);
 			} finally {
 				mgr.close();
 			}
-			return subscriber;
+			return device;
 		} else {
 			throw new OAuthRequestException("Invalid user.");
 		}
@@ -182,27 +212,18 @@ public class DeviceEndpoint {
 			Device device = null;
 			try {
 				device = mgr.find(Device.class, id);
-				// remove subscriptions, and subscribers
-				List<Long> publicationIds = device.getPublications();
-				for (Long publicationId : publicationIds){
-					Action publication = mgr.find(Action.class, publicationId);
-					List<String> subscriberIds = publication.getSubscribers();
-					for (String subscriberId : subscriberIds) {
-						Device subscriber = mgr.find(Device.class, subscriberId);
-						if (subscriber.unsubscribe(publicationId)) {
-							mgr.persist(subscriber);
-						}
+				if (device != null) {
+					// remove subscriptions, and subscribers
+					List<Long> publicationIds = device.getPublications();
+					for (Long publicationId : publicationIds){
+						unpublish(publicationId);
 					}
-					mgr.remove(publication);
-				}
-				List<Long> subscriptionIds = device.getSubscriptions();
-				for (Long subscriptionId : subscriptionIds) {
-					Action subscription = mgr.find(Action.class, subscriptionId);
-					if (subscription.removeSubscriber(id)) {
-						mgr.persist(subscription);
+					List<Long> subscriptionIds = device.getSubscriptions();
+					for (Long subscriptionId : subscriptionIds) {
+						removeSubscriberFromPublication(subscriptionId, id);
 					}
+					mgr.remove(device);
 				}
-				mgr.remove(device);
 			} finally {
 				mgr.close();
 			}
@@ -211,8 +232,23 @@ public class DeviceEndpoint {
 			throw new OAuthRequestException("Invalid user.");
 		}
 	}
+	
+	private void unpublish(Long publicationId) {
+		EntityManager mgr = getEntityManager();
+		Action publication = null;
+		try {
+			publication = mgr.find(Action.class, publicationId);
+			List<String> subscriberIds = publication.getSubscribers();
+			for (String subscriberId : subscriberIds) {
+				removePublicationFromSubscriptions(subscriberId, publicationId);
+			}
+			mgr.remove(publication);
+		} finally {
+			mgr.close();
+		}
+	}
 
-	private Action getPublication(String publisherId, String actionName) {
+	private Long getPublicationId(String publisherId, String actionName) {
 		EntityManager mgr = getEntityManager();
 		Device publisher = null;
 		Action action = null;
@@ -234,7 +270,7 @@ public class DeviceEndpoint {
 		} finally {
 			mgr.close();
 		}
-		return action;
+		return action.getId();
 	}
 
 	private Action createAction(String publisherId, String actionName) {

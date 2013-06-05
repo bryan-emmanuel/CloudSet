@@ -56,12 +56,6 @@
           "name" : {
             "type" : "string"
           },
-          "extras" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "Extra"
-            }
-          },
           "timestamp" : {
             "type" : "string",
             "format" : "int64"
@@ -73,6 +67,12 @@
             "type" : "array",
             "items" : {
               "type" : "string"
+            }
+          },
+          "extras" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "Extra"
             }
           }
         }

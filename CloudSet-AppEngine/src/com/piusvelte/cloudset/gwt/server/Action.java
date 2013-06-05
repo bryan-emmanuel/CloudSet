@@ -23,12 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Basic;
-import javax.persistence.ElementCollection;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 @Entity
 public class Action {
@@ -39,18 +38,6 @@ public class Action {
 
 	// setting name
 	private String name;
-
-	@Embedded
-	@ElementCollection
-	private List<Extra> extras;
-
-	public List<Extra> getExtras() {
-		return extras;
-	}
-
-	public void setExtras(List<Extra> extras) {
-		this.extras = extras;
-	}
 
 	private long timestamp;
 	private String publisher;
@@ -98,7 +85,7 @@ public class Action {
 		this.subscribers = subscribers;
 	}
 
-	public boolean addSubscriber(String id) {
+	public boolean subscribe(String id) {
 		if (subscribers.contains(id)) {
 			return false;
 		} else {
@@ -107,13 +94,24 @@ public class Action {
 		}
 	}
 
-	public boolean removeSubscriber(String id) {
+	public boolean unsubscribe(String id) {
 		if (!subscribers.contains(id)) {
 			return false;
 		} else {
 			subscribers.remove(id);
 			return true;
 		}
+	}
+	
+	@Transient
+	private List<Extra> extras = new ArrayList<Extra>();
+
+	public List<Extra> getExtras() {
+		return extras;
+	}
+
+	public void setExtras(List<Extra> extras) {
+		this.extras = extras;
 	}
 
 }

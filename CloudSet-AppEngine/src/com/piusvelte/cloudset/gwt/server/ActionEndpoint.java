@@ -41,36 +41,60 @@ public class ActionEndpoint {
 
 	private static final DeviceEndpoint endpoint = new DeviceEndpoint();
 
-	public void publish(User user, Action action)
-			throws IOException, OAuthRequestException {
+	public void publish(User user, Action action) throws IOException, OAuthRequestException {
 
 		if (user != null) {
 			Sender sender = new Sender(Ids.API_KEY);
 
 			EntityManager mgr = getEntityManager();
 
-			try {
-				Device publisher = mgr.find(Device.class, action.getPublisher());
-				List<Long> actionIds = publisher.getPublications();
-				for (Long actionId : actionIds) {
-					Action a = mgr.find(Action.class, actionId);
-					if (a.getName().equals(action.getName())) {
-						action.setId(a.getId());
-						mgr.persist(action);
-						List<String> subscriberIds = action.getSubscribers();
-						for (String subscriberId : subscriberIds) {
-							Device device = mgr.find(Device.class, subscriberId);
-							doSendViaGcm(user, action.getName(), action.getExtras(), sender, device);
-						}
-						break;
+			List<String> subscriberIds = getSubscriberIds(getPublicationId(action.getPublisher(), action.getName()));
+			if (subscriberIds != null) {
+				try {
+					for (String subscriberId : subscriberIds) {
+						Device device = mgr.find(Device.class, subscriberId);
+						doSendViaGcm(user, action.getName(), action.getExtras(), sender, device);
 					}
+				} finally {
+					mgr.close();
 				}
-			} finally {
-				mgr.close();
 			}
 		} else {
 			throw new OAuthRequestException("Invalid user.");
 		}
+	}
+
+	private List<String> getSubscriberIds(Long publicationId) {
+		EntityManager mgr = getEntityManager();
+		Action publication = null;
+		List<String> subscriberIds = null;
+		try {
+			publication = mgr.find(Action.class, publicationId);
+			subscriberIds = publication.getSubscribers();
+		} finally {
+			mgr.close();
+		}
+		return subscriberIds;
+	}
+
+	private Long getPublicationId(String publisherId, String name) {
+		EntityManager mgr = getEntityManager();
+		Device publisher = null;
+		Long publicationId = null;
+		try {
+			publisher = mgr.find(Device.class, publisherId);
+			List<Long> actionIds = publisher.getPublications();
+			for (Long actionId : actionIds) {
+				Action action = mgr.find(Action.class, actionId);
+				if (action.getName().equals(name)) {
+					publicationId = action.getId();
+					break;
+				}
+			}
+		} finally {
+			mgr.close();
+		}
+		return publicationId;
 	}
 
 	private static Result doSendViaGcm(User user, String action, List<Extra> extras, Sender sender, Device device) throws IOException {

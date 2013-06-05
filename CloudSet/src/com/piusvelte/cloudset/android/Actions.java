@@ -93,13 +93,14 @@ public class Actions extends ListActivity {
 			adapter = new ArrayAdapter<String>(this, R.layout.action_item, actions) {
 
 				@Override
-				public View getView(int position, View convertView, ViewGroup parent){
+				public View getView(int position, View convertView, ViewGroup parent) {
 					View row;
 					if (convertView == null) {
 						row = (View) (LayoutInflater.from(parent.getContext().getApplicationContext())).inflate(R.layout.action_item, null);
 					} else {
 						row = (View) convertView;
 					}
+
 					String action = ActionsIntentService.ACTIONS[position];
 
 					TextView tv = (TextView) row.findViewById(R.id.action);
@@ -114,7 +115,7 @@ public class Actions extends ListActivity {
 			};
 		}
 	}
-	
+
 	private boolean isSubscribedTo(String action) {
 		if (publications != null) {
 			for (Action publication : publications) {
@@ -154,6 +155,9 @@ public class Actions extends ListActivity {
 			protected Void doInBackground(String... params) {
 				try {
 					publications = endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
+					if (publications == null) {
+						publications = new ArrayList<Action>();
+					}
 				} catch (IOException e) {
 					Log.e(TAG, e.toString());
 				}
@@ -190,7 +194,7 @@ public class Actions extends ListActivity {
 						}
 					} else {
 						Log.d(TAG, "subscribe: " + params[0]);
-						Action publication = endpoint.deviceEndpoint().subscribe(subscriberId, publisherId, params[0]).execute(); 
+						Action publication = endpoint.deviceEndpoint().subscribe(subscriberId, publisherId, params[0]).execute();
 						publications.add(publication);
 					}
 				} catch (IOException e) {

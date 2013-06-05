@@ -35,8 +35,8 @@ import com.google.android.gcm.GCMRegistrar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.piusvelte.cloudset.gwt.server.subscriberendpoint.Subscriberendpoint;
-import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Subscriber;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Device;
 
 /**
  * This class is started up as a service of the Android application. It listens
@@ -59,7 +59,7 @@ import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Subscriber;
  */
 public class GCMIntentService extends GCMBaseIntentService {
 
-	private Subscriberendpoint endpoint;
+	private Deviceendpoint endpoint;
 
 	protected static final String PROJECT_NUMBER = "205428532443";
 
@@ -89,7 +89,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		super(PROJECT_NUMBER);
 	}
 
-	private Subscriberendpoint getEndpoint(Context context) {
+	private Deviceendpoint getEndpoint(Context context) {
 		if (endpoint == null) {
 			String accountName = null;
 			SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.app_name), MODE_PRIVATE);
@@ -101,7 +101,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 					"server:client_id:" + context.getString(R.string.client_id));
 			credential.setSelectedAccountName(accountName);
 
-			Subscriberendpoint.Builder endpointBuilder = new Subscriberendpoint.Builder(
+			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
 					AndroidHttp.newCompatibleTransport(),
 					new JacksonFactory(),
 					credential);
@@ -121,7 +121,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	public void onError(Context context, String errorId) {
-		sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR);
+		sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR, null);
 	}
 
 	/**
@@ -132,6 +132,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		// intent contains the actions extras, "action", and "value"
 		String action = intent.getStringExtra("action");
 		if (action != null) {
+			Log.d(TAG, "GCM action: " + action);
 			if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
 				BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
 				int state = Integer.parseInt(intent.getStringExtra(BluetoothAdapter.EXTRA_STATE));
@@ -197,50 +198,34 @@ public class GCMIntentService extends GCMBaseIntentService {
 			 * Using cloud endpoints, see if the device has already been
 			 * registered with the backend
 			 */
-			Subscriber subscriber = getEndpoint(context).subscriberEndpoint().get(registration)
+			Device subscriber = getEndpoint(context).deviceEndpoint().get(registration)
 					.execute();
 
-			if (subscriber != null) {
-				
-				saveRegistration(context, registration);
-
-				if (registration.equals(subscriber.getId())) {
-					sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED);
-					return;
-				}
+			if ((subscriber != null) && (registration.equals(subscriber.getId()))) {
+				sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED, registration);
+				return;
 			}
 		} catch (IOException e) {
 			// Ignore
 		}
 
 		try {
-			Subscriber subscriber = getEndpoint(context).subscriberEndpoint().add(
-					(new Subscriber())
+			Device subscriber = getEndpoint(context).deviceEndpoint().add(
+					(new Device())
 					.setId(registration)
 					.setTimestamp(System.currentTimeMillis())
 					.setModel(URLEncoder.encode(android.os.Build.MODEL, "UTF-8"))).execute();
-			
-			if ((subscriber != null) && registration.equals(subscriber.getId())) {
-				
-				saveRegistration(context, registration);
 
-				sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED);
+			if ((subscriber != null) && registration.equals(subscriber.getId())) {
+				sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED, registration);
 			}
 		} catch (IOException e) {
 			Log.e(GCMIntentService.class.getName(),
 					"Exception received when attempting to register with server at "
 							+ getEndpoint(context).getRootUrl(), e);
 
-			sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR);
+			sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR, null);
 		}
-	}
-	
-	private void saveRegistration(Context context, String registration) {
-		// registered and stored in the backend, store locally
-		context.getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
-		.edit()
-		.putString(getString(R.string.preference_gcm_registration), registration)
-		.commit();
 	}
 
 	/**
@@ -255,12 +240,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		if (registrationId != null && registrationId.length() > 0) {
 			try {
-				getEndpoint(context).subscriberEndpoint().remove(registrationId).execute();
-				context.getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
-				.edit()
-				.putString(getString(R.string.preference_account_name), null)
-				.putString(getString(R.string.preference_gcm_registration), null)
-				.commit();
+				getEndpoint(context).deviceEndpoint().remove(registrationId).execute();
 			} catch (IOException e) {
 				Log.e(GCMIntentService.class.getName(),
 						"Exception received when attempting to unregister with server at "
@@ -269,13 +249,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 			}
 		}
 
-		sendGCMIntent(context, CloudSetMain.ACTION_GCM_UNREGISTERED);
+		sendGCMIntent(context, CloudSetMain.ACTION_GCM_UNREGISTERED, null);
 
 	}
 
-	private void sendGCMIntent(Context context, String action) {
+	private void sendGCMIntent(Context context, String action, String registration) {
 		startActivity(new Intent(context, CloudSetMain.class)
 		.setAction(action)
+		.putExtra(CloudSetMain.EXTRA_DEVICE_REGISTRATION, registration)
 		.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 	}
 }

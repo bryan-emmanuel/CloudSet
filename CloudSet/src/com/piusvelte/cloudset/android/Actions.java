@@ -26,8 +26,8 @@ import java.util.List;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.piusvelte.cloudset.gwt.server.subscriberendpoint.Subscriberendpoint;
-import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Publication;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Action;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -53,10 +53,10 @@ public class Actions extends ListActivity {
 
 	private String publisherId;
 	private String subscriberId;
-	private Subscriberendpoint endpoint = null;
+	private Deviceendpoint endpoint = null;
 	private ArrayAdapter<String> adapter;
 	// subscriptions, filtered on the publisherId
-	private List<Publication> publications;
+	private List<Action> publications;
 	private ArrayList<String> actions = new ArrayList<String>();
 
 	@Override
@@ -83,7 +83,7 @@ public class Actions extends ListActivity {
 					"server:client_id:" + getString(R.string.client_id));
 			credential.setSelectedAccountName(accountName);
 
-			Subscriberendpoint.Builder endpointBuilder = new Subscriberendpoint.Builder(
+			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
 					AndroidHttp.newCompatibleTransport(),
 					new JacksonFactory(),
 					credential);
@@ -117,8 +117,8 @@ public class Actions extends ListActivity {
 	
 	private boolean isSubscribedTo(String action) {
 		if (publications != null) {
-			for (Publication publication : publications) {
-				if (publication.getAction().equals(action)) {
+			for (Action publication : publications) {
+				if (publication.getName().equals(action)) {
 					return true;
 				}
 			}
@@ -153,7 +153,7 @@ public class Actions extends ListActivity {
 			@Override
 			protected Void doInBackground(String... params) {
 				try {
-					publications = endpoint.subscriberEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
+					publications = endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
 				} catch (IOException e) {
 					Log.e(TAG, e.toString());
 				}
@@ -181,14 +181,17 @@ public class Actions extends ListActivity {
 					if (Boolean.parseBoolean(params[1])) {
 						Log.d(TAG, "unsubscribe: " + params[0]);
 						for (int i = 0, s = publications.size(); i < s; i++) {
-							Publication pulication = publications.get(i);
-							if (pulication.getAction().equals(params[0])) {
-								publications = endpoint.subscriberEndpoint().unsubscribe(subscriberId, pulication.getKey()).execute().getItems();
+							Action publication = publications.get(i);
+							if (publication.getName().equals(params[0])) {
+								Log.d(TAG, "publicationId: " + publication.getId());
+								endpoint.deviceEndpoint().unsubscribe(subscriberId, publication.getId()).execute();
+								publications.remove(i);
 							}
 						}
 					} else {
 						Log.d(TAG, "subscribe: " + params[0]);
-						publications = endpoint.subscriberEndpoint().subscribe(subscriberId, publisherId, params[0]).execute().getItems();
+						Action publication = endpoint.deviceEndpoint().subscribe(subscriberId, publisherId, params[0]).execute(); 
+						publications.add(publication);
 					}
 				} catch (IOException e) {
 					Log.e(TAG, e.toString());

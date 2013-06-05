@@ -82,7 +82,6 @@ public class AccountsFragment extends ListFragment {
 	@Override
 	public void onListItemClick(ListView list, View view, int position, long id) {
 		super.onListItemClick(list, view, position, id);
-		
 		callback.setAccount(adapter.getItem(position));
 	}
 
@@ -95,7 +94,7 @@ public class AccountsFragment extends ListFragment {
 
 			@Override
 			public void onClick(View v) {
-				GCMIntentService.register(getActivity().getApplicationContext());
+				GCMIntentService.unregister(getActivity().getApplicationContext());
 			}
 		
 		});

@@ -26,9 +26,9 @@ import java.util.List;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.piusvelte.cloudset.gwt.server.publicationendpoint.Publicationendpoint;
-import com.piusvelte.cloudset.gwt.server.publicationendpoint.model.Extra;
-import com.piusvelte.cloudset.gwt.server.publicationendpoint.model.Publication;
+import com.piusvelte.cloudset.gwt.server.actionendpoint.Actionendpoint;
+import com.piusvelte.cloudset.gwt.server.actionendpoint.model.Action;
+import com.piusvelte.cloudset.gwt.server.actionendpoint.model.Extra;
 
 import android.app.IntentService;
 import android.bluetooth.BluetoothAdapter;
@@ -39,6 +39,7 @@ import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.PowerManager;
+import android.util.Log;
 
 public class ActionsIntentService extends IntentService {
 	
@@ -68,12 +69,13 @@ public class ActionsIntentService extends IntentService {
 		context.startService(intent);
 	}
 
-	private Publicationendpoint endpoint;
+	private Actionendpoint endpoint;
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		String action = intent.getAction();
 		if (action != null) {
+			Log.d(TAG, "onHandleIntent: " + action);
 			if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
 				int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
 				if ((state == BluetoothAdapter.STATE_ON) || (state == BluetoothAdapter.STATE_OFF)) {
@@ -135,26 +137,26 @@ public class ActionsIntentService extends IntentService {
 
 		if ((accountName != null) && (registration != null)) {
 			
-			Publication publication = new Publication();
+			Action publication = new Action();
 			publication.setPublisher(registration);
-			publication.setAction(action);
+			publication.setName(action);
 			publication.setExtras(extras);
 
 			GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(this, "server:client_id:" + getString(R.string.client_id));
 			credential.setSelectedAccountName(accountName);
 
-			Publicationendpoint.Builder endpointBuilder = new Publicationendpoint.Builder(
+			Actionendpoint.Builder endpointBuilder = new Actionendpoint.Builder(
 					AndroidHttp.newCompatibleTransport(),
 					new JacksonFactory(),
 					credential);
 			endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 
-			(new AsyncTask<Publication, Void, Void>() {
+			(new AsyncTask<Action, Void, Void>() {
 
 				@Override
-				protected Void doInBackground(Publication... publications) {
+				protected Void doInBackground(Action... publications) {
 					try {
-						endpoint.publicationEndpoint().publish(publications[0]).execute();
+						endpoint.actionEndpoint().publish(publications[0]).execute();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

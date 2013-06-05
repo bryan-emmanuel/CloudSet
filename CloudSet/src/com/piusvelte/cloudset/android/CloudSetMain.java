@@ -30,8 +30,8 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.piusvelte.cloudset.gwt.server.subscriberendpoint.Subscriberendpoint;
-import com.piusvelte.cloudset.gwt.server.subscriberendpoint.model.Subscriber;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Device;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
@@ -66,6 +66,8 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	public static final String ACTION_GCM_REGISTERED = "com.piusvelte.cloudset.android.action.GCM_REGISTERED";
 	public static final String ACTION_GCM_UNREGISTERED = "com.piusvelte.cloudset.android.action.GCM_UNREGISTERED";
 	public static final String ACTION_GCM_ERROR = "com.piusvelte.cloudset.android.action.GCM_ERROR";
+	
+	public static final String EXTRA_DEVICE_REGISTRATION = "com.piusvelte.cloudset.android.extra.DEVICE_REGISTRATION";
 
 	public static final String ARGUMENT_ISSUBSCRIPTIONS = "issubscriptions";
 
@@ -76,7 +78,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	private String account;
 	private String registrationId;
 	private GoogleAccountCredential credential;
-	private List<Subscriber> devices = new ArrayList<Subscriber>();
+	private List<Device> devices = new ArrayList<Device>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -119,24 +121,46 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	@Override
 	public void onResume() {
 		super.onResume();
+		
+		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
+		
 		Intent intent = getIntent();
 		if (intent != null) {
 			String action = intent.getAction();
 			if (action != null) {
 				if (action.equals(ACTION_GCM_ERROR)) {
 					Toast.makeText(getApplicationContext(), "Error occurred during device registration", Toast.LENGTH_SHORT).show();
-				} else if (action.equals(ACTION_GCM_REGISTERED)) {
+					account = null;
+					registrationId = null;
+					sp
+					.edit()
+					.putString(getString(R.string.preference_account_name), account)
+					.putString(getString(R.string.preference_gcm_registration), registrationId)
+					.commit();
+				} else if (action.equals(ACTION_GCM_REGISTERED) && intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
 					Log.d(TAG, "registered");
-				} else if (action.equals(ACTION_GCM_UNREGISTERED)) {
-					Log.d(TAG, "unregistered");	
+					registrationId = intent.getStringExtra(EXTRA_DEVICE_REGISTRATION);
+					sp
+					.edit()
+					.putString(getString(R.string.preference_gcm_registration), registrationId)
+					.commit();
+				} else if (action.equals(ACTION_GCM_UNREGISTERED) && intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
+					Log.d(TAG, "unregistered");
+					account = null;
+					registrationId = null;
+					sp
+					.edit()
+					.putString(getString(R.string.preference_account_name), account)
+					.putString(getString(R.string.preference_gcm_registration), registrationId)
+					.commit();
 				}
+			} else {
+				Log.d(TAG, "null action");
+				account = sp.getString(getString(R.string.preference_account_name), null);
+				registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
 			}
-		}
-
-		// check if the account is setup
-		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
-		if ((sp.getString(getString(R.string.preference_account_name), null) != null)
-				&& (sp.getString(getString(R.string.preference_gcm_registration), null) != null)) {
+		} else {
+			Log.d(TAG, "no intent");
 			account = sp.getString(getString(R.string.preference_account_name), null);
 			registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
 		}
@@ -215,17 +239,17 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 				@Override
 				protected String doInBackground(String... params) {
 
-					Subscriberendpoint.Builder endpointBuilder = new Subscriberendpoint.Builder(
+					Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
 							AndroidHttp.newCompatibleTransport(),
 							new JacksonFactory(),
 							credential);
-					Subscriberendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+					Deviceendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 
 					try {
-						devices = endpoint.subscriberEndpoint().subscribers(registrationId).execute().getItems();
+						devices = endpoint.deviceEndpoint().subscribers(registrationId).execute().getItems();
 						if (devices == null) {
 							// set to new empty List for the adapter
-							devices = new ArrayList<Subscriber>();
+							devices = new ArrayList<Device>();
 						}
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -249,7 +273,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 		} else {
 			// set to new empty List for the adapter
-			devices = new ArrayList<Subscriber>();
+			devices = new ArrayList<Device>();
 			if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
 				subscriptionsFragment.reloadAdapter(null);
 			} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
@@ -327,6 +351,9 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 		// register with GCM, this is an asynchronous operation
 		GCMIntentService.register(getApplicationContext());
+		
+		// move to show "loading devices"
+		viewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
 
 	}
 
@@ -352,7 +379,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	@Override
 	public void loadDeviceModels(ArrayAdapter<String> adapter) {
 		if (devices != null) {
-			for (Subscriber device : devices) {
+			for (Device device : devices) {
 				try {
 					adapter.add(URLDecoder.decode(device.getModel(), "UTF-8"));
 				} catch (UnsupportedEncodingException e) {

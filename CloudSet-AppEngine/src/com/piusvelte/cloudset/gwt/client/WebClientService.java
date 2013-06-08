@@ -41,4 +41,6 @@ public interface WebClientService extends RemoteService {
 	
 	void unsubscribe(String subscriberId, Long publicationId) throws IllegalArgumentException;
 	
+	List<Action> getSubscriptions(String subscriberId, String publisherId) throws IllegalArgumentException;
+	
 }

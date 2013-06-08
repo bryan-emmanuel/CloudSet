@@ -23,16 +23,22 @@ import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.ParagraphElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.URL;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.piusvelte.cloudset.gwt.shared.Action;
 import com.piusvelte.cloudset.gwt.shared.Device;
 
 /**
@@ -50,7 +56,7 @@ public class CloudSet implements EntryPoint {
 	private final WebClientServiceAsync webClientService = GWT
 			.create(WebClientService.class);
 
-	private VerticalPanel devicesPanel;
+	private VerticalPanel devicesPanel = new VerticalPanel();
 
 	public void onModuleLoad() {
 
@@ -129,13 +135,28 @@ public class CloudSet implements EntryPoint {
 					}
 
 				});
-		
-		devicesPanel = new VerticalPanel();
-		RootPanel.get("devicesContainer").add(devicesPanel);
-		
+
+		contentTitle = RootPanel.get("contentTitle").getElement();
+		devicesContainer = RootPanel.get("devicesContainer");
+
+		devicesContainer.add(devicesPanel);
+
+		syncPanel.add(syncFromPanel, "Sync From");
+		syncPanel.add(syncToPanel, "Sync To");
+
 	}
 
+	private RootPanel devicesContainer;
+	
+	public void setLoading() {
+		devicesPanel.clear();
+		devicesPanel.add(new Label("Loading..."));
+	}
+
+	private Element contentTitle;
+
 	public void loadDevices() {
+		setLoading();
 		webClientService.getDevices(new AsyncCallback<List<Device>>() {
 
 			@Override
@@ -147,24 +168,21 @@ public class CloudSet implements EntryPoint {
 			@Override
 			public void onSuccess(List<Device> result) {
 				// TODO Auto-generated method stub
+				contentTitle.setInnerHTML("Registered Devices");
 				devicesPanel.clear();
-				if (result != null) {
-					for (Device device : result) {
-						devicesPanel.add(new Button(device.getModel(),
-								new DeviceClickHandler(device.getId())));
-					}
-				} else {
-					//TODO
+				for (Device device : result) {
+					devicesPanel.add(new Button(URL.decode(device.getModel()),
+							new DeviceClickHandler(device.getId())));
 				}
 			}
 
 		});
 	}
-	
+
 	public class DeviceClickHandler implements ClickHandler {
-		
+
 		private String deviceId;
-		
+
 		public DeviceClickHandler(String deviceId) {
 			this.deviceId = deviceId;
 		}
@@ -173,24 +191,191 @@ public class CloudSet implements EntryPoint {
 		public void onClick(ClickEvent event) {
 			loadSubscribers(deviceId);
 		}
+
+	}
+
+	public class SyncClickHandler implements ClickHandler {
+
+		private String publisherId;
+		private String subscriberId;
+
+		public SyncClickHandler(String publisherId, String subscriberId) {
+			this.publisherId = publisherId;
+			this.subscriberId = subscriberId;
+		}
+
+		@Override
+		public void onClick(ClickEvent event) {
+			loadActions(publisherId, subscriberId);
+		}
+
+	}
+
+	private VerticalPanel actionsPanel = new VerticalPanel();
+
+	public static final String[] ACTIONS = new String[]{"android.net.wifi.WIFI_STATE_CHANGED",
+		"android.bluetooth.adapter.action.STATE_CHANGED",
+		"android.media.VOLUME_CHANGED_ACTION",
+		"android.media.RINGER_MODE_CHANGED"};
+	public static final String[] ACTION_NAMES = new String[]{"Wi-Fi", "Bluetooth", "Volume", "Ringer"};
+	
+	public class SubscribeCallback implements AsyncCallback<Action> {
+
+		private String publisherId;
+		private String subscriberId;
+		
+		public SubscribeCallback(String publisherId, String subscriberId) {
+			this.publisherId = publisherId;
+			this.subscriberId = subscriberId;
+		}
+
+		@Override
+		public void onFailure(Throwable caught) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onSuccess(Action result) {
+			loadActions(publisherId, subscriberId);
+		}
+		
+	}
+	
+	public class UnsubscribeCallback implements AsyncCallback<Void> {
+
+		private String publisherId;
+		private String subscriberId;
+		
+		public UnsubscribeCallback(String publisherId, String subscriberId) {
+			this.publisherId = publisherId;
+			this.subscriberId = subscriberId;
+		}
+
+		@Override
+		public void onFailure(Throwable caught) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onSuccess(Void result) {
+			loadActions(publisherId, subscriberId);
+		}
 		
 	}
 
+	public class ActionClickHandler implements ClickHandler {
+
+		private String publisherId;
+		private String subscriberId;
+		private String action;
+		private Long publicationId;
+
+		public ActionClickHandler(String publisherId, String subscriberId, String action, Long publicationId) {
+			this.action = action;
+			this.publicationId = publicationId;
+			this.publisherId = publisherId;
+			this.subscriberId = subscriberId;
+		}
+
+		@Override
+		public void onClick(ClickEvent event) {
+			boolean checked = ((CheckBox) event.getSource()).isChecked();
+			if (checked) {
+				webClientService.subscribe(subscriberId, publisherId, action, new SubscribeCallback(publisherId, subscriberId));
+			} else {
+				webClientService.unsubscribe(subscriberId, publicationId, new UnsubscribeCallback(publisherId, subscriberId));
+			}
+		}
+
+	}
+
+	public class ActionsCallback implements AsyncCallback<List<Action>> {
+
+		private String publisherId;
+		private String subscriberId;
+
+		public ActionsCallback(String publisherId, String subscriberId) {
+			this.publisherId = publisherId;
+			this.subscriberId = subscriberId;
+		}
+
+		@Override
+		public void onFailure(Throwable caught) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onSuccess(List<Action> result) {
+			// TODO Auto-generated method stub
+			devicesPanel.clear();
+
+			actionsPanel.clear();
+
+			for (int i = 0; i < ACTIONS.length; i++) {
+				boolean isSubscribed = false;
+				for (Action action : result) {
+					if (action.getName().equals(ACTIONS[i])) {
+						isSubscribed = true;
+						break;
+					}
+				}
+				CheckBox cb = new CheckBox(ACTION_NAMES[i]);
+				cb.setChecked(isSubscribed);
+				actionsPanel.add(cb);
+			}
+		}
+
+	}
+
+	public void loadActions(String publisherId, String subscriberId) {
+		setLoading();
+		webClientService.getSubscriptions(subscriberId, publisherId, new ActionsCallback(publisherId, subscriberId));
+	}
+
+	private TabPanel syncPanel = new TabPanel();
+
+	private VerticalPanel syncFromPanel = new VerticalPanel();
+
+	private VerticalPanel syncToPanel = new VerticalPanel();
+
+	public class SubscribersCallback implements AsyncCallback<List<Device>> {
+
+		private String deviceId;
+
+		public SubscribersCallback(String deviceId) {
+			this.deviceId = deviceId;
+		}
+
+		@Override
+		public void onFailure(Throwable caught) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onSuccess(List<Device> result) {
+			devicesPanel.clear();
+
+			syncFromPanel.clear();
+			syncToPanel.clear();
+
+			for (Device device : result) {
+				syncFromPanel.add(new Button(URL.decode(device.getModel()),
+						new SyncClickHandler(deviceId, device.getId())));
+				syncToPanel.add(new Button(URL.decode(device.getModel()),
+						new SyncClickHandler(device.getId(), deviceId)));
+			}
+
+			devicesPanel.add(syncPanel);
+		}
+
+	}
+
 	public void loadSubscribers(String deviceId) {
-		webClientService.getSubscribers(deviceId, new AsyncCallback<List<Device>>() {
-
-			@Override
-			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void onSuccess(List<Device> result) {
-				// TODO load tabbed panel, and unsubscribe button
-
-			}
-
-		});
+		setLoading();
+		webClientService.getSubscribers(deviceId, new SubscribersCallback(deviceId));
 	}
 }

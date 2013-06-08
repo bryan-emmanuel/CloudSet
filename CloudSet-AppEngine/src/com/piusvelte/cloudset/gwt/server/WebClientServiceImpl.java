@@ -29,6 +29,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.piusvelte.cloudset.gwt.client.WebClientService;
 import com.piusvelte.cloudset.gwt.shared.Action;
 import com.piusvelte.cloudset.gwt.shared.Device;
+import com.piusvelte.cloudset.gwt.shared.Extra;
 
 @SuppressWarnings("serial")
 public class WebClientServiceImpl extends RemoteServiceServlet implements
@@ -54,7 +55,7 @@ WebClientService {
 		}
 	}
 	
-	private List<Device> makeSerializable(List<Device> streamingResults) {
+	private List<Device> serializeDevices(List<Device> streamingResults) {
 		List<Device> devices = new ArrayList<Device>();
 		for (Device device : streamingResults) {
 			ArrayList<Long> publications = new ArrayList<Long>();
@@ -67,13 +68,27 @@ WebClientService {
 		}
 		return devices;
 	}
+	
+	private List<Action> serializeActions(List<Action> streamingResults) {
+		List<Action> actions = new ArrayList<Action>();
+		for (Action action : streamingResults) {
+			ArrayList<String> subscribers = new ArrayList<String>();
+			subscribers.addAll(action.getSubscribers());
+			action.setSubscribers(subscribers);
+			ArrayList<Extra> extras = new ArrayList<Extra>();
+			extras.addAll(action.getExtras());
+			action.setExtras(extras);
+			actions.add(action);
+		}
+		return actions;
+	}
 
 	// load all devices for the user
 	@Override
 	public List<Device> getDevices() throws IllegalArgumentException {
 		if (userService.isUserLoggedIn()) {
 			try {
-				return makeSerializable(new DeviceEndpoint().list(userService.getCurrentUser()));
+				return serializeDevices(new DeviceEndpoint().list(userService.getCurrentUser()));
 			} catch (OAuthRequestException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("error getting devices");
@@ -89,7 +104,7 @@ WebClientService {
 			throws IllegalArgumentException {
 		if (userService.isUserLoggedIn()) {
 			try {
-				return makeSerializable(new DeviceEndpoint().subscribers(userService.getCurrentUser(), deviceId));
+				return serializeDevices(new DeviceEndpoint().subscribers(userService.getCurrentUser(), deviceId));
 			} catch (OAuthRequestException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("error getting devices");
@@ -120,6 +135,21 @@ WebClientService {
 		if (userService.isUserLoggedIn()) {
 			try {
 				new DeviceEndpoint().unsubscribe(userService.getCurrentUser(), subscriberId, publicationId);
+			} catch (OAuthRequestException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException("error getting devices");
+			}
+		} else {
+			throw new IllegalArgumentException("not logged in");
+		}
+	}
+
+	@Override
+	public List<Action> getSubscriptions(String subscriberId, String publisherId)
+			throws IllegalArgumentException {
+		if (userService.isUserLoggedIn()) {
+			try {
+				return serializeActions(new DeviceEndpoint().subscriptions(userService.getCurrentUser(), subscriberId, publisherId));
 			} catch (OAuthRequestException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("error getting devices");

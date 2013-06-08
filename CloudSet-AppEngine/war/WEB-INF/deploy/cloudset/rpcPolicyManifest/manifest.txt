@@ -1,3 +1,3 @@
 # Module cloudset
 # RPC service class, partial path of RPC policy file
-com.piusvelte.cloudset.gwt.client.WebClientService, 6225989F00B4DB194701A952EFE1F9F8.gwt.rpc
+com.piusvelte.cloudset.gwt.client.WebClientService, 2B977853389884926A4D63FE484BAD3E.gwt.rpc

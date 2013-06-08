@@ -4,6 +4,7 @@ com.google.gwt.user.client.rpc.XsrfToken, false, false, true, true, com.google.g
 com.piusvelte.cloudset.gwt.client.WebClientService, false, false, false, false, _, 1986659193
 com.piusvelte.cloudset.gwt.shared.Action, true, true, false, false, com.piusvelte.cloudset.gwt.shared.Action/2404065419, 2404065419
 @ClientFields,com.piusvelte.cloudset.gwt.shared.Action,id,name,timestamp,publisher,subscribers,extras
+[Lcom.piusvelte.cloudset.gwt.shared.Action;, true, true, false, false, [Lcom.piusvelte.cloudset.gwt.shared.Action;/3651744751, 3651744751
 com.piusvelte.cloudset.gwt.shared.Device, true, true, false, false, com.piusvelte.cloudset.gwt.shared.Device/263938954, 263938954
 @ClientFields,com.piusvelte.cloudset.gwt.shared.Device,id,timestamp,account,nickname,model,subscriptions,publications
 [Lcom.piusvelte.cloudset.gwt.shared.Device;, true, true, false, false, [Lcom.piusvelte.cloudset.gwt.shared.Device;/1161080131, 1161080131

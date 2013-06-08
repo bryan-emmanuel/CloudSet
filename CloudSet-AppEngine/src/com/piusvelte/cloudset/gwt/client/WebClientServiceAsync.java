@@ -52,4 +52,9 @@ public interface WebClientServiceAsync {
 			Long publicationId,
 			AsyncCallback<Void> callback);
 	
+	void getSubscriptions(
+			String subscriberId,
+			String publisherId,
+			AsyncCallback<List<Action>> callback);
+	
 }

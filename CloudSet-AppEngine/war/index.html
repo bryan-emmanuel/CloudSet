@@ -8,6 +8,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <style>
+
 body {
 	font-family: sans-serif;
 	background-color: #E4E9EC;
@@ -27,12 +28,12 @@ header {
 }
 
 #content,
-#header-inner {
+#headerInner {
 	max-width: 960px;
 	margin: 0 auto;
 }
 
-#title_span {
+#titleSpan {
 	font-weight: bold;
 	font-size: 2em;
 }
@@ -51,10 +52,24 @@ header {
 	border: none;
 	font-weight: bold;
 }
+
+#devicesContainer button {
+	width: 100%;
+	text-align: left;
+	background-color: #FFF;
+	border: none;
+	border-top: .2em solid #DDD;
+	padding: .5em;
+	font-weight: bold;
+}
+
+#devicesContainer button:hover {
+	background-color: #E6F6F3;
+}
+
 </style>
 <title>Cloud Set</title>
-<script type="text/javascript" language="javascript"
-	src="cloudset/cloudset.nocache.js"></script>
+<script type="text/javascript" src="cloudset/cloudset.nocache.js"></script>
 </head>
 <body>
 
@@ -71,16 +86,16 @@ header {
 	</noscript>
 
 	<header>
-		<div id="header-inner">
+		<div id="headerInner">
 			<span id="authContainer"></span>
 			<img src="img/cloudset_icon.png" />
-			<span id="title_span">Cloud Set</span>
+			<span id="titleSpan">Cloud Set</span>
 		</div>
 	</header>
 	
 	<div id="content">
 		<p>Cloud Set synchronizes settings across Android devices, and is currently in development.</p>
-		<h4>Registered Devices</h4>
+		<h4 id="contentTitle"></h4>
 		<div id="devicesContainer"></div>
 	</div>
 </body>

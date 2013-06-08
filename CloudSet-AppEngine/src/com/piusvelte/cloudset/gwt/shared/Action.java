@@ -17,7 +17,7 @@
  *  
  *  Bryan Emmanuel piusvelte@gmail.com
  */
-package com.piusvelte.cloudset.gwt.server;
+package com.piusvelte.cloudset.gwt.shared;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +29,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+
 @Entity
-public class Action {
+public class Action implements IsSerializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

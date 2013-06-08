@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/hgmNrIk_yUOYLNuW9O3ruTUtce0\"",
+ "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/MIOYSttgRWyGzKZZiXkvY4hwr0I\"",
  "discoveryVersion": "v1",
  "id": "deviceendpoint:v1",
  "name": "deviceendpoint",
@@ -197,6 +197,13 @@
    ],
    "returns": {
     "$ref": "Device"
+   }
+  },
+  "deviceendpoint.deviceEndpoint.list": {
+   "id": "deviceendpoint.deviceEndpoint.list",
+   "allowGet": true,
+   "returns": {
+    "$ref": "DeviceCollection"
    }
   },
   "deviceendpoint.deviceEndpoint.patch": {

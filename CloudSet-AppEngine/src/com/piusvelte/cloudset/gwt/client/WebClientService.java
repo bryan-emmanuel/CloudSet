@@ -19,8 +19,12 @@
  */
 package com.piusvelte.cloudset.gwt.client;
 
+import java.util.List;
+
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.piusvelte.cloudset.gwt.shared.Action;
+import com.piusvelte.cloudset.gwt.shared.Device;
 
 @RemoteServiceRelativePath("webclient")
 public interface WebClientService extends RemoteService {
@@ -28,5 +32,13 @@ public interface WebClientService extends RemoteService {
 	String getUserNickname() throws IllegalArgumentException;
 
 	String getAuthenticationURL(String url) throws IllegalArgumentException;
+	
+	List<Device> getDevices() throws IllegalArgumentException;
+
+	List<Device> getSubscribers(String deviceId) throws IllegalArgumentException;
+	
+	Action subscribe(String subscriberId, String publisherId, String action) throws IllegalArgumentException;
+	
+	void unsubscribe(String subscriberId, Long publicationId) throws IllegalArgumentException;
 	
 }

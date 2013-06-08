@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/hgmNrIk_yUOYLNuW9O3ruTUtce0\"",
+ "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/MIOYSttgRWyGzKZZiXkvY4hwr0I\"",
  "discoveryVersion": "v1",
  "id": "deviceendpoint:v1",
  "name": "deviceendpoint",
@@ -200,6 +200,14 @@
      ],
      "response": {
       "$ref": "Device"
+     }
+    },
+    "list": {
+     "id": "deviceendpoint.deviceEndpoint.list",
+     "path": "device",
+     "httpMethod": "GET",
+     "response": {
+      "$ref": "DeviceCollection"
      }
     },
     "patch": {

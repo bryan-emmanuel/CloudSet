@@ -21,6 +21,7 @@ header,
 }
 
 header {
+	padding-top: 2em;
 	color: #FFF;
 	border-bottom: .3em solid #7EC8EB;
 }
@@ -50,45 +51,6 @@ header {
 	border: none;
 	font-weight: bold;
 }
-
-.regDevicesSection {
-	margin-top: 30px;
-}
-
-.devicenameCol {
-	max-width: 150px;
-}
-
-.deviceIdCol {
-	max-width: 500px;
-	word-wrap: break-word;
-}
-
-.form-sendmessage {
-	max-width: 300px;
-	padding: 29px 29px 29px;
-	margin: 50px auto 20px;
-	background-color: #fff;
-	border: 1px solid #e5e5e5;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	-webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
-	-moz-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
-}
-
-.form-sendmessage input[type="text"] {
-	font-size: 16px;
-	height: auto;
-	margin-bottom: 15px;
-	padding: 7px 9px;
-}
-
-.alertStyle {
-	max-width: 300px;
-	margin: 5px auto 20px;
-}
 </style>
 <title>Cloud Set</title>
 <script type="text/javascript" language="javascript"
@@ -117,19 +79,9 @@ header {
 	</header>
 	
 	<div id="content">
-		<p>Cloud Set synchronizes settings across Android devices, and is
-			currently in development.</p>
-
-		<div class="regDevicesSection">
-		<h3>Registered Devices</h3>
-			<table class="table table-striped" id="regDevicesTable">
-				<thead>
-					<tr>
-						<th>Please sign in to load your devices.</th>
-					</tr>
-				</thead>
-			</table>
-		</div>
+		<p>Cloud Set synchronizes settings across Android devices, and is currently in development.</p>
+		<h4>Registered Devices</h4>
+		<div id="devicesContainer"></div>
 	</div>
 </body>
 </html>

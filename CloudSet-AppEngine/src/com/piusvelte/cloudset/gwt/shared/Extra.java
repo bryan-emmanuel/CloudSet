@@ -17,9 +17,11 @@
  *  
  *  Bryan Emmanuel piusvelte@gmail.com
  */
-package com.piusvelte.cloudset.gwt.server;
+package com.piusvelte.cloudset.gwt.shared;
 
-public class Extra {
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+public class Extra implements IsSerializable {
 	
 	private String name;
 	

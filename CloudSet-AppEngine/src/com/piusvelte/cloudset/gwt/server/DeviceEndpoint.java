@@ -20,6 +20,8 @@
 package com.piusvelte.cloudset.gwt.server;
 
 import com.piusvelte.cloudset.gwt.server.EMF;
+import com.piusvelte.cloudset.gwt.shared.Action;
+import com.piusvelte.cloudset.gwt.shared.Device;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiNamespace;
@@ -40,6 +42,25 @@ namespace = @ApiNamespace(ownerDomain = "piusvelte.com", ownerName = "piusvelte.
 clientIds = {Ids.WEB_CLIENT_ID, Ids.ANDROID_CLIENT_ID},
 audiences = {Ids.ANDROID_AUDIENCE})
 public class DeviceEndpoint {
+
+	@SuppressWarnings({ "unchecked" })
+	public List<Device> list(
+			User user) throws OAuthRequestException {
+		if (user != null) {
+			List<Device> subscribers;
+			EntityManager mgr = getEntityManager();
+			try {
+				Query query = mgr.createQuery("select from Device as Device where account = :account")
+						.setParameter("account", user.getNickname());
+				subscribers = query.getResultList();
+			} finally {
+				mgr.close();
+			}
+			return subscribers;
+		} else {
+			throw new OAuthRequestException("Invalid user.");
+		}
+	}
 
 	@SuppressWarnings({ "unchecked" })
 	public List<Device> subscribers(

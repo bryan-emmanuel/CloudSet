@@ -32,6 +32,9 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.users.User;
+import com.piusvelte.cloudset.gwt.shared.Action;
+import com.piusvelte.cloudset.gwt.shared.Device;
+import com.piusvelte.cloudset.gwt.shared.Extra;
 
 @Api(name = "actionendpoint",
 namespace = @ApiNamespace(ownerDomain = "piusvelte.com", ownerName = "piusvelte.com", packagePath = "cloudset.gwt.server"),

@@ -17,7 +17,7 @@
  *  
  *  Bryan Emmanuel piusvelte@gmail.com
  */
-package com.piusvelte.cloudset.gwt.server;
+package com.piusvelte.cloudset.gwt.shared;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +26,10 @@ import javax.persistence.Basic;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
+
 @Entity
-public class Device {
+public class Device implements IsSerializable {
 
 	// Devices publish actions, and subscribe to the actions of other devices
 

@@ -27,6 +27,26 @@
   "ownerName" : "piusvelte.com",
   "packagePath" : "cloudset.gwt.server",
   "methods" : {
+    "deviceendpoint.deviceEndpoint.get" : {
+      "path" : "device/{id}",
+      "httpMethod" : "GET",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.get",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
     "deviceendpoint.deviceEndpoint.subscribe" : {
       "path" : "subscribe/{subscriber}/{publisher}/{action}",
       "httpMethod" : "POST",
@@ -55,26 +75,6 @@
         "body" : "autoTemplate(backendResponse)"
       }
     },
-    "deviceendpoint.deviceEndpoint.get" : {
-      "path" : "device/{id}",
-      "httpMethod" : "GET",
-      "scopes" : [ ],
-      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
-      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.get",
-      "request" : {
-        "parameters" : {
-          "id" : {
-            "type" : "string",
-            "required" : true
-          }
-        },
-        "body" : "empty"
-      },
-      "response" : {
-        "body" : "autoTemplate(backendResponse)"
-      }
-    },
     "deviceendpoint.deviceEndpoint.subscribers" : {
       "path" : "subscribers/{publisher}",
       "httpMethod" : "POST",
@@ -89,6 +89,20 @@
             "required" : true
           }
         },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "deviceendpoint.deviceEndpoint.list" : {
+      "path" : "device",
+      "httpMethod" : "GET",
+      "scopes" : [ ],
+      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
+      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.list",
+      "request" : {
         "body" : "empty"
       },
       "response" : {
@@ -196,6 +210,42 @@
   },
   "descriptor" : {
     "schemas" : {
+      "Device" : {
+        "id" : "Device",
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "int64"
+          },
+          "account" : {
+            "type" : "string"
+          },
+          "nickname" : {
+            "type" : "string"
+          },
+          "model" : {
+            "type" : "string"
+          },
+          "subscriptions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "int64"
+            }
+          },
+          "publications" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "int64"
+            }
+          }
+        }
+      },
       "Action" : {
         "id" : "Action",
         "type" : "object",
@@ -240,42 +290,6 @@
           }
         }
       },
-      "Device" : {
-        "id" : "Device",
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "string"
-          },
-          "timestamp" : {
-            "type" : "string",
-            "format" : "int64"
-          },
-          "account" : {
-            "type" : "string"
-          },
-          "nickname" : {
-            "type" : "string"
-          },
-          "model" : {
-            "type" : "string"
-          },
-          "subscriptions" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "format" : "int64"
-            }
-          },
-          "publications" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "format" : "int64"
-            }
-          }
-        }
-      },
       "DeviceCollection" : {
         "id" : "DeviceCollection",
         "type" : "object",
@@ -302,17 +316,22 @@
       }
     },
     "methods" : {
-      "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.subscribe" : {
-        "response" : {
-          "$ref" : "Action"
-        }
-      },
       "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.get" : {
         "response" : {
           "$ref" : "Device"
         }
       },
+      "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.subscribe" : {
+        "response" : {
+          "$ref" : "Action"
+        }
+      },
       "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.subscribers" : {
+        "response" : {
+          "$ref" : "DeviceCollection"
+        }
+      },
+      "com.piusvelte.cloudset.gwt.server.DeviceEndpoint.list" : {
         "response" : {
           "$ref" : "DeviceCollection"
         }

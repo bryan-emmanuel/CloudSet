@@ -19,7 +19,11 @@
  */
 package com.piusvelte.cloudset.gwt.client;
 
+import java.util.List;
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.piusvelte.cloudset.gwt.shared.Action;
+import com.piusvelte.cloudset.gwt.shared.Device;
 
 public interface WebClientServiceAsync {
 	
@@ -29,5 +33,23 @@ public interface WebClientServiceAsync {
 	void getAuthenticationURL(
 			String url,
 			AsyncCallback<String> callback);
+	
+	void getDevices(
+			AsyncCallback<List<Device>> callback);
+	
+	void getSubscribers(
+			String deviceId,
+			AsyncCallback<List<Device>> callback);
+	
+	void subscribe(
+			String subscriberId,
+			String publisherId,
+			String action,
+			AsyncCallback<Action> callback);
+	
+	void unsubscribe(
+			String subscriberId,
+			Long publicationId,
+			AsyncCallback<Void> callback);
 	
 }

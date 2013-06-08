@@ -19,6 +19,8 @@
  */
 package com.piusvelte.cloudset.gwt.client;
 
+import java.util.List;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -31,6 +33,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.piusvelte.cloudset.gwt.shared.Device;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -46,20 +49,22 @@ public class CloudSet implements EntryPoint {
 
 	private final WebClientServiceAsync webClientService = GWT
 			.create(WebClientService.class);
-	
+
+	private VerticalPanel devicesPanel;
+
 	public void onModuleLoad() {
-		
+
 		// Create the popup dialog box
 		final DialogBox dialogBox = new DialogBox();
 		dialogBox.setText("Remote Procedure Call");
 		dialogBox.setAnimationEnabled(true);
-		
+
 		final Button closeButton = new Button("Close");
 		// We can set the id of a widget by accessing its Element
 		closeButton.getElement().setId("closeButton");
-		
+
 		final Label textToServerLabel = new Label();
-		
+
 		final HTML serverResponseLabel = new HTML();
 		VerticalPanel dialogVPanel = new VerticalPanel();
 		dialogVPanel.addStyleName("dialogVPanel");
@@ -77,7 +82,7 @@ public class CloudSet implements EntryPoint {
 				dialogBox.hide();
 			}
 		});
-		
+
 		final Button authButton = new Button("Sign in");
 		RootPanel.get("authContainer").add(authButton);
 		authButton.addClickHandler(new ClickHandler() {
@@ -120,9 +125,72 @@ public class CloudSet implements EntryPoint {
 					@Override
 					public void onSuccess(String result) {
 						authButton.setText(result);
-						// load the devices
+						loadDevices();
 					}
 
 				});
+		
+		devicesPanel = new VerticalPanel();
+		RootPanel.get("devicesContainer").add(devicesPanel);
+		
+	}
+
+	public void loadDevices() {
+		webClientService.getDevices(new AsyncCallback<List<Device>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onSuccess(List<Device> result) {
+				// TODO Auto-generated method stub
+				devicesPanel.clear();
+				if (result != null) {
+					for (Device device : result) {
+						devicesPanel.add(new Button(device.getModel(),
+								new DeviceClickHandler(device.getId())));
+					}
+				} else {
+					//TODO
+				}
+			}
+
+		});
+	}
+	
+	public class DeviceClickHandler implements ClickHandler {
+		
+		private String deviceId;
+		
+		public DeviceClickHandler(String deviceId) {
+			this.deviceId = deviceId;
+		}
+
+		@Override
+		public void onClick(ClickEvent event) {
+			loadSubscribers(deviceId);
+		}
+		
+	}
+
+	public void loadSubscribers(String deviceId) {
+		webClientService.getSubscribers(deviceId, new AsyncCallback<List<Device>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onSuccess(List<Device> result) {
+				// TODO load tabbed panel, and unsubscribe button
+
+			}
+
+		});
 	}
 }

@@ -17,7 +17,7 @@
    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
-   <application android:allowBackup="true" android:icon="@drawable/ic_launcher" android:label="@string/app_name" android:theme="@style/AppTheme">
+   <application android:allowBackup="true" android:icon="@drawable/cloudset_icon" android:label="@string/app_name" android:theme="@style/AppTheme">
         <activity android:label="@string/app_name" android:launchMode="singleTop" android:name="com.piusvelte.cloudset.android.CloudSetMain">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

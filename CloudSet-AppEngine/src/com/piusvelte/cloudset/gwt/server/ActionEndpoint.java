@@ -87,6 +87,7 @@ public class ActionEndpoint {
 			for (Long actionId : actionIds) {
 				Action action = mgr.find(Action.class, actionId);
 				if (action.getName().equals(name)) {
+					action.setTimestamp(System.currentTimeMillis());
 					publicationId = action.getId();
 					break;
 				}

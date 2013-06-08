@@ -162,7 +162,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				if (audioManager != null) {
 					int streamType = Integer.parseInt(intent.getStringExtra(ActionsIntentService.EXTRA_VOLUME_STREAM_TYPE));
 					int streamValue = Integer.parseInt(intent.getStringExtra(ActionsIntentService.EXTRA_VOLUME_STREAM_VALUE));
-					audioManager.setStreamVolume(streamType, streamValue, AudioManager.FLAG_PLAY_SOUND);
+					audioManager.setStreamVolume(streamType, streamValue, AudioManager.FLAG_SHOW_UI);
 				} else {
 					Log.d(TAG, "Audio not supported on this device");
 				}

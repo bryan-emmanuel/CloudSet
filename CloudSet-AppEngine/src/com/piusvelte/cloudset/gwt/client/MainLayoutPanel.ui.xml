@@ -1,0 +1,50 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+<ui:style>
+.headerPanel {
+	background-color: #0067B2;
+	padding-top: 2em;
+	color: #FFF;
+	border-bottom: .3em solid #7EC8EB;
+	font-weight: bold;
+}
+.bodyPanel {
+	max-width: 960px;
+	margin: 0 auto;
+	padding: 1em;
+	background-color: #FFF;
+}
+.signin {
+	background-color: #0067B2;
+	color: #FFF;
+	border: none;
+}
+.listPanel {
+	max-width: 320px;
+	display: inline-block;
+}
+</ui:style>
+	<g:FlowPanel>
+		<g:HTMLPanel styleName="{style.headerPanel}">
+			<div id="headerInner">
+				<span id="authContainer">
+					<g:Button styleName='{style.signin}' ui:field='signin' />
+				</span>
+				<img src="img/cloudset_icon.png" />
+				<span id="titleSpan">Cloud Set</span>
+			</div>
+		</g:HTMLPanel>
+	    <g:FlowPanel styleName="{style.bodyPanel}">
+	        <g:ScrollPanel styleName="{style.listPanel}">
+				<g:FlowPanel styleName="{style.listPanel}" ui:field='publishersPanel'></g:FlowPanel>
+			</g:ScrollPanel>
+	        <g:ScrollPanel styleName="{style.listPanel}">
+				<g:FlowPanel styleName="{style.listPanel}" ui:field='subscribersPanel'></g:FlowPanel>
+			</g:ScrollPanel>
+	        <g:ScrollPanel styleName="{style.listPanel}">
+				<g:FlowPanel styleName="{style.listPanel}" ui:field='actionsPanel'></g:FlowPanel>
+			</g:ScrollPanel>
+		</g:FlowPanel>
+	</g:FlowPanel>
+</ui:UiBinder>

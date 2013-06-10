@@ -8,52 +8,24 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <style>
-
 body {
 	font-family: sans-serif;
 	background-color: #E4E9EC;
 	margin: 0;
 	padding: 0;
 }
-
-header,
-#authContainer button {
-	background-color: #0067B2;
-}
-
-header {
-	padding-top: 2em;
-	color: #FFF;
-	border-bottom: .3em solid #7EC8EB;
-}
-
-#content,
 #headerInner {
 	max-width: 960px;
 	margin: 0 auto;
 }
-
+#authContainer {
+	float: right;
+}
 #titleSpan {
 	font-weight: bold;
 	font-size: 2em;
 }
-
-#content {
-	padding: 1em;
-	background-color: #FFF;
-}
-
-#authContainer {
-	float: right;
-}
-
-#authContainer button {
-	color: #FFF;
-	border: none;
-	font-weight: bold;
-}
-
-#devicesContainer button {
+.gwt-Button {
 	width: 100%;
 	text-align: left;
 	background-color: #FFF;
@@ -62,11 +34,9 @@ header {
 	padding: .5em;
 	font-weight: bold;
 }
-
-#devicesContainer button:hover {
+.gwt-Button:hover {
 	background-color: #E6F6F3;
 }
-
 </style>
 <title>Cloud Set</title>
 <script type="text/javascript" src="cloudset/cloudset.nocache.js"></script>
@@ -79,24 +49,9 @@ header {
 
 	<!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
 	<noscript>
-		<div
-			style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+		<div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
 			Your web browser must have JavaScript enabled in order for this
 			application to display correctly.</div>
 	</noscript>
-
-	<header>
-		<div id="headerInner">
-			<span id="authContainer"></span>
-			<img src="img/cloudset_icon.png" />
-			<span id="titleSpan">Cloud Set</span>
-		</div>
-	</header>
-	
-	<div id="content">
-		<p>Cloud Set synchronizes settings across Android devices, and is currently in development.</p>
-		<h4 id="contentTitle"></h4>
-		<div id="devicesContainer"></div>
-	</div>
 </body>
 </html>

@@ -1,11 +1,11 @@
 {
   "files": [
     {
-      "path": "cloud-set-deviceendpoint-v1-20130608162108-java-1.14.2-beta-sources.jar", 
+      "path": "cloud-set-deviceendpoint-v1-20130610012959-java-1.14.2-beta-sources.jar", 
       "type": "source"
     }, 
     {
-      "path": "cloud-set-deviceendpoint-v1-20130608162108-java-1.14.2-beta.jar.properties", 
+      "path": "cloud-set-deviceendpoint-v1-20130610012959-java-1.14.2-beta.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -689,7 +689,7 @@
     }
   ], 
   "language_version": "1.14.2-beta", 
-  "revision": 20130608162108, 
+  "revision": 20130610012959, 
   "id": "deviceendpoint:v1", 
   "modulePath": "com/piusvelte/cloudset/gwt/server"
 }

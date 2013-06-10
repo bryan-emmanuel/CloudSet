@@ -15,14 +15,27 @@
 	padding: 1em;
 	background-color: #FFF;
 }
+.contentWrapperPanel {
+	float: right;
+	width: 100%;
+	margin-left: -480px;
+}
+.contentPanel {
+	margin-left: 480px;
+	padding: 4px;
+}
+.devicesPanel {
+	float: right;
+	width: 232px;
+	padding: 4px;
+}
 .signin {
 	background-color: #0067B2;
 	color: #FFF;
 	border: none;
 }
-.listPanel {
-	max-width: 320px;
-	display: inline-block;
+.contentHeader {
+	padding: 4px;
 }
 </ui:style>
 	<g:FlowPanel>
@@ -35,16 +48,23 @@
 				<span id="titleSpan">Cloud Set</span>
 			</div>
 		</g:HTMLPanel>
-	    <g:FlowPanel styleName="{style.bodyPanel}">
-	        <g:ScrollPanel styleName="{style.listPanel}">
-				<g:FlowPanel styleName="{style.listPanel}" ui:field='publishersPanel'></g:FlowPanel>
-			</g:ScrollPanel>
-	        <g:ScrollPanel styleName="{style.listPanel}">
-				<g:FlowPanel styleName="{style.listPanel}" ui:field='subscribersPanel'></g:FlowPanel>
-			</g:ScrollPanel>
-	        <g:ScrollPanel styleName="{style.listPanel}">
-				<g:FlowPanel styleName="{style.listPanel}" ui:field='actionsPanel'></g:FlowPanel>
-			</g:ScrollPanel>
-		</g:FlowPanel>
+	    <g:HTMLPanel styleName="{style.bodyPanel}">
+	        <g:FlowPanel ui:field='contentHeaderPanel' styleName="{style.contentHeader}"/>
+	        <g:FlowPanel styleName="{style.contentWrapperPanel}">
+	            <g:HTMLPanel styleName="{style.contentPanel}">
+	                <div class="colHeader">Actions</div>
+	                <g:FlowPanel ui:field='actionsList'/>
+	            </g:HTMLPanel>
+	        </g:FlowPanel>
+	        <g:HTMLPanel styleName="{style.devicesPanel}">
+	            <div class="colHeader">Devices</div>
+	            <g:FlowPanel ui:field='subscribersList'/>
+	        </g:HTMLPanel>
+	        <g:HTMLPanel styleName="{style.devicesPanel}">
+	            <div class="colHeader">Devices</div>
+	            <g:FlowPanel ui:field='publishersList'/>
+	        </g:HTMLPanel>
+	        <br class="clearFloats" />
+		</g:HTMLPanel>
 	</g:FlowPanel>
 </ui:UiBinder>

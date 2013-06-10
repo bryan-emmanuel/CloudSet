@@ -34,6 +34,8 @@ public class MainLayoutPanel extends Composite {
 
 	public MainLayoutPanel() {
 		initWidget(uiBinder.createAndBindUi(this));
+		
+		contentHeaderPanel.add(new Label("Cloud Set synchronizes setting across Android devices. Please sign in to see and manager your registered devices"));
 
 		webClientService.getUserNickname(
 				new AsyncCallback<String>() {
@@ -46,6 +48,8 @@ public class MainLayoutPanel extends Composite {
 					@Override
 					public void onSuccess(String result) {
 						signin.setText(result);
+						contentHeaderPanel.clear();
+						contentHeaderPanel.add(new Label("Android devices registered through the app appear below. Sync selected settings from a device on the left to the device on the right."));
 						loadPublishers();
 					}
 
@@ -73,20 +77,23 @@ public class MainLayoutPanel extends Composite {
 
 				});
 	}
+	
+	@UiField
+	FlowPanel contentHeaderPanel;
 
 	@UiField
-	FlowPanel publishersPanel;
+	FlowPanel publishersList;
 
 	@UiField
-	FlowPanel subscribersPanel;
+	FlowPanel subscribersList;
 
 	@UiField
-	FlowPanel actionsPanel;
+	FlowPanel actionsList;
 
 	// Devices
 	public void loadPublishers() {
-		publishersPanel.clear();
-		publishersPanel.add(new Label("Loading devices..."));
+		publishersList.clear();
+		publishersList.add(new Label("Loading devices..."));
 		webClientService.getDevices(new PublisherCallback());
 	}
 
@@ -114,9 +121,9 @@ public class MainLayoutPanel extends Composite {
 
 		@Override
 		public void onSuccess(List<Device> result) {
-			publishersPanel.clear();
+			publishersList.clear();
 			for (Device device : result) {
-				publishersPanel.add(new Button(URL.decode(device.getModel()),
+				publishersList.add(new Button(URL.decode(device.getModel()),
 						new PublisherClickHandler(device.getId())));
 			}
 			// load the first device
@@ -129,8 +136,8 @@ public class MainLayoutPanel extends Composite {
 
 	// Syncing Devices
 	public void loadSubscribers(String deviceId) {
-		subscribersPanel.clear();
-		subscribersPanel.add(new Label("Loading devices..."));
+		subscribersList.clear();
+		subscribersList.add(new Label("Loading devices..."));
 		webClientService.getSubscribers(deviceId, new SubscribersCallback(deviceId));
 	}
 
@@ -166,15 +173,15 @@ public class MainLayoutPanel extends Composite {
 
 		@Override
 		public void onSuccess(List<Device> result) {
-			subscribersPanel.clear();
+			subscribersList.clear();
 			if (result.size() > 0) {
 				for (Device device : result) {
-					subscribersPanel.add(new Button(URL.decode(device.getModel()),
+					subscribersList.add(new Button(URL.decode(device.getModel()),
 							new SubscriberClickHandler(deviceId, device.getId())));
 				}
 				loadActions(deviceId, result.get(0).getId());
 			} else {
-				actionsPanel.clear();
+				actionsList.clear();
 				//TODO add message to register another device
 			}
 		}
@@ -189,6 +196,8 @@ public class MainLayoutPanel extends Composite {
 	public static final String[] ACTION_NAMES = new String[]{"Wi-Fi", "Bluetooth", "Volume", "Ringer"};
 
 	public void loadActions(String publisherId, String subscriberId) {
+		actionsList.clear();
+		actionsList.add(new Label("Loading actions..."));
 		webClientService.getSubscriptions(subscriberId, publisherId, new ActionsCallback(publisherId, subscriberId));
 	}
 
@@ -235,8 +244,7 @@ public class MainLayoutPanel extends Composite {
 		@Override
 		public void onSuccess(List<Action> result) {
 			// TODO Auto-generated method stub
-			actionsPanel.clear();
-
+			actionsList.clear();
 			for (int i = 0; i < ACTIONS.length; i++) {
 				boolean isSubscribed = false;
 				Long publicationId = null;
@@ -247,10 +255,10 @@ public class MainLayoutPanel extends Composite {
 						break;
 					}
 				}
-				CheckBox cb = new CheckBox(ACTION_NAMES[i]);
-				cb.setValue(isSubscribed);
-				cb.addValueChangeHandler(new ActionValueChangeHandler(publisherId, subscriberId, ACTION_NAMES[i], publicationId));
-				actionsPanel.add(cb);
+				CheckBox actionCheckBox = new CheckBox(ACTION_NAMES[i]);
+				actionCheckBox.setValue(isSubscribed);
+				actionCheckBox.addValueChangeHandler(new ActionValueChangeHandler(publisherId, subscriberId, ACTION_NAMES[i], publicationId));
+				actionsList.add(actionCheckBox);
 			}
 		}
 

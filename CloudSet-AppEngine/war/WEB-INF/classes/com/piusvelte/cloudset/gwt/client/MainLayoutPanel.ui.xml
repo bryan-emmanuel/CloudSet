@@ -14,6 +14,7 @@
 	margin: 0 auto;
 	padding: 1em;
 	background-color: #FFF;
+	color: #666;
 }
 .contentWrapperPanel {
 	float: right;
@@ -32,10 +33,14 @@
 .signin {
 	background-color: #0067B2;
 	color: #FFF;
-	border: none;
+	border: 1px solid #FFF;
+	font-weight: bold;
+	font-size: 1em;
+	padding: 4px 8px;
 }
 .contentHeader {
-	padding: 4px;
+	padding: .5em;
+	font-weight: bold;
 }
 </ui:style>
 	<g:FlowPanel>
@@ -57,11 +62,11 @@
 	            </g:HTMLPanel>
 	        </g:FlowPanel>
 	        <g:HTMLPanel styleName="{style.devicesPanel}">
-	            <div class="colHeader">Devices</div>
+	            <div class="colHeader">Sync To</div>
 	            <g:FlowPanel ui:field='subscribersList'/>
 	        </g:HTMLPanel>
 	        <g:HTMLPanel styleName="{style.devicesPanel}">
-	            <div class="colHeader">Devices</div>
+	            <div class="colHeader">Sync From</div>
 	            <g:FlowPanel ui:field='publishersList'/>
 	        </g:HTMLPanel>
 	        <br class="clearFloats" />

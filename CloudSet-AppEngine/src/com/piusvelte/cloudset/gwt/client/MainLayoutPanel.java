@@ -89,6 +89,9 @@ public class MainLayoutPanel extends Composite {
 
 	@UiField
 	FlowPanel actionsList;
+	
+	int selectedPublisher = 0;
+	int selectedSubscriber = 0;
 
 	// Devices
 	public void loadPublishers() {
@@ -99,14 +102,19 @@ public class MainLayoutPanel extends Composite {
 
 	public class PublisherClickHandler implements ClickHandler {
 
+		private int index;
 		private String deviceId;
 
-		public PublisherClickHandler(String deviceId) {
+		public PublisherClickHandler(int index, String deviceId) {
+			this.index = index;
 			this.deviceId = deviceId;
 		}
 
 		@Override
 		public void onClick(ClickEvent event) {
+			publishersList.getWidget(selectedPublisher).setStyleName("gwt-Button");
+			selectedPublisher = index;
+			publishersList.getWidget(selectedPublisher).setStyleName("selectedDevice");
 			loadSubscribers(deviceId);
 		}
 
@@ -121,14 +129,28 @@ public class MainLayoutPanel extends Composite {
 
 		@Override
 		public void onSuccess(List<Device> result) {
+			selectedPublisher = 0;
 			publishersList.clear();
-			for (Device device : result) {
-				publishersList.add(new Button(URL.decode(device.getModel()),
-						new PublisherClickHandler(device.getId())));
-			}
-			// load the first device
-			if (result.size() > 0) {
-				loadSubscribers(result.get(0).getId());
+			if (result.size() > selectedPublisher) {
+				// default to the first device
+				Device device = result.get(selectedPublisher);
+				if (result.size() > 1) {
+					loadSubscribers(device.getId());
+				} else {
+					subscribersList.clear();
+					actionsList.clear();
+				}
+				publishersList.add(new Button(URL.decode(device.getModel()).replace("+", " "),
+						new PublisherClickHandler(selectedPublisher, device.getId())));
+				publishersList.getWidget(selectedPublisher).setStyleName("selectedDevice");
+				for (int i = 1, s = result.size(); i < s; i++) {
+					device = result.get(i); 
+					publishersList.add(new Button(URL.decode(device.getModel()).replace("+", " "),
+							new PublisherClickHandler(i, device.getId())));
+				}
+			} else {
+				subscribersList.clear();
+				actionsList.clear();
 			}
 		}
 
@@ -143,16 +165,21 @@ public class MainLayoutPanel extends Composite {
 
 	public class SubscriberClickHandler implements ClickHandler {
 
+		private int index;
 		private String publisherId;
 		private String subscriberId;
 
-		public SubscriberClickHandler(String publisherId, String subscriberId) {
+		public SubscriberClickHandler(int index, String publisherId, String subscriberId) {
+			this.index = index;
 			this.publisherId = publisherId;
 			this.subscriberId = subscriberId;
 		}
 
 		@Override
 		public void onClick(ClickEvent event) {
+			subscribersList.getWidget(selectedSubscriber).setStyleName("gwt-Button");
+			selectedSubscriber = index;
+			subscribersList.getWidget(selectedSubscriber).setStyleName("selectedDevice");
 			loadActions(publisherId, subscriberId);
 		}
 
@@ -173,13 +200,19 @@ public class MainLayoutPanel extends Composite {
 
 		@Override
 		public void onSuccess(List<Device> result) {
+			selectedSubscriber = 0;
 			subscribersList.clear();
-			if (result.size() > 0) {
-				for (Device device : result) {
-					subscribersList.add(new Button(URL.decode(device.getModel()),
-							new SubscriberClickHandler(deviceId, device.getId())));
+			if (result.size() > selectedSubscriber) {
+				Device device = result.get(selectedSubscriber);
+				loadActions(deviceId, device.getId());
+				subscribersList.add(new Button(URL.decode(device.getModel()).replace("+", " "),
+						new SubscriberClickHandler(selectedSubscriber, deviceId, device.getId())));
+				subscribersList.getWidget(selectedSubscriber).setStyleName("selectedDevice");
+				for (int i = 1, s = result.size(); i < s; i++) {
+					device = result.get(i); 
+					subscribersList.add(new Button(URL.decode(device.getModel()).replace("+", " "),
+							new SubscriberClickHandler(i, deviceId, device.getId())));
 				}
-				loadActions(deviceId, result.get(0).getId());
 			} else {
 				actionsList.clear();
 				//TODO add message to register another device

@@ -1,2 +1,2 @@
 serviceClass: com.piusvelte.cloudset.gwt.client.WebClientService
-path: 2B977853389884926A4D63FE484BAD3E.gwt.rpc
+path: A8FD8B35E93E03246770D0C0D788D691.gwt.rpc

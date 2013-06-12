@@ -19,7 +19,6 @@
  */
 package com.piusvelte.cloudset.gwt.server;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.google.appengine.api.oauth.OAuthRequestException;
@@ -27,9 +26,8 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.piusvelte.cloudset.gwt.client.WebClientService;
-import com.piusvelte.cloudset.gwt.shared.Action;
-import com.piusvelte.cloudset.gwt.shared.Device;
-import com.piusvelte.cloudset.gwt.shared.Extra;
+import com.piusvelte.cloudset.gwt.shared.SimpleDevice;
+import com.piusvelte.cloudset.gwt.shared.SimpleAction;
 
 @SuppressWarnings("serial")
 public class WebClientServiceImpl extends RemoteServiceServlet implements
@@ -54,41 +52,13 @@ WebClientService {
 			return userService.createLoginURL(url);
 		}
 	}
-	
-	private List<Device> serializeDevices(List<Device> streamingResults) {
-		List<Device> devices = new ArrayList<Device>();
-		for (Device device : streamingResults) {
-			ArrayList<Long> publications = new ArrayList<Long>();
-			publications.addAll(device.getPublications());
-			device.setPublications(publications);
-			ArrayList<Long> subscriptions = new ArrayList<Long>();
-			subscriptions.addAll(device.getSubscriptions());
-			device.setSubscriptions(subscriptions);
-			devices.add(device);
-		}
-		return devices;
-	}
-	
-	private List<Action> serializeActions(List<Action> streamingResults) {
-		List<Action> actions = new ArrayList<Action>();
-		for (Action action : streamingResults) {
-			ArrayList<String> subscribers = new ArrayList<String>();
-			subscribers.addAll(action.getSubscribers());
-			action.setSubscribers(subscribers);
-			ArrayList<Extra> extras = new ArrayList<Extra>();
-			extras.addAll(action.getExtras());
-			action.setExtras(extras);
-			actions.add(action);
-		}
-		return actions;
-	}
 
 	// load all devices for the user
 	@Override
-	public List<Device> getDevices() throws IllegalArgumentException {
+	public List<SimpleDevice> getDevices() throws IllegalArgumentException {
 		if (userService.isUserLoggedIn()) {
 			try {
-				return serializeDevices(new DeviceEndpoint().list(userService.getCurrentUser()));
+				return new DeviceEndpoint().list(userService.getCurrentUser());
 			} catch (OAuthRequestException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("error getting devices");
@@ -100,11 +70,11 @@ WebClientService {
 	
 	// load all devices synced to from a selected device
 	@Override
-	public List<Device> getSubscribers(String deviceId)
+	public List<SimpleDevice> getSubscribers(String deviceId)
 			throws IllegalArgumentException {
 		if (userService.isUserLoggedIn()) {
 			try {
-				return serializeDevices(new DeviceEndpoint().subscribers(userService.getCurrentUser(), deviceId));
+				return new DeviceEndpoint().subscribers(userService.getCurrentUser(), deviceId);
 			} catch (OAuthRequestException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("error getting devices");
@@ -115,11 +85,11 @@ WebClientService {
 	}
 
 	@Override
-	public Action subscribe(String subscriberId, String publisherId,
-			String action) throws IllegalArgumentException {
+	public SimpleAction subscribe(String subscriberId, String publisherId,
+			String actionName) throws IllegalArgumentException {
 		if (userService.isUserLoggedIn()) {
 			try {
-				return new DeviceEndpoint().subscribe(userService.getCurrentUser(), subscriberId, publisherId, action);
+				return new DeviceEndpoint().subscribe(userService.getCurrentUser(), subscriberId, publisherId, actionName);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("error getting devices");
@@ -145,11 +115,11 @@ WebClientService {
 	}
 
 	@Override
-	public List<Action> getSubscriptions(String subscriberId, String publisherId)
+	public List<SimpleAction> getSubscriptions(String subscriberId, String publisherId)
 			throws IllegalArgumentException {
 		if (userService.isUserLoggedIn()) {
 			try {
-				return serializeActions(new DeviceEndpoint().subscriptions(userService.getCurrentUser(), subscriberId, publisherId));
+				return new DeviceEndpoint().subscriptions(userService.getCurrentUser(), subscriberId, publisherId);
 			} catch (OAuthRequestException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("error getting devices");

@@ -27,7 +27,7 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
-import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Action;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.SimpleAction;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -56,7 +56,7 @@ public class Actions extends ListActivity {
 	private Deviceendpoint endpoint = null;
 	private ArrayAdapter<String> adapter;
 	// subscriptions, filtered on the publisherId
-	private List<Action> publications;
+	private List<SimpleAction> publications;
 	private ArrayList<String> actions = new ArrayList<String>();
 
 	@Override
@@ -118,7 +118,7 @@ public class Actions extends ListActivity {
 
 	private boolean isSubscribedTo(String action) {
 		if (publications != null) {
-			for (Action publication : publications) {
+			for (SimpleAction publication : publications) {
 				if (publication.getName().equals(action)) {
 					return true;
 				}
@@ -156,7 +156,7 @@ public class Actions extends ListActivity {
 				try {
 					publications = endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
 					if (publications == null) {
-						publications = new ArrayList<Action>();
+						publications = new ArrayList<SimpleAction>();
 					}
 				} catch (IOException e) {
 					Log.e(TAG, e.toString());
@@ -185,7 +185,7 @@ public class Actions extends ListActivity {
 					if (Boolean.parseBoolean(params[1])) {
 						Log.d(TAG, "unsubscribe: " + params[0]);
 						for (int i = 0, s = publications.size(); i < s; i++) {
-							Action publication = publications.get(i);
+							SimpleAction publication = publications.get(i);
 							if (publication.getName().equals(params[0])) {
 								Log.d(TAG, "publicationId: " + publication.getId());
 								endpoint.deviceEndpoint().unsubscribe(subscriberId, publication.getId()).execute();
@@ -194,7 +194,7 @@ public class Actions extends ListActivity {
 						}
 					} else {
 						Log.d(TAG, "subscribe: " + params[0]);
-						Action publication = endpoint.deviceEndpoint().subscribe(subscriberId, publisherId, params[0]).execute();
+						SimpleAction publication = endpoint.deviceEndpoint().subscribe(subscriberId, publisherId, params[0]).execute();
 						publications.add(publication);
 					}
 				} catch (IOException e) {

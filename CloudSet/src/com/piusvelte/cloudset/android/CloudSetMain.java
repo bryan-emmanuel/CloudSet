@@ -31,7 +31,7 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
-import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Device;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.SimpleDevice;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
@@ -78,7 +78,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	private String account;
 	private String registrationId;
 	private GoogleAccountCredential credential;
-	private List<Device> devices = new ArrayList<Device>();
+	private List<SimpleDevice> devices = new ArrayList<SimpleDevice>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -251,7 +251,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 						devices = endpoint.deviceEndpoint().subscribers(registrationId).execute().getItems();
 						if (devices == null) {
 							// set to new empty List for the adapter
-							devices = new ArrayList<Device>();
+							devices = new ArrayList<SimpleDevice>();
 						}
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -275,7 +275,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 		} else {
 			// set to new empty List for the adapter
-			devices = new ArrayList<Device>();
+			devices = new ArrayList<SimpleDevice>();
 			if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
 				subscriptionsFragment.reloadAdapter(null);
 			} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
@@ -381,7 +381,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	@Override
 	public void loadDeviceModels(ArrayAdapter<String> adapter) {
 		if (devices != null) {
-			for (Device device : devices) {
+			for (SimpleDevice device : devices) {
 				try {
 					adapter.add(URLDecoder.decode(device.getModel(), "UTF-8"));
 				} catch (UnsupportedEncodingException e) {

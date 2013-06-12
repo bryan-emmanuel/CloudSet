@@ -56,7 +56,9 @@ public class ActionEndpoint {
 				try {
 					for (String subscriberId : subscriberIds) {
 						Device device = mgr.find(Device.class, subscriberId);
-						doSendViaGcm(user, action.getName(), action.getExtras(), sender, device);
+						if (device != null) {
+							doSendViaGcm(user, action.getName(), action.getExtras(), sender, device);
+						}
 					}
 				} finally {
 					mgr.close();
@@ -89,7 +91,7 @@ public class ActionEndpoint {
 			List<Long> actionIds = publisher.getPublications();
 			for (Long actionId : actionIds) {
 				Action action = mgr.find(Action.class, actionId);
-				if (action.getName().equals(name)) {
+				if ((action != null) && (action.getName().equals(name))) {
 					action.setTimestamp(System.currentTimeMillis());
 					publicationId = action.getId();
 					break;

@@ -19,8 +19,8 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import com.piusvelte.cloudset.gwt.shared.Action;
-import com.piusvelte.cloudset.gwt.shared.Device;
+import com.piusvelte.cloudset.gwt.shared.SimpleAction;
+import com.piusvelte.cloudset.gwt.shared.SimpleDevice;
 
 public class MainLayoutPanel extends Composite {
 
@@ -35,7 +35,7 @@ public class MainLayoutPanel extends Composite {
 	public MainLayoutPanel() {
 		initWidget(uiBinder.createAndBindUi(this));
 		
-		contentHeaderPanel.add(new Label("Cloud Set synchronizes setting across Android devices. Please sign in to see and manager your registered devices"));
+		contentHeaderPanel.add(new Label("Cloud Set synchronizes setting across Android devices. Please sign in to see and manage your registered devices"));
 
 		webClientService.getUserNickname(
 				new AsyncCallback<String>() {
@@ -120,7 +120,7 @@ public class MainLayoutPanel extends Composite {
 
 	}
 
-	public class PublisherCallback implements AsyncCallback<List<Device>> {
+	public class PublisherCallback implements AsyncCallback<List<SimpleDevice>> {
 
 		@Override
 		public void onFailure(Throwable caught) {
@@ -128,12 +128,12 @@ public class MainLayoutPanel extends Composite {
 		}
 
 		@Override
-		public void onSuccess(List<Device> result) {
+		public void onSuccess(List<SimpleDevice> result) {
 			selectedPublisher = 0;
 			publishersList.clear();
 			if (result.size() > selectedPublisher) {
 				// default to the first device
-				Device device = result.get(selectedPublisher);
+				SimpleDevice device = result.get(selectedPublisher);
 				if (result.size() > 1) {
 					loadSubscribers(device.getId());
 				} else {
@@ -158,8 +158,6 @@ public class MainLayoutPanel extends Composite {
 
 	// Syncing Devices
 	public void loadSubscribers(String deviceId) {
-		subscribersList.clear();
-		subscribersList.add(new Label("Loading devices..."));
 		webClientService.getSubscribers(deviceId, new SubscribersCallback(deviceId));
 	}
 
@@ -185,7 +183,7 @@ public class MainLayoutPanel extends Composite {
 
 	}
 
-	public class SubscribersCallback implements AsyncCallback<List<Device>> {
+	public class SubscribersCallback implements AsyncCallback<List<SimpleDevice>> {
 
 		private String deviceId;
 
@@ -199,11 +197,11 @@ public class MainLayoutPanel extends Composite {
 		}
 
 		@Override
-		public void onSuccess(List<Device> result) {
+		public void onSuccess(List<SimpleDevice> result) {
 			selectedSubscriber = 0;
 			subscribersList.clear();
 			if (result.size() > selectedSubscriber) {
-				Device device = result.get(selectedSubscriber);
+				SimpleDevice device = result.get(selectedSubscriber);
 				loadActions(deviceId, device.getId());
 				subscribersList.add(new Button(URL.decode(device.getModel()).replace("+", " "),
 						new SubscriberClickHandler(selectedSubscriber, deviceId, device.getId())));
@@ -215,7 +213,7 @@ public class MainLayoutPanel extends Composite {
 				}
 			} else {
 				actionsList.clear();
-				//TODO add message to register another device
+				subscribersList.add(new Label("You have no other devices to sync. Please register more through the app."));
 			}
 		}
 
@@ -229,8 +227,6 @@ public class MainLayoutPanel extends Composite {
 	public static final String[] ACTION_NAMES = new String[]{"Wi-Fi", "Bluetooth", "Volume", "Ringer"};
 
 	public void loadActions(String publisherId, String subscriberId) {
-		actionsList.clear();
-		actionsList.add(new Label("Loading actions..."));
 		webClientService.getSubscriptions(subscriberId, publisherId, new ActionsCallback(publisherId, subscriberId));
 	}
 
@@ -259,7 +255,7 @@ public class MainLayoutPanel extends Composite {
 
 	}
 
-	public class ActionsCallback implements AsyncCallback<List<Action>> {
+	public class ActionsCallback implements AsyncCallback<List<SimpleAction>> {
 
 		private String publisherId;
 		private String subscriberId;
@@ -275,29 +271,28 @@ public class MainLayoutPanel extends Composite {
 		}
 
 		@Override
-		public void onSuccess(List<Action> result) {
-			// TODO Auto-generated method stub
+		public void onSuccess(List<SimpleAction> simpleActions) {
 			actionsList.clear();
 			for (int i = 0; i < ACTIONS.length; i++) {
 				boolean isSubscribed = false;
 				Long publicationId = null;
-				for (Action action : result) {
-					if (action.getName().equals(ACTIONS[i])) {
+				for (SimpleAction simpleAction : simpleActions) {
+					if (simpleAction.getName().equals(ACTIONS[i])) {
 						isSubscribed = true;
-						publicationId = action.getId();
+						publicationId = simpleAction.getId();
 						break;
 					}
 				}
 				CheckBox actionCheckBox = new CheckBox(ACTION_NAMES[i]);
 				actionCheckBox.setValue(isSubscribed);
-				actionCheckBox.addValueChangeHandler(new ActionValueChangeHandler(publisherId, subscriberId, ACTION_NAMES[i], publicationId));
+				actionCheckBox.addValueChangeHandler(new ActionValueChangeHandler(publisherId, subscriberId, ACTIONS[i], publicationId));
 				actionsList.add(actionCheckBox);
 			}
 		}
 
 	}
 
-	public class SubscribeCallback implements AsyncCallback<Action> {
+	public class SubscribeCallback implements AsyncCallback<SimpleAction> {
 
 		private String publisherId;
 		private String subscriberId;
@@ -313,7 +308,7 @@ public class MainLayoutPanel extends Composite {
 		}
 
 		@Override
-		public void onSuccess(Action result) {
+		public void onSuccess(SimpleAction result) {
 			loadActions(publisherId, subscriberId);
 		}
 

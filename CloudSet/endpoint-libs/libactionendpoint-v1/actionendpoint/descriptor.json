@@ -1,11 +1,11 @@
 {
   "files": [
     {
-      "path": "cloud-set-actionendpoint-v1-20130610190126-java-1.15.0-rc-sources.jar", 
+      "path": "cloud-set-actionendpoint-v1-20130611133216-java-1.15.0-rc-sources.jar", 
       "type": "source"
     }, 
     {
-      "path": "cloud-set-actionendpoint-v1-20130610190126-java-1.15.0-rc.jar.properties", 
+      "path": "cloud-set-actionendpoint-v1-20130611133216-java-1.15.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -689,7 +689,7 @@
     }
   ], 
   "language_version": "1.15.0-rc", 
-  "revision": 20130610190126, 
+  "revision": 20130611133216, 
   "id": "actionendpoint:v1", 
   "modulePath": "com/piusvelte/cloudset/gwt/server"
 }

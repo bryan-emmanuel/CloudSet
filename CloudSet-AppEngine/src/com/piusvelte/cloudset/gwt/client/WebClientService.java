@@ -23,8 +23,8 @@ import java.util.List;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import com.piusvelte.cloudset.gwt.shared.Action;
-import com.piusvelte.cloudset.gwt.shared.Device;
+import com.piusvelte.cloudset.gwt.shared.SimpleAction;
+import com.piusvelte.cloudset.gwt.shared.SimpleDevice;
 
 @RemoteServiceRelativePath("webclient")
 public interface WebClientService extends RemoteService {
@@ -33,14 +33,14 @@ public interface WebClientService extends RemoteService {
 
 	String getAuthenticationURL(String url) throws IllegalArgumentException;
 	
-	List<Device> getDevices() throws IllegalArgumentException;
+	List<SimpleDevice> getDevices() throws IllegalArgumentException;
 
-	List<Device> getSubscribers(String deviceId) throws IllegalArgumentException;
+	List<SimpleDevice> getSubscribers(String deviceId) throws IllegalArgumentException;
 	
-	Action subscribe(String subscriberId, String publisherId, String action) throws IllegalArgumentException;
+	SimpleAction subscribe(String subscriberId, String publisherId, String action) throws IllegalArgumentException;
 	
 	void unsubscribe(String subscriberId, Long publicationId) throws IllegalArgumentException;
 	
-	List<Action> getSubscriptions(String subscriberId, String publisherId) throws IllegalArgumentException;
+	List<SimpleAction> getSubscriptions(String subscriberId, String publisherId) throws IllegalArgumentException;
 	
 }

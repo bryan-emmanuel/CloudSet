@@ -33,10 +33,13 @@
 .signin {
 	background-color: #0067B2;
 	color: #FFF;
-	border: 1px solid #FFF;
+	border: 1px solid #0067B2;
 	font-weight: bold;
 	font-size: 1em;
 	padding: 4px 8px;
+}
+.signin:hover {
+	border: 1px solid #FFF;
 }
 .contentHeader {
 	padding: .5em;

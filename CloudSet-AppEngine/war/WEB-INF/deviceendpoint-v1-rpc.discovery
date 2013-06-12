@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/MIOYSttgRWyGzKZZiXkvY4hwr0I\"",
+ "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/BcnF-F2U4GbDF2X2W9KhKnuT0SE\"",
  "discoveryVersion": "v1",
  "id": "deviceendpoint:v1",
  "name": "deviceendpoint",
@@ -63,50 +63,6 @@
   }
  },
  "schemas": {
-  "Action": {
-   "id": "Action",
-   "type": "object",
-   "properties": {
-    "extras": {
-     "type": "array",
-     "items": {
-      "$ref": "Extra"
-     }
-    },
-    "id": {
-     "type": "string",
-     "format": "int64"
-    },
-    "name": {
-     "type": "string"
-    },
-    "publisher": {
-     "type": "string"
-    },
-    "subscribers": {
-     "type": "array",
-     "items": {
-      "type": "string"
-     }
-    },
-    "timestamp": {
-     "type": "string",
-     "format": "int64"
-    }
-   }
-  },
-  "ActionCollection": {
-   "id": "ActionCollection",
-   "type": "object",
-   "properties": {
-    "items": {
-     "type": "array",
-     "items": {
-      "$ref": "Action"
-     }
-    }
-   }
-  },
   "Device": {
    "id": "Device",
    "type": "object",
@@ -143,27 +99,52 @@
     }
    }
   },
-  "DeviceCollection": {
-   "id": "DeviceCollection",
+  "SimpleAction": {
+   "id": "SimpleAction",
+   "type": "object",
+   "properties": {
+    "id": {
+     "type": "string",
+     "format": "int64"
+    },
+    "name": {
+     "type": "string"
+    }
+   }
+  },
+  "SimpleActionCollection": {
+   "id": "SimpleActionCollection",
    "type": "object",
    "properties": {
     "items": {
      "type": "array",
      "items": {
-      "$ref": "Device"
+      "$ref": "SimpleAction"
      }
     }
    }
   },
-  "Extra": {
-   "id": "Extra",
+  "SimpleDevice": {
+   "id": "SimpleDevice",
    "type": "object",
    "properties": {
-    "name": {
+    "id": {
      "type": "string"
     },
-    "value": {
+    "model": {
      "type": "string"
+    }
+   }
+  },
+  "SimpleDeviceCollection": {
+   "id": "SimpleDeviceCollection",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "SimpleDevice"
+     }
     }
    }
   }
@@ -203,7 +184,7 @@
    "id": "deviceendpoint.deviceEndpoint.list",
    "allowGet": true,
    "returns": {
-    "$ref": "DeviceCollection"
+    "$ref": "SimpleDeviceCollection"
    }
   },
   "deviceendpoint.deviceEndpoint.patch": {
@@ -285,7 +266,7 @@
     "action"
    ],
    "returns": {
-    "$ref": "Action"
+    "$ref": "SimpleAction"
    }
   },
   "deviceendpoint.deviceEndpoint.subscribers": {
@@ -300,7 +281,7 @@
     "publisher"
    ],
    "returns": {
-    "$ref": "DeviceCollection"
+    "$ref": "SimpleDeviceCollection"
    }
   },
   "deviceendpoint.deviceEndpoint.subscriptions": {
@@ -320,7 +301,7 @@
     "publisher"
    ],
    "returns": {
-    "$ref": "ActionCollection"
+    "$ref": "SimpleActionCollection"
    }
   },
   "deviceendpoint.deviceEndpoint.unsubscribe": {

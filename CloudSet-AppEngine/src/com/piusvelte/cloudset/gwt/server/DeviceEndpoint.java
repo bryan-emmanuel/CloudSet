@@ -22,6 +22,8 @@ package com.piusvelte.cloudset.gwt.server;
 import com.piusvelte.cloudset.gwt.server.EMF;
 import com.piusvelte.cloudset.gwt.shared.Action;
 import com.piusvelte.cloudset.gwt.shared.Device;
+import com.piusvelte.cloudset.gwt.shared.SimpleAction;
+import com.piusvelte.cloudset.gwt.shared.SimpleDevice;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiNamespace;
@@ -44,40 +46,54 @@ audiences = {Ids.ANDROID_AUDIENCE})
 public class DeviceEndpoint {
 
 	@SuppressWarnings({ "unchecked" })
-	public List<Device> list(
+	public List<SimpleDevice> list(
 			User user) throws OAuthRequestException {
 		if (user != null) {
-			List<Device> subscribers;
+			List<SimpleDevice> simpleDevices = new ArrayList<SimpleDevice>();
+			List<Device> devices;
 			EntityManager mgr = getEntityManager();
 			try {
 				Query query = mgr.createQuery("select from Device as Device where account = :account")
 						.setParameter("account", user.getNickname());
-				subscribers = query.getResultList();
+				devices = query.getResultList();
+				for (Device device : devices) {
+					SimpleDevice simpleDevice = new SimpleDevice();
+					simpleDevice.setId(device.getId());
+					simpleDevice.setModel(device.getModel());
+					simpleDevices.add(simpleDevice);
+				}
 			} finally {
 				mgr.close();
 			}
-			return subscribers;
+			return simpleDevices;
 		} else {
 			throw new OAuthRequestException("Invalid user.");
 		}
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	public List<Device> subscribers(
+	public List<SimpleDevice> subscribers(
 			User user,
 			@Named("publisher") String publisher) throws OAuthRequestException {
 		if (user != null) {
-			List<Device> subscribers;
+			List<SimpleDevice> simpleDevices = new ArrayList<SimpleDevice>();
+			List<Device> devices;
 			EntityManager mgr = getEntityManager();
 			try {
 				Query query = mgr.createQuery("select from Device as Device where account = :account and id <> :id")
 						.setParameter("account", user.getNickname())
 						.setParameter("id", publisher);
-				subscribers = query.getResultList();
+				devices = query.getResultList();
+				for (Device device : devices) {
+					SimpleDevice simpleDevice = new SimpleDevice();
+					simpleDevice.setId(device.getId());
+					simpleDevice.setModel(device.getModel());
+					simpleDevices.add(simpleDevice);
+				}
 			} finally {
 				mgr.close();
 			}
-			return subscribers;
+			return simpleDevices;
 		} else {
 			throw new OAuthRequestException("Invalid user.");
 		}
@@ -116,41 +132,47 @@ public class DeviceEndpoint {
 		}
 	}
 
-	public List<Action> subscriptions(User user, @Named("subscriber") String subscriberId, @Named("publisher") String publisherId) throws OAuthRequestException {
+	public List<SimpleAction> subscriptions(User user, @Named("subscriber") String subscriberId, @Named("publisher") String publisherId) throws OAuthRequestException {
 		if (user != null) {
 			EntityManager mgr = getEntityManager();
-			List<Action> publications = new ArrayList<Action>();
+			List<SimpleAction> simpleActions = new ArrayList<SimpleAction>();
 			Device subscriber;
 			try {
 				subscriber = mgr.find(Device.class, subscriberId);
 				List<Long> subscriptions = subscriber.getSubscriptions();
 				// filter on the publisher
 				for (Long subscription : subscriptions) {
-					Action publication = mgr.find(Action.class, subscription);
-					if (publication.getPublisher().equals(publisherId)) {
-						publications.add(publication);
+					Action action = mgr.find(Action.class, subscription);
+					if ((action != null) && (action.getPublisher().equals(publisherId))) {
+						SimpleAction simpleAction = new SimpleAction();
+						simpleAction.setId(action.getId());
+						simpleAction.setName(action.getName());
+						simpleActions.add(simpleAction);
 					}
 				}
 			} finally {
 				mgr.close();
 			}
-			return publications;
+			return simpleActions;
 		} else {
 			throw new OAuthRequestException("Invalid user.");
 		}
 	}
 
-	public Action subscribe(User user, @Named("subscriber") String subscriberId, @Named("publisher") String publisherId, @Named("action") String action) throws Exception {
+	public SimpleAction subscribe(User user, @Named("subscriber") String subscriberId, @Named("publisher") String publisherId, @Named("action") String actionName) throws Exception {
 		if (user != null) {
-			Action publication = null;
-			Long publicationId = getPublicationId(publisherId, action);
+			Action action;
+			SimpleAction simpleAction = new SimpleAction();
+			Long publicationId = getPublicationId(publisherId, actionName);
 			if (publicationId != null) {
 				addPublicationToSubscriptions(subscriberId, publicationId);
-				publication = addSubscriberToPublication(publicationId, subscriberId);
+				action = addSubscriberToPublication(publicationId, subscriberId);
+				simpleAction.setId(action.getId());
+				simpleAction.setName(action.getName());
 			} else {
 				throw new Exception("error creating publication");
 			}
-			return publication;
+			return simpleAction;
 		} else {
 			throw new OAuthRequestException("Invalid user.");
 		}
@@ -278,7 +300,7 @@ public class DeviceEndpoint {
 			List<Long> actionIds = publisher.getPublications();
 			for (Long actionId : actionIds) {
 				Action a = mgr.find(Action.class, actionId);
-				if (a.getName().equals(actionName)) {
+				if ((a != null) && (a.getName().equals(actionName))) {
 					action = a;
 					break;
 				}

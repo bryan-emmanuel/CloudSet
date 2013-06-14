@@ -23,6 +23,7 @@
 <resources>
 
     <string name="app_name">CloudSet</string>
+    <string name="action_refresh">Refresh</string>
     <string name="action_about">About</string>
     <string name="title_accounts">Sign In</string>
     <string name="title_settings">Settings</string>

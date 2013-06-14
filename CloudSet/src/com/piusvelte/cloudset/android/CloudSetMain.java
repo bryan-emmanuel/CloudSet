@@ -185,7 +185,11 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.action_about) {
+		int itemId = item.getItemId();
+		if (itemId == R.id.action_refresh) {
+			loadDevices();
+			return true;
+		} else if (item.getItemId() == R.id.action_about) {
 			(new AlertDialog.Builder(this))
 			.setTitle(R.string.about_title)
 			.setMessage(R.string.about_message)
@@ -256,7 +260,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-						return "error connecting to cloud-set.appengine.com, please check your connection";
+						return "error connecting to cloud-set.appengine.com, please check your connection and true refreshing";
 					}
 
 					return null;

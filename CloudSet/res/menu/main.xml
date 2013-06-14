@@ -1,6 +1,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
+        android:id="@+id/action_refresh"
+        android:title="@string/action_refresh"
+        android:icon="@android:drawable/ic_menu_rotate"
+        android:orderInCategory="0"
+        android:showAsAction="always"/>
+    
+    <item
         android:id="@+id/action_about"
         android:orderInCategory="100"
         android:showAsAction="never"

@@ -104,7 +104,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
 					AndroidHttp.newCompatibleTransport(),
 					new JacksonFactory(),
-					credential);
+					credential)
+			.setApplicationName(getString(R.string.app_name));
 			endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 		}
 		return endpoint;

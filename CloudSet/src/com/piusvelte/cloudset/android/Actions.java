@@ -29,6 +29,7 @@ import com.google.api.client.json.jackson.JacksonFactory;
 import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
 import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.SimpleAction;
 
+import android.app.ActionBar;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -36,6 +37,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -64,6 +66,9 @@ public class Actions extends ListActivity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.actions);
+		
+		ActionBar actionBar = getActionBar();
+		actionBar.setDisplayHomeAsUpEnabled(true);
 
 		Intent intent = getIntent();
 		if (intent != null) {
@@ -86,7 +91,8 @@ public class Actions extends ListActivity {
 			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
 					AndroidHttp.newCompatibleTransport(),
 					new JacksonFactory(),
-					credential);
+					credential)
+			.setApplicationName(getString(R.string.app_name));
 
 			endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 
@@ -146,6 +152,15 @@ public class Actions extends ListActivity {
 
 		updateDevice(ActionsIntentService.ACTIONS[position], cb.isChecked());
 
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == android.R.id.home) {
+			finish();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	private void loadActions() {

@@ -42,7 +42,7 @@ import android.os.PowerManager;
 import android.util.Log;
 
 public class ActionsIntentService extends IntentService {
-	
+
 	public static final String VOLUME_CHANGED_ACTION = "android.media.VOLUME_CHANGED_ACTION";
 	public static final String EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
 	public static final String EXTRA_VOLUME_STREAM_VALUE = "android.media.EXTRA_VOLUME_STREAM_VALUE";
@@ -116,18 +116,18 @@ public class ActionsIntentService extends IntentService {
 			sWakeLock.release();
 		}
 	}
-	
+
 	private Extra buildExtra(String name, int value) {
 		return buildExtra(name, Integer.toString(value));
 	}
-	
+
 	private Extra buildExtra(String name, String value) {
 		Extra extra = new Extra();
 		extra.setName(name);
 		extra.setValue(value);
 		return extra;
 	}
-	
+
 	private void publish(String action, List<Extra> extras) {
 		String accountName = null;
 		String registration = null;
@@ -136,7 +136,7 @@ public class ActionsIntentService extends IntentService {
 		registration = sp.getString(getString(R.string.preference_gcm_registration), null);
 
 		if ((accountName != null) && (registration != null)) {
-			
+
 			Action publication = new Action();
 			publication.setPublisher(registration);
 			publication.setName(action);
@@ -148,7 +148,8 @@ public class ActionsIntentService extends IntentService {
 			Actionendpoint.Builder endpointBuilder = new Actionendpoint.Builder(
 					AndroidHttp.newCompatibleTransport(),
 					new JacksonFactory(),
-					credential);
+					credential)
+			.setApplicationName(getString(R.string.app_name));
 			endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 
 			(new AsyncTask<Action, Void, Void>() {

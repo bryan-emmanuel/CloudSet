@@ -66,7 +66,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	public static final String ACTION_GCM_REGISTERED = "com.piusvelte.cloudset.android.action.GCM_REGISTERED";
 	public static final String ACTION_GCM_UNREGISTERED = "com.piusvelte.cloudset.android.action.GCM_UNREGISTERED";
 	public static final String ACTION_GCM_ERROR = "com.piusvelte.cloudset.android.action.GCM_ERROR";
-	
+
 	public static final String EXTRA_DEVICE_REGISTRATION = "com.piusvelte.cloudset.android.extra.DEVICE_REGISTRATION";
 
 	public static final String ARGUMENT_ISSUBSCRIPTIONS = "issubscriptions";
@@ -77,7 +77,6 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 	private String account;
 	private String registrationId;
-	private GoogleAccountCredential credential;
 	private List<SimpleDevice> devices = new ArrayList<SimpleDevice>();
 
 	@Override
@@ -116,7 +115,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 		super.onNewIntent(intent);
 		setIntent(intent);
 	}
-	
+
 	private boolean handleGCMIntent(Intent intent, SharedPreferences sp) {
 		if (intent != null) {
 			String action = intent.getAction();
@@ -158,9 +157,9 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	@Override
 	public void onResume() {
 		super.onResume();
-		
+
 		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
-		
+
 		Intent intent = getIntent();
 		if (!handleGCMIntent(intent, sp)) {
 			account = sp.getString(getString(R.string.preference_account_name), null);
@@ -230,29 +229,35 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 			FragmentTransaction fragmentTransaction) {
 	}
 
+	Deviceendpoint deviceendpoint = null;
+
+	private void buildEndpoint() {
+		if (deviceendpoint == null) {
+			GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(getApplicationContext(), "server:client_id:" + getString(R.string.client_id));
+			credential.setSelectedAccountName(account);
+			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
+					AndroidHttp.newCompatibleTransport(),
+					new JacksonFactory(),
+					credential)
+			.setApplicationName(getString(R.string.app_name));
+			deviceendpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+		}
+	}
+
 	public void loadDevices() {
 		if (hasRegistration()) {
+			
+			buildEndpoint();
 
 			Log.d(TAG, "loading devices");
-
-			if (credential == null) {
-				credential = GoogleAccountCredential.usingAudience(getApplicationContext(), "server:client_id:" + getString(R.string.client_id));
-				credential.setSelectedAccountName(account);
-			}
 
 			(new AsyncTask<String, Void, String>() {
 
 				@Override
 				protected String doInBackground(String... params) {
 
-					Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
-							AndroidHttp.newCompatibleTransport(),
-							new JacksonFactory(),
-							credential);
-					Deviceendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
-
 					try {
-						devices = endpoint.deviceEndpoint().subscribers(registrationId).execute().getItems();
+						devices = deviceendpoint.deviceEndpoint().subscribers(registrationId).execute().getItems();
 						if (devices == null) {
 							// set to new empty List for the adapter
 							devices = new ArrayList<SimpleDevice>();
@@ -260,7 +265,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-						return "error connecting to cloud-set.appengine.com, please check your connection and true refreshing";
+						return getString(R.string.connection_error);
 					}
 
 					return null;
@@ -357,7 +362,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 		// register with GCM, this is an asynchronous operation
 		GCMIntentService.register(getApplicationContext());
-		
+
 		// move to show "loading devices"
 		viewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
 

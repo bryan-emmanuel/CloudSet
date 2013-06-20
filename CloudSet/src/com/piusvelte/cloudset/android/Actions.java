@@ -44,6 +44,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Actions extends ListActivity {
 
@@ -60,6 +61,9 @@ public class Actions extends ListActivity {
 	// subscriptions, filtered on the publisherId
 	private List<SimpleAction> publications;
 	private ArrayList<String> actions = new ArrayList<String>();
+	
+	private CheckBox actionSelected = null;
+	private boolean actionDoubleSelected = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -147,11 +151,15 @@ public class Actions extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView list, View view, int position, long id) {
 		super.onListItemClick(list, view, position, id);
-
-		CheckBox cb = (CheckBox) view.findViewById(R.id.enabled);
-
-		updateDevice(ActionsIntentService.ACTIONS[position], cb.isChecked());
-
+		// block rapid checking/unchecking
+		if (actionSelected == null) {
+			actionSelected = (CheckBox) view.findViewById(R.id.enabled);
+			actionSelected.setEnabled(false);
+			updateDevice(ActionsIntentService.ACTIONS[position], actionSelected.isChecked());
+		} else {
+			actionDoubleSelected = true;
+			Toast.makeText(getApplicationContext(), getString(R.string.updating_sync), Toast.LENGTH_SHORT).show();
+		}
 	}
 	
 	@Override
@@ -192,10 +200,10 @@ public class Actions extends ListActivity {
 	}
 
 	private void updateDevice(String action, boolean add) {
-		(new AsyncTask<String, Void, Void>() {
+		(new AsyncTask<String, Void, Boolean>() {
 
 			@Override
-			protected Void doInBackground(String... params) {
+			protected Boolean doInBackground(String... params) {
 				try {
 					if (Boolean.parseBoolean(params[1])) {
 						Log.d(TAG, "unsubscribe: " + params[0]);
@@ -212,16 +220,29 @@ public class Actions extends ListActivity {
 						SimpleAction publication = endpoint.deviceEndpoint().subscribe(subscriberId, publisherId, params[0]).execute();
 						publications.add(publication);
 					}
+					return true;
 				} catch (IOException e) {
 					Log.e(TAG, e.toString());
 				}
-				return null;
+				return false;
 			}
 
 			@Override
-			protected void onPostExecute(Void result) {
+			protected void onPostExecute(Boolean successful) {
 				Log.d(TAG, "reload subscriptions");
+				actionSelected.setEnabled(true);
+				actionSelected = null;
 				adapter.notifyDataSetChanged();
+				if (actionDoubleSelected) {
+					if (successful) {
+						Toast.makeText(getApplicationContext(), getString(R.string.sync_updated), Toast.LENGTH_SHORT).show();
+					} else {
+						Toast.makeText(getApplicationContext(), getString(R.string.sync_error), Toast.LENGTH_SHORT).show();
+					}
+					actionDoubleSelected = false;
+				} else if (!successful) {
+					Toast.makeText(getApplicationContext(), getString(R.string.sync_error), Toast.LENGTH_SHORT).show();
+				}
 			}
 
 		}).execute(action, Boolean.toString(add));

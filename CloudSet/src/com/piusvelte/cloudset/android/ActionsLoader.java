@@ -21,7 +21,10 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 	private Deviceendpoint endpoint;
 	private String subscriberId;
 	private String publisherId;
-	private List<SimpleAction> actions;
+	private List<SimpleAction> publications;
+	private String action = null;
+	private String actionToEnable = null;
+	private boolean remove = false;
 
 	public ActionsLoader(Context context, String subscriberId, String publisherId) {
 		super(context);
@@ -47,45 +50,50 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 		endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 	}
 
-	private String action = null;
-	private boolean add = true;
-
-	public void update(String action, boolean add) {
+	public ActionsLoader(Context context, String subscriberId, String publisherId, List<SimpleAction> publications, String action, boolean remove) {
+		this(context, subscriberId, publisherId);
+		this.publications = publications;
 		this.action = action;
-		this.add = add;
-		forceLoad();
+		this.remove = remove;
+	}
+	
+	public String getActionToEnable() {
+		return actionToEnable;
 	}
 
 	@Override
 	public List<SimpleAction> loadInBackground() {
+		Log.d(TAG, "loadInBackground");
 		if (action != null) {
+			Log.d(TAG, "update device");
 			try {
-				if (add) {
-					for (int i = 0, s = actions.size(); i < s; i++) {
-						SimpleAction publication = actions.get(i);
+				if (remove) {
+					for (int i = 0, s = publications.size(); i < s; i++) {
+						SimpleAction publication = publications.get(i);
 						if (publication.getName().equals(action)) {
 							Log.d(TAG, "publicationId: " + publication.getId());
 							endpoint.deviceEndpoint().unsubscribe(subscriberId, publication.getId()).execute();
-							actions.remove(i);
+							publications.remove(i);
 						}
 					}
 				} else {
 					SimpleAction publication = endpoint.deviceEndpoint().subscribe(subscriberId, publisherId, action).execute();
-					actions.add(publication);
+					publications.add(publication);
 				}
 			} catch (IOException e) {
 				Log.e(TAG, e.toString());
 			}
-			return actions;
+			return publications;
 		} else {
-			List<SimpleAction> actions = null;
+			Log.d(TAG, "load publications");
+			List<SimpleAction> publications = null;
 			try {
-				actions = endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
+				publications = endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
 			} catch (IOException e) {
 				Log.e(TAG, e.toString());
 			}
-			if (actions != null) {
-				return actions;
+			if (publications != null) {
+				return publications;
 			} else {
 				return new ArrayList<SimpleAction>();
 			}
@@ -93,24 +101,30 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 	}
 
 	@Override
-	public void deliverResult(List<SimpleAction> actions) {
-		// clear the update
+	public void deliverResult(List<SimpleAction> publications) {
+		Log.d(TAG, "deliverResult");
+		// store the action for the checkbox to enable, then clear it here
+		actionToEnable = action;
 		action = null;
-		this.actions = actions;
+		this.publications = publications;
 		if (isStarted()) {
-			super.deliverResult(actions);
+			super.deliverResult(publications);
 		}
 	}
 
 	@Override
 	protected void onStartLoading() {
+		Log.d(TAG, "onStartLoading");
 		// onStart, check if updating
 		if (action != null) {
+			Log.d(TAG, "update device");
 			// update a device
 			forceLoad();
-		} else if (actions != null) {
-			deliverResult(actions);
-		} else if (takeContentChanged() || (actions == null)) {
+		} else if (publications != null) {
+			Log.d(TAG, "publications loaded, deliver");
+			deliverResult(publications);
+		} else if (takeContentChanged() || (publications == null)) {
+			Log.d(TAG, "force actions load");
 			forceLoad();
 		}
 	}
@@ -118,12 +132,14 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 	@Override
 	protected void onReset() {
 		super.onReset();
+		Log.d(TAG, "onReset");
 		onStopLoading();
-		actions = null;
+		publications = null;
 	}
 
 	@Override
 	protected void onStopLoading() {
+		Log.d(TAG, "onStopLoading");
 		cancelLoad();
 	}
 

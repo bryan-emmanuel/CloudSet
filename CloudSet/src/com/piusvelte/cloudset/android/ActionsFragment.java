@@ -10,20 +10,19 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class ActionsFragment extends ListFragment implements LoaderManager.LoaderCallbacks<List<SimpleAction>> {
 
 	private static final String TAG = "ActionsFragment";
 	// load the actions for the subscription to this device
-	private ArrayAdapter<String> adapter;
+	private ActionsArrayAdapter adapter;
 	// subscriptions, filtered on the publisherId
 	private List<SimpleAction> publications;
 	private ArrayList<String> actions = new ArrayList<String>();
@@ -31,8 +30,7 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		final View rootView = inflater.inflate(R.layout.actions_fragment, container, false);
-		return rootView;
+		return inflater.inflate(R.layout.actions_fragment, container, false);
 	}
 
 	@Override
@@ -72,21 +70,15 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 		public String getPublisherId();
 
 	}
-
-	private boolean isSubscribedTo(String action) {
-		if (publications != null) {
-			for (SimpleAction publication : publications) {
-				if (publication.getName().equals(action)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+	
+	private static final String EXTRA_ACTION = "action";
+	private static final String EXTRA_REMOVE = "remove";
 
 	private void updateDevice(String action, boolean add) {
-		ActionsLoader loader = (ActionsLoader) getLoaderManager().initLoader(++loadersCount, null, this);
-		loader.update(action, add);
+		Bundle extras = new Bundle();
+		extras.putString(EXTRA_ACTION, action);
+		extras.putBoolean(EXTRA_REMOVE, add);
+		getLoaderManager().initLoader(++loadersCount, extras, this);
 	}
 	
 	// the first loader is for all actions, the rest are for updating devices
@@ -102,52 +94,38 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		adapter = new ArrayAdapter<String>(getActivity(), R.layout.action_item, actions) {
-
-			@Override
-			public View getView(int position, View convertView, ViewGroup parent) {
-				View row;
-				if (convertView == null) {
-					row = (View) (LayoutInflater.from(parent.getContext().getApplicationContext())).inflate(R.layout.action_item, null);
-				} else {
-					row = (View) convertView;
-				}
-
-				String action = ActionsIntentService.ACTIONS[position];
-
-				TextView tv = (TextView) row.findViewById(R.id.action);
-				tv.setText(ActionsIntentService.ACTION_NAMES[position]);
-
-				CheckBox cb = (CheckBox) row.findViewById(R.id.enabled);
-				cb.setChecked(isSubscribedTo(action));
-
-				return row;
-			}
-
-		};
+		adapter = new ActionsArrayAdapter(getActivity(), R.layout.action_item, actions);
 		setListAdapter(adapter);
 		LoaderManager loaderManager = getLoaderManager();
+		// attach the first loader for populating the publications
+		loaderManager.initLoader(0, null, this);
 		if (savedInstanceState != null) {
 			if (savedInstanceState.containsKey(LOADERS)) {
 				loadersCount = savedInstanceState.getInt(LOADERS);
 			}
 		}
-		for (int i = 0; i < loadersCount; i++) {
+		// attach additional tasks for updating devices
+		for (int i = 1; i < loadersCount; i++) {
 			loaderManager.initLoader(loadersCount, null, this);
 		}
 	}
 
 	@Override
 	public Loader<List<SimpleAction>> onCreateLoader(int arg0, Bundle args) {
-		return new ActionsLoader(getActivity(), callback.getSubscriberId(), callback.getPublisherId());
+		if ((loadersCount > 0) && (args != null)) {
+			return new ActionsLoader(getActivity(), callback.getSubscriberId(), callback.getPublisherId(), publications, args.getString(EXTRA_ACTION), args.getBoolean(EXTRA_REMOVE));
+		} else {
+			return new ActionsLoader(getActivity(), callback.getSubscriberId(), callback.getPublisherId());
+		}
 	}
 
 	@Override
 	public void onLoadFinished(Loader<List<SimpleAction>> loader,
 			List<SimpleAction> publications) {
 		if (loadersCount > 1) {
-			loadersCount--;
+			getLoaderManager().destroyLoader(--loadersCount);
 		}
+		Log.d(TAG, "onLoadFinished : " + loadersCount + ", " + loader.getId());
 		this.publications = publications;
 		// reload the adapter for the first loader
 		if (loader.getId() == 0) {
@@ -155,8 +133,11 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 			for (String action : ActionsIntentService.ACTIONS) {
 				adapter.add(action);
 			}
+			adapter.notifyDataSetChanged(this.publications);
+		} else {
+			Log.d(TAG, "onLoadFinished, done updating, has publications? " + (this.publications != null));
+			adapter.notifyDataSetChanged(this.publications, ((ActionsLoader) loader).getActionToEnable());
 		}
-		adapter.notifyDataSetChanged();
 	}
 
 	@Override

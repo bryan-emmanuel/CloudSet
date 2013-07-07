@@ -19,13 +19,17 @@
  */
 package com.piusvelte.cloudset.android;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.List;
+
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.SimpleDevice;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,11 +37,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class DevicesFragment extends ListFragment {
+public class DevicesFragment extends ListFragment implements DevicesListListener {
 
 	private static final String TAG = "DevicesFragment";
 
-	ArrayAdapter<String> adapter;
 	TextView empty;
 
 	boolean isSubscriptions;
@@ -46,16 +49,6 @@ public class DevicesFragment extends ListFragment {
 	}
 
 	DevicesListener callback;
-
-	public interface DevicesListener {
-
-		public String getRegistration();
-
-		public String getDeviceId(int which);
-
-		public void loadDeviceModels(ArrayAdapter<String> adapter);
-
-	}
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -68,20 +61,30 @@ public class DevicesFragment extends ListFragment {
 		}
 	}
 
+	private ArrayAdapter<String> adapter;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		isSubscriptions = getArguments().getBoolean(CloudSetMain.ARGUMENT_ISSUBSCRIPTIONS);
 		final View rootView = inflater.inflate(isSubscriptions ? R.layout.devices : R.layout.devices, container, false);
 		empty = (TextView) rootView.findViewById(android.R.id.empty);
-		adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
 		return rootView;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
+		setListAdapter(adapter);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		setListAdapter(adapter);
+		if (callback != null) {
+			onDevicesLoaded(callback.getDevices());
+		}
 	}
 
 	@Override
@@ -103,27 +106,26 @@ public class DevicesFragment extends ListFragment {
 		}
 	}
 
-	public void reloadAdapter(String error) {
+	@Override
+	public void onDevicesLoaded(List<SimpleDevice> devices) {
 		if (adapter != null) {
-
-			Log.d(TAG, "reloading adapter");
-
-			adapter.clear();
-
-			if (error != null) {
-				empty.setText(error);
-			} else {
-				if (callback != null) {
-					callback.loadDeviceModels(adapter);
+			if (devices != null) {
+				adapter.clear();
+				for (SimpleDevice device : devices) {
+					try {
+						adapter.add(URLDecoder.decode(device.getModel(), "UTF-8"));
+					} catch (UnsupportedEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 				if (adapter.isEmpty()) {
 					empty.setText(R.string.no_devices);
 				} else {
 					empty.setText(R.string.loading_devices);
 				}
+				adapter.notifyDataSetChanged();
 			}
-			
-			adapter.notifyDataSetChanged();
 		}
 	}
 

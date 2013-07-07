@@ -19,18 +19,11 @@
  */
 package com.piusvelte.cloudset.android;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.json.jackson.JacksonFactory;
-import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
 import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.SimpleDevice;
 
 import android.app.ActionBar;
@@ -41,21 +34,20 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 public class CloudSetMain extends FragmentActivity implements
-ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.DevicesListener {
+ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesListener, LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 
 	private static final String TAG = "CloudSetMain";
 
@@ -82,92 +74,46 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		// not called on screen rotate
 		GooglePlayServicesUtil.getOpenSourceSoftwareLicenseInfo(getApplicationContext());
-
 		setContentView(R.layout.activity_main);
-
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
 		sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		viewPager.setAdapter(sectionsPagerAdapter);
-
 		viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
 				actionBar.setSelectedNavigationItem(position);
 			}
 		});
-
 		for (int i = 0; i < sectionsPagerAdapter.getCount(); i++) {
 			actionBar.addTab(actionBar.newTab()
 					.setText(sectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
+		account = sp.getString(getString(R.string.preference_account_name), null);
+		registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
+		getSupportLoaderManager().initLoader(DEVICES_LOADER, null, this);
+		setCurrentTab();
+	}
 
+	private static final int DEVICES_LOADER = 0;
+
+	@Override
+	public void onSaveInstanceState(Bundle state) {
+		super.onSaveInstanceState(state);
 	}
 
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-		setIntent(intent);
+		handleGCMIntent(intent);
 	}
 
-	private boolean handleGCMIntent(Intent intent, SharedPreferences sp) {
-		if (intent != null) {
-			String action = intent.getAction();
-			if (action != null) {
-				if (action.equals(ACTION_GCM_ERROR)) {
-					Toast.makeText(getApplicationContext(), "Error occurred during device registration", Toast.LENGTH_SHORT).show();
-					account = null;
-					registrationId = null;
-					sp
-					.edit()
-					.putString(getString(R.string.preference_account_name), account)
-					.putString(getString(R.string.preference_gcm_registration), registrationId)
-					.commit();
-					return true;
-				} else if (action.equals(ACTION_GCM_REGISTERED) && intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
-					Log.d(TAG, "registered");
-					registrationId = intent.getStringExtra(EXTRA_DEVICE_REGISTRATION);
-					sp
-					.edit()
-					.putString(getString(R.string.preference_gcm_registration), registrationId)
-					.commit();
-					return true;
-				} else if (action.equals(ACTION_GCM_UNREGISTERED) && intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
-					Log.d(TAG, "unregistered");
-					account = null;
-					registrationId = null;
-					sp
-					.edit()
-					.putString(getString(R.string.preference_account_name), account)
-					.putString(getString(R.string.preference_gcm_registration), registrationId)
-					.commit();
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-
-		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
-
-		Intent intent = getIntent();
-		if (!handleGCMIntent(intent, sp)) {
-			account = sp.getString(getString(R.string.preference_account_name), null);
-			registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
-		}
-
-		loadDevices();
-
+	private void setCurrentTab() {
 		if (hasRegistration()) {
 			viewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
 		} else {
@@ -175,11 +121,55 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 		}
 	}
 
+	private void handleGCMIntent(Intent intent) {
+		if (intent != null) {
+			String action = intent.getAction();
+			if (action != null) {
+				if (action.equals(ACTION_GCM_ERROR)) {
+					Toast.makeText(getApplicationContext(), "Error occurred during device registration", Toast.LENGTH_SHORT).show();
+					account = null;
+					registrationId = null;
+					getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
+					.edit()
+					.putString(getString(R.string.preference_account_name), account)
+					.putString(getString(R.string.preference_gcm_registration), registrationId)
+					.commit();
+					setCurrentTab();
+				} else if (action.equals(ACTION_GCM_REGISTERED) && intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
+					registrationId = intent.getStringExtra(EXTRA_DEVICE_REGISTRATION);
+					getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
+					.edit()
+					.putString(getString(R.string.preference_gcm_registration), registrationId)
+					.commit();
+					setCurrentTab();
+				} else if (action.equals(ACTION_GCM_UNREGISTERED) && intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
+					account = null;
+					registrationId = null;
+					getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
+					.edit()
+					.putString(getString(R.string.preference_account_name), account)
+					.putString(getString(R.string.preference_gcm_registration), registrationId)
+					.commit();
+					setCurrentTab();
+				}
+			}
+		}
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+
+	private String getFragmentTag(int position) {
+		return "android:switcher:" + R.id.pager + ":" + position;
 	}
 
 	@Override
@@ -207,16 +197,25 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 		return super.onOptionsItemSelected(item);
 	}
 
+	private void updateDevicesFragments() {
+		if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) {
+			DevicesListListener listener = (DevicesListListener) getSupportFragmentManager().findFragmentByTag(getFragmentTag(FRAGMENT_SUBSCRIPTIONS));
+			if (listener != null) {
+				listener.onDevicesLoaded(devices);
+			}
+		} else if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) {
+			DevicesListListener listener = (DevicesListListener) getSupportFragmentManager().findFragmentByTag(getFragmentTag(FRAGMENT_SUBSCRIBERS));
+			if (listener != null) {
+				listener.onDevicesLoaded(devices);
+			}
+		}
+	}
+
 	@Override
 	public void onTabSelected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
 		viewPager.setCurrentItem(tab.getPosition());
-
-		if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
-			subscriptionsFragment.reloadAdapter(null);
-		} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
-			subscribersFragment.reloadAdapter(null);
-		}
+		updateDevicesFragments();
 	}
 
 	@Override
@@ -229,72 +228,15 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 			FragmentTransaction fragmentTransaction) {
 	}
 
-	Deviceendpoint deviceendpoint = null;
-
-	private void buildEndpoint() {
-		if (deviceendpoint == null) {
-			GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(getApplicationContext(), "server:client_id:" + getString(R.string.client_id));
-			credential.setSelectedAccountName(account);
-			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
-					AndroidHttp.newCompatibleTransport(),
-					new JacksonFactory(),
-					credential)
-			.setApplicationName(getString(R.string.app_name));
-			deviceendpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
-		}
-	}
-
 	public void loadDevices() {
 		if (hasRegistration()) {
-			
-			buildEndpoint();
-
-			Log.d(TAG, "loading devices");
-
-			(new AsyncTask<String, Void, String>() {
-
-				@Override
-				protected String doInBackground(String... params) {
-
-					try {
-						devices = deviceendpoint.deviceEndpoint().subscribers(registrationId).execute().getItems();
-						if (devices == null) {
-							// set to new empty List for the adapter
-							devices = new ArrayList<SimpleDevice>();
-						}
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return getString(R.string.connection_error);
-					}
-
-					return null;
-				}
-
-				@Override
-				protected void onPostExecute(String result) {
-					if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
-						subscriptionsFragment.reloadAdapter(result);
-					} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
-						subscribersFragment.reloadAdapter(result);
-					}
-				}
-
-			}).execute();
-
+			getSupportLoaderManager().initLoader(DEVICES_LOADER, null, this).forceLoad();
 		} else {
 			// set to new empty List for the adapter
 			devices = new ArrayList<SimpleDevice>();
-			if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) && (subscriptionsFragment != null)) {
-				subscriptionsFragment.reloadAdapter(null);
-			} else if ((viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) && (subscribersFragment != null)) {
-				subscribersFragment.reloadAdapter(null);
-			}
+			updateDevicesFragments();
 		}
 	}
-
-	private DevicesFragment subscriptionsFragment;
-	private DevicesFragment subscribersFragment;
 
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -307,17 +249,17 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 			if (position == FRAGMENT_ACCOUNT) {
 				return new AccountsFragment();
 			} else if (position == FRAGMENT_SUBSCRIPTIONS) {
-				subscriptionsFragment = new DevicesFragment();
+				Fragment fragment = new DevicesFragment();
 				Bundle b = new Bundle();
 				b.putBoolean(ARGUMENT_ISSUBSCRIPTIONS, true);
-				subscriptionsFragment.setArguments(b);
-				return subscriptionsFragment;
+				fragment.setArguments(b);
+				return fragment;
 			} else if (position == FRAGMENT_SUBSCRIBERS) {
-				subscribersFragment = new DevicesFragment();
+				Fragment fragment = new DevicesFragment();
 				Bundle b = new Bundle();
 				b.putBoolean(ARGUMENT_ISSUBSCRIPTIONS, false);
-				subscribersFragment.setArguments(b);
-				return subscribersFragment;
+				fragment.setArguments(b);
+				return fragment;
 			}
 			return null;
 		}
@@ -349,28 +291,20 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 
 	@Override
 	public void setAccount(String account) {
-
-		Log.d(TAG, "setAccount: " + account);
-
 		this.account = account;
-
 		// store the account
 		getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE)
 		.edit()
 		.putString(getString(R.string.preference_account_name), account)
 		.commit();
-
 		// register with GCM, this is an asynchronous operation
 		GCMIntentService.register(getApplicationContext());
-
 		// move to show "loading devices"
 		viewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
-
 	}
 
 	@Override
 	public boolean hasRegistration() {
-		Log.d(TAG, "hasRegistration? " + ((account != null) && (registrationId != null)));
 		return (account != null) && (registrationId != null);
 	}
 
@@ -388,17 +322,28 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesFragment.Device
 	}
 
 	@Override
-	public void loadDeviceModels(ArrayAdapter<String> adapter) {
-		if (devices != null) {
-			for (SimpleDevice device : devices) {
-				try {
-					adapter.add(URLDecoder.decode(device.getModel(), "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+	public Loader<List<SimpleDevice>> onCreateLoader(int arg0, Bundle arg1) {
+		if (arg0 == DEVICES_LOADER) {
+			return new DevicesLoader(this, account, registrationId);
 		}
+		return null;
+	}
+
+	@Override
+	public void onLoadFinished(Loader<List<SimpleDevice>> arg0,
+			List<SimpleDevice> arg1) {
+		devices = arg1;
+		updateDevicesFragments();
+	}
+
+	@Override
+	public void onLoaderReset(Loader<List<SimpleDevice>> arg0) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public List<SimpleDevice> getDevices() {
+		return devices;
 	}
 
 }

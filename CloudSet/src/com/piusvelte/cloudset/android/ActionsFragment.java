@@ -131,8 +131,14 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 
 	@Override
 	public Loader<List<SimpleAction>> onCreateLoader(int arg0, Bundle args) {
-		if ((loadersCount > 0) && (args != null)) {
-			return new ActionsLoader(getActivity(), callback.getSubscriberId(), callback.getPublisherId(), publications, args.getString(EXTRA_ACTION), args.getBoolean(EXTRA_REMOVE));
+		if (loadersCount > 0) {
+			if ((args != null)
+					&& args.containsKey(EXTRA_ACTION)
+					&& args.containsKey(EXTRA_REMOVE)) {
+				return new ActionsLoader(getActivity(), callback.getSubscriberId(), callback.getPublisherId(), publications, args.getString(EXTRA_ACTION), args.getBoolean(EXTRA_REMOVE));
+			} else {
+				return null;
+			}
 		} else {
 			return new ActionsLoader(getActivity(), callback.getSubscriberId(), callback.getPublisherId());
 		}

@@ -28,5 +28,7 @@ public interface DevicesListener {
 	public String getRegistration();
 	public List<SimpleDevice> getDevices();
 	public String getDeviceId(int which);
+	public void confirmDeregistration(String id);
+	public void deregisterDevice(String id);
 
 }

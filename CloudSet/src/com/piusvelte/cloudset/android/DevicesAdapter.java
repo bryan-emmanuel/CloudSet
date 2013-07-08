@@ -33,6 +33,8 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 public class DevicesAdapter extends ArrayAdapter<SimpleDevice> {
+	
+	private static final String TAG = "DevicesAdapter";
 
 	public DevicesAdapter(Context context, List<SimpleDevice> devices) {
 		super(context, R.layout.device_item, devices);
@@ -56,7 +58,33 @@ public class DevicesAdapter extends ArrayAdapter<SimpleDevice> {
 			device.setText(simpleDevice.getModel());
 		}
 		
+		row.findViewById(R.id.deregister).setOnClickListener(new OnDeregisterClick(this, position));
+		
 		return row;
+	}
+	
+	public class OnDeregisterClick implements View.OnClickListener {
+		
+		private ArrayAdapter<SimpleDevice> adapter;
+		private int which;
+		
+		public OnDeregisterClick(ArrayAdapter<SimpleDevice> adapter, int which) {
+			this.adapter = adapter;
+			this.which = which;
+		}
+
+		@Override
+		public void onClick(View v) {
+			DevicesListener listener;
+			try {
+				listener = (DevicesListener) adapter.getContext();
+				listener.confirmDeregistration(adapter.getItem(which).getId());
+			} catch (ClassCastException e) {
+				throw new ClassCastException(adapter.getContext().toString()
+						+ " must implement DevicesListener");
+			}
+		}
+		
 	}
 
 }

@@ -105,13 +105,11 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 	@Override
 	protected void onStartLoading() {
 		// onStart, check if updating
-		if (action != null) {
+		if ((action != null) || takeContentChanged() || (publications == null)) {
 			// update a device
 			forceLoad();
 		} else if (publications != null) {
 			deliverResult(publications);
-		} else if (takeContentChanged() || (publications == null)) {
-			forceLoad();
 		}
 	}
 

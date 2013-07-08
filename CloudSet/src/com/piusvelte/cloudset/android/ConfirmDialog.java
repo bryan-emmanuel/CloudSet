@@ -28,32 +28,38 @@ import android.support.v4.app.DialogFragment;
 
 public class ConfirmDialog extends DialogFragment {
 	
-	public interface ConfirmDialogListener {
-		
-		public void setConfirmed(boolean confirmed);
-		
+	private String deviceId;
+	
+	public ConfirmDialog setDeviceId(String id) {
+		this.deviceId = id;
+		return this;
 	}
 	
 	@Override
 	public void onAttach(Activity activity) {
         super.onAttach(activity);
-        if (!(activity instanceof ConfirmDialogListener)) {
+        if (!(activity instanceof DevicesListener)) {
             throw new ClassCastException(activity.toString() + " must implement ConfirmDialogListener");
         }
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+    	if (savedInstanceState != null) {
+    		if (savedInstanceState.containsKey(EXTRA_DEVICE_ID)) {
+    			deviceId = savedInstanceState.getString(EXTRA_DEVICE_ID);
+    		}
+    	}
         return new AlertDialog.Builder(getActivity())
         .setTitle(R.string.title_deregister)
         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				ConfirmDialogListener listener;
+				DevicesListener listener;
 				try {
-					listener = (ConfirmDialogListener) getActivity();
-					listener.setConfirmed(true);
+					listener = (DevicesListener) getActivity();
+					listener.deregisterDevice(deviceId);
 				} catch (ClassCastException e) {
 					throw new ClassCastException(getActivity().toString()
 							+ " must implement DevicesListener");
@@ -64,17 +70,18 @@ public class ConfirmDialog extends DialogFragment {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				ConfirmDialogListener listener;
-				try {
-					listener = (ConfirmDialogListener) getActivity();
-					listener.setConfirmed(false);
-				} catch (ClassCastException e) {
-					throw new ClassCastException(getActivity().toString()
-							+ " must implement DevicesListener");
-				}
+				// do nothing
 			}
 		})
         .create();
     }
+    
+    private static final String EXTRA_DEVICE_ID = "device_id";
+
+	@Override
+	public void onSaveInstanceState(Bundle state) {
+		super.onSaveInstanceState(state);
+		state.putString(EXTRA_DEVICE_ID, deviceId);
+	}
 
 }

@@ -107,32 +107,19 @@ public class DevicesFragment extends ListFragment implements DevicesListListener
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-		if (v.getId() == R.id.device) {
-			Log.d(TAG, "device");
-			if (callback != null) {
-				String publisher;
-				String subscriber;
-				if (isSubscriptions) {
-					publisher = callback.getDeviceId(position);
-					subscriber = callback.getRegistration();
-				} else {
-					publisher = callback.getRegistration();
-					subscriber = callback.getDeviceId(position);
-				}
-				startActivity(new Intent(getActivity().getApplicationContext(), Actions.class)
-				.putExtra(Actions.EXTRA_PUBLISHER, publisher)
-				.putExtra(Actions.EXTRA_SUBSCRIBER, subscriber));
+		if (callback != null) {
+			String publisher;
+			String subscriber;
+			if (isSubscriptions) {
+				publisher = callback.getDeviceId(position);
+				subscriber = callback.getRegistration();
+			} else {
+				publisher = callback.getRegistration();
+				subscriber = callback.getDeviceId(position);
 			}
-		} else if (v.getId() == R.id.deregister) {
-			Log.d(TAG, "deregister");
-			DevicesAdapterListener listener;
-			try {
-				listener = (DevicesAdapterListener) getActivity();
-				listener.confirmDeregistration(adapter.getItem(position).getId());
-			} catch (ClassCastException e) {
-				throw new ClassCastException(getActivity().toString()
-						+ " must implement DevicesListener");
-			}
+			startActivity(new Intent(getActivity().getApplicationContext(), Actions.class)
+			.putExtra(Actions.EXTRA_PUBLISHER, publisher)
+			.putExtra(Actions.EXTRA_SUBSCRIBER, subscriber));
 		}
 	}
 

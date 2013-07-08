@@ -45,15 +45,16 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class CloudSetMain extends FragmentActivity implements
 ActionBar.TabListener,
 AccountsFragment.AccountsListener,
 DevicesListener,
-LoaderManager.LoaderCallbacks<List<SimpleDevice>>,
-DevicesAdapterListener,
-ConfirmDialog.ConfirmDialogListener {
+LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 
 	private static final String TAG = "CloudSetMain";
 
@@ -76,8 +77,6 @@ ConfirmDialog.ConfirmDialogListener {
 	private String account;
 	private String registrationId;
 	private List<SimpleDevice> devices = new ArrayList<SimpleDevice>();
-
-	private String deregisterId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -111,19 +110,13 @@ ConfirmDialog.ConfirmDialogListener {
 			if (savedInstanceState.containsKey(EXTRA_LOADERS_COUNT)) {
 				loadersCount = savedInstanceState.getInt(EXTRA_LOADERS_COUNT);
 			}
-			if (savedInstanceState.containsKey(EXTRA_DEREGISTER_ID)) {
-				deregisterId = savedInstanceState.getString(EXTRA_DEREGISTER_ID);
-				if (deregisterId != null) {
-					new ConfirmDialog().show(getSupportFragmentManager(), "confirm:deregister");
-				}
-			}
 		}
 		for (int i = 1; i < loadersCount; i++) {
 			loaderManager.initLoader(i, null, this);
 		}
 	}
 
-	private int loadersCount = 0;
+	private int loadersCount = 1;
 	private static final String EXTRA_LOADERS_COUNT = "loaders_count";
 	private static final String EXTRA_DEREGISTER_ID = "deregister_id";
 
@@ -131,7 +124,6 @@ ConfirmDialog.ConfirmDialogListener {
 	public void onSaveInstanceState(Bundle state) {
 		super.onSaveInstanceState(state);
 		state.putInt(EXTRA_LOADERS_COUNT, loadersCount);
-		state.putString(EXTRA_DEREGISTER_ID, deregisterId);
 	}
 
 	@Override
@@ -351,8 +343,8 @@ ConfirmDialog.ConfirmDialogListener {
 	@Override
 	public Loader<List<SimpleDevice>> onCreateLoader(int arg0, Bundle arg1) {
 		if (arg0 > 0) {
-			if (arg1 != null) {
-				return new DevicesLoader(this, account, registrationId, arg1.getString(EXTRA_DEREGISTER_ID));
+			if ((arg1 != null) && (arg1.containsKey(EXTRA_DEREGISTER_ID))) {
+				return new DevicesLoader(this, account, registrationId, devices, arg1.getString(EXTRA_DEREGISTER_ID));
 			} else {
 				return null;
 			}
@@ -381,25 +373,18 @@ ConfirmDialog.ConfirmDialogListener {
 		return devices;
 	}
 
-	public void deregisterDevice(String id) {
-		Bundle extras = new Bundle();
-		extras.putString(EXTRA_DEREGISTER_ID, id);
-		getSupportLoaderManager().initLoader(loadersCount++, extras, this);
-	}
-
 	@Override
-	public void setConfirmed(boolean confirmed) {
-		Log.d(TAG, "setConfirmed? " + confirmed);
-		if (confirmed) {
-			deregisterDevice(deregisterId);
+	public void deregisterDevice(String id) {
+		if (id != null) {
+			Bundle extras = new Bundle();
+			extras.putString(EXTRA_DEREGISTER_ID, id);
+			getSupportLoaderManager().initLoader(loadersCount++, extras, this);
 		}
-		deregisterId = null;
 	}
 
 	@Override
 	public void confirmDeregistration(String id) {
-		deregisterId = id;
-		new ConfirmDialog().show(getSupportFragmentManager(), "confirm:deregister");
+		new ConfirmDialog().setDeviceId(id).show(getSupportFragmentManager(), "confirm:deregister");
 	}
 
 }

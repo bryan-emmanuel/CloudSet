@@ -54,8 +54,9 @@ public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
 		deviceendpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 	}
 
-	public DevicesLoader(Context context, String account, String registrationId, String deregisterId) {
+	public DevicesLoader(Context context, String account, String registrationId, List<SimpleDevice> devices, String deregisterId) {
 		this(context, account, registrationId);
+		this.devices = devices;
 		this.deregisterId = deregisterId;
 	}
 
@@ -89,6 +90,7 @@ public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
 
 	@Override
 	public void deliverResult(List<SimpleDevice> devices) {
+		deregisterId = null;
 		this.devices = devices;
 		if (isStarted()) {
 			super.deliverResult(devices);
@@ -97,11 +99,10 @@ public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
 
 	@Override
 	protected void onStartLoading() {
-		if (devices != null) {
-			deliverResult(devices);
-		}
-		if (takeContentChanged() || (devices == null)) {
+		if ((deregisterId != null) || takeContentChanged() || (devices == null)) {
 			forceLoad();
+		} else if (devices != null) {
+			deliverResult(devices);
 		}
 	}
 

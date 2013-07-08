@@ -63,15 +63,12 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 
 	@Override
 	public List<SimpleAction> loadInBackground() {
-		Log.d(TAG, "loadInBackground");
 		if (action != null) {
-			Log.d(TAG, "update device");
 			try {
 				if (remove) {
 					for (int i = 0, s = publications.size(); i < s; i++) {
 						SimpleAction publication = publications.get(i);
 						if (publication.getName().equals(action)) {
-							Log.d(TAG, "publicationId: " + publication.getId());
 							endpoint.deviceEndpoint().unsubscribe(subscriberId, publication.getId()).execute();
 							publications.remove(i);
 						}
@@ -85,24 +82,17 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 			}
 			return publications;
 		} else {
-			Log.d(TAG, "load publications");
-			List<SimpleAction> publications = null;
 			try {
-				publications = endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
+				return endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
 			} catch (IOException e) {
 				Log.e(TAG, e.toString());
 			}
-			if (publications != null) {
-				return publications;
-			} else {
-				return new ArrayList<SimpleAction>();
-			}
+			return null;
 		}
 	}
 
 	@Override
 	public void deliverResult(List<SimpleAction> publications) {
-		Log.d(TAG, "deliverResult");
 		// store the action for the checkbox to enable, then clear it here
 		actionToEnable = action;
 		action = null;
@@ -114,17 +104,13 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 
 	@Override
 	protected void onStartLoading() {
-		Log.d(TAG, "onStartLoading");
 		// onStart, check if updating
 		if (action != null) {
-			Log.d(TAG, "update device");
 			// update a device
 			forceLoad();
 		} else if (publications != null) {
-			Log.d(TAG, "publications loaded, deliver");
 			deliverResult(publications);
 		} else if (takeContentChanged() || (publications == null)) {
-			Log.d(TAG, "force actions load");
 			forceLoad();
 		}
 	}
@@ -132,14 +118,12 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 	@Override
 	protected void onReset() {
 		super.onReset();
-		Log.d(TAG, "onReset");
 		onStopLoading();
 		publications = null;
 	}
 
 	@Override
 	protected void onStopLoading() {
-		Log.d(TAG, "onStopLoading");
 		cancelLoad();
 	}
 

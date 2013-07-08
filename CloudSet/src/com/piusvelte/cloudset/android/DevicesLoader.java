@@ -1,3 +1,22 @@
+/*
+ * CloudSet - Android devices settings synchronization
+ * Copyright (C) 2013 Bryan Emmanuel
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  
+ *  Bryan Emmanuel piusvelte@gmail.com
+ */
 package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
@@ -12,12 +31,14 @@ import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.SimpleDevice;
 
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
+import android.util.Log;
 
 public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
-	
+
 	private static final String TAG = "DevicesLoader";
 	private String registrationId;
 	private Deviceendpoint deviceendpoint;
+	private String deregisterId;
 
 	public DevicesLoader(Context context, String account, String registrationId) {
 		super(context);
@@ -32,52 +53,68 @@ public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
 		.setApplicationName(globalContext.getString(R.string.app_name));
 		deviceendpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 	}
-	
-	private List<SimpleDevice> devices;
+
+	public DevicesLoader(Context context, String account, String registrationId, String deregisterId) {
+		this(context, account, registrationId);
+		this.deregisterId = deregisterId;
+	}
+
+
+	private List<SimpleDevice> devices = null;
 
 	@Override
 	public List<SimpleDevice> loadInBackground() {
-		List<SimpleDevice> devices = null;
-		try {
-			devices = deviceendpoint.deviceEndpoint().subscribers(registrationId).execute().getItems();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (deregisterId != null) {
+			try {
+				deviceendpoint.deviceEndpoint().remove(deregisterId).execute();
+				for (int i = 0, l = devices.size(); i < l; i++) {
+					if (devices.get(i).getId().equals(deregisterId)) {
+						devices.remove(i);
+						break;
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return devices;
+		} else {
+			try {
+				return deviceendpoint.deviceEndpoint().subscribers(registrationId).execute().getItems();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
 		}
-		if (devices == null) {
-			// set to new empty List for the adapter
-			devices = new ArrayList<SimpleDevice>();
-		}
-		return devices;
 	}
 
-    @Override
-    public void deliverResult(List<SimpleDevice> devices) {
-    	this.devices = devices;
-    	if (isStarted()) {
-    		super.deliverResult(devices);
-    	}
-    }
+	@Override
+	public void deliverResult(List<SimpleDevice> devices) {
+		this.devices = devices;
+		if (isStarted()) {
+			super.deliverResult(devices);
+		}
+	}
 
 	@Override
 	protected void onStartLoading() {
 		if (devices != null) {
 			deliverResult(devices);
 		}
-        if (takeContentChanged() || (devices == null)) {
-            forceLoad();
-        }
+		if (takeContentChanged() || (devices == null)) {
+			forceLoad();
+		}
 	}
-	
-    @Override
-    protected void onReset() {
-        super.onReset();
-        onStopLoading();
-        devices = null;
-    }
-    
-    @Override
-    protected void onStopLoading() {
-        cancelLoad();
-    }
+
+	@Override
+	protected void onReset() {
+		super.onReset();
+		onStopLoading();
+		devices = null;
+	}
+
+	@Override
+	protected void onStopLoading() {
+		cancelLoad();
+	}
 
 }

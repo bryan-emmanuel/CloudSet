@@ -98,14 +98,19 @@ public class AccountsFragment extends ListFragment {
 			}
 		
 		});
-		adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
 		return rootView;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
+		setListAdapter(adapter);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		setListAdapter(adapter);
 		View v = getView();
 		if (callback.hasRegistration()) {
 			v.findViewById(android.R.id.list).setVisibility(View.INVISIBLE);

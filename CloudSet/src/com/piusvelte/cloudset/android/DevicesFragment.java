@@ -19,8 +19,6 @@
  */
 package com.piusvelte.cloudset.android;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,14 +28,15 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.TextView;
 
-public class DevicesFragment extends ListFragment implements DevicesListListener {
+public class DevicesFragment extends ListFragment implements DevicesListListener, OnItemClickListener {
 
 	private static final String TAG = "DevicesFragment";
 
@@ -61,7 +60,7 @@ public class DevicesFragment extends ListFragment implements DevicesListListener
 		}
 	}
 
-	private ArrayAdapter<String> adapter;
+	private DevicesAdapter adapter;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -75,8 +74,9 @@ public class DevicesFragment extends ListFragment implements DevicesListListener
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
+		adapter = new DevicesAdapter(getActivity(), new ArrayList<SimpleDevice>());
 		setListAdapter(adapter);
+		getListView().setOnItemClickListener(this);
 	}
 
 	@Override
@@ -88,43 +88,50 @@ public class DevicesFragment extends ListFragment implements DevicesListListener
 	}
 
 	@Override
-	public void onListItemClick(ListView list, View view, int position, long id) {
-		super.onListItemClick(list, view, position, id);
-		if (callback != null) {
-			String publisher;
-			String subscriber;
-			if (isSubscriptions) {
-				publisher = callback.getDeviceId(position);
-				subscriber = callback.getRegistration();
-			} else {
-				publisher = callback.getRegistration();
-				subscriber = callback.getDeviceId(position);
-			}
-			startActivity(new Intent(getActivity().getApplicationContext(), Actions.class)
-			.putExtra(Actions.EXTRA_PUBLISHER, publisher)
-			.putExtra(Actions.EXTRA_SUBSCRIBER, subscriber));
-		}
-	}
-
-	@Override
 	public void onDevicesLoaded(List<SimpleDevice> devices) {
 		if (adapter != null) {
 			if (devices != null) {
 				adapter.clear();
-				for (SimpleDevice device : devices) {
-					try {
-						adapter.add(URLDecoder.decode(device.getModel(), "UTF-8"));
-					} catch (UnsupportedEncodingException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
+				adapter.addAll(devices);
+				adapter.notifyDataSetChanged();
 				if (adapter.isEmpty()) {
 					empty.setText(R.string.no_devices);
 				} else {
 					empty.setText(R.string.loading_devices);
 				}
-				adapter.notifyDataSetChanged();
+			} else {
+				empty.setText(R.string.connection_error);
+			}
+		}
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+		if (v.getId() == R.id.device) {
+			Log.d(TAG, "device");
+			if (callback != null) {
+				String publisher;
+				String subscriber;
+				if (isSubscriptions) {
+					publisher = callback.getDeviceId(position);
+					subscriber = callback.getRegistration();
+				} else {
+					publisher = callback.getRegistration();
+					subscriber = callback.getDeviceId(position);
+				}
+				startActivity(new Intent(getActivity().getApplicationContext(), Actions.class)
+				.putExtra(Actions.EXTRA_PUBLISHER, publisher)
+				.putExtra(Actions.EXTRA_SUBSCRIBER, subscriber));
+			}
+		} else if (v.getId() == R.id.deregister) {
+			Log.d(TAG, "deregister");
+			DevicesAdapterListener listener;
+			try {
+				listener = (DevicesAdapterListener) getActivity();
+				listener.confirmDeregistration(adapter.getItem(position).getId());
+			} catch (ClassCastException e) {
+				throw new ClassCastException(getActivity().toString()
+						+ " must implement DevicesListener");
 			}
 		}
 	}

@@ -42,12 +42,18 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 public class CloudSetMain extends FragmentActivity implements
-ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesListener, LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
+ActionBar.TabListener,
+AccountsFragment.AccountsListener,
+DevicesListener,
+LoaderManager.LoaderCallbacks<List<SimpleDevice>>,
+DevicesAdapterListener,
+ConfirmDialog.ConfirmDialogListener {
 
 	private static final String TAG = "CloudSetMain";
 
@@ -70,6 +76,8 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesListener, Loade
 	private String account;
 	private String registrationId;
 	private List<SimpleDevice> devices = new ArrayList<SimpleDevice>();
+
+	private String deregisterId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -96,15 +104,34 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesListener, Loade
 		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
 		account = sp.getString(getString(R.string.preference_account_name), null);
 		registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
-		getSupportLoaderManager().initLoader(DEVICES_LOADER, null, this);
 		setCurrentTab();
+		LoaderManager loaderManager = getSupportLoaderManager();
+		loaderManager.initLoader(0, null, this);
+		if (savedInstanceState != null) {
+			if (savedInstanceState.containsKey(EXTRA_LOADERS_COUNT)) {
+				loadersCount = savedInstanceState.getInt(EXTRA_LOADERS_COUNT);
+			}
+			if (savedInstanceState.containsKey(EXTRA_DEREGISTER_ID)) {
+				deregisterId = savedInstanceState.getString(EXTRA_DEREGISTER_ID);
+				if (deregisterId != null) {
+					new ConfirmDialog().show(getSupportFragmentManager(), "confirm:deregister");
+				}
+			}
+		}
+		for (int i = 1; i < loadersCount; i++) {
+			loaderManager.initLoader(i, null, this);
+		}
 	}
 
-	private static final int DEVICES_LOADER = 0;
+	private int loadersCount = 0;
+	private static final String EXTRA_LOADERS_COUNT = "loaders_count";
+	private static final String EXTRA_DEREGISTER_ID = "deregister_id";
 
 	@Override
 	public void onSaveInstanceState(Bundle state) {
 		super.onSaveInstanceState(state);
+		state.putInt(EXTRA_LOADERS_COUNT, loadersCount);
+		state.putString(EXTRA_DEREGISTER_ID, deregisterId);
 	}
 
 	@Override
@@ -230,7 +257,7 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesListener, Loade
 
 	public void loadDevices() {
 		if (hasRegistration()) {
-			getSupportLoaderManager().initLoader(DEVICES_LOADER, null, this).forceLoad();
+			getSupportLoaderManager().initLoader(0, null, this).forceLoad();
 		} else {
 			// set to new empty List for the adapter
 			devices = new ArrayList<SimpleDevice>();
@@ -323,15 +350,23 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesListener, Loade
 
 	@Override
 	public Loader<List<SimpleDevice>> onCreateLoader(int arg0, Bundle arg1) {
-		if (arg0 == DEVICES_LOADER) {
+		if (arg0 > 0) {
+			if (arg1 != null) {
+				return new DevicesLoader(this, account, registrationId, arg1.getString(EXTRA_DEREGISTER_ID));
+			} else {
+				return null;
+			}
+		} else {
 			return new DevicesLoader(this, account, registrationId);
 		}
-		return null;
 	}
 
 	@Override
 	public void onLoadFinished(Loader<List<SimpleDevice>> arg0,
 			List<SimpleDevice> arg1) {
+		if (loadersCount > 1) {
+			getLoaderManager().destroyLoader(--loadersCount);
+		}
 		devices = arg1;
 		updateDevicesFragments();
 	}
@@ -344,6 +379,27 @@ ActionBar.TabListener, AccountsFragment.AccountsListener, DevicesListener, Loade
 	@Override
 	public List<SimpleDevice> getDevices() {
 		return devices;
+	}
+
+	public void deregisterDevice(String id) {
+		Bundle extras = new Bundle();
+		extras.putString(EXTRA_DEREGISTER_ID, id);
+		getSupportLoaderManager().initLoader(loadersCount++, extras, this);
+	}
+
+	@Override
+	public void setConfirmed(boolean confirmed) {
+		Log.d(TAG, "setConfirmed? " + confirmed);
+		if (confirmed) {
+			deregisterDevice(deregisterId);
+		}
+		deregisterId = null;
+	}
+
+	@Override
+	public void confirmDeregistration(String id) {
+		deregisterId = id;
+		new ConfirmDialog().show(getSupportFragmentManager(), "confirm:deregister");
 	}
 
 }

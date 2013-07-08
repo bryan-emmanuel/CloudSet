@@ -1,3 +1,22 @@
+/*
+ * CloudSet - Android devices settings synchronization
+ * Copyright (C) 2013 Bryan Emmanuel
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  
+ *  Bryan Emmanuel piusvelte@gmail.com
+ */
 package com.piusvelte.cloudset.android;
 
 import java.util.ArrayList;
@@ -22,11 +41,11 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 
 	private static final String TAG = "ActionsFragment";
 	// load the actions for the subscription to this device
-	private ActionsArrayAdapter adapter;
+	private ActionsAdapter adapter;
 	// subscriptions, filtered on the publisherId
 	private List<SimpleAction> publications;
 	private ArrayList<String> actions = new ArrayList<String>();
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -70,7 +89,7 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 		public String getPublisherId();
 
 	}
-	
+
 	private static final String EXTRA_ACTION = "action";
 	private static final String EXTRA_REMOVE = "remove";
 
@@ -78,30 +97,30 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 		Bundle extras = new Bundle();
 		extras.putString(EXTRA_ACTION, action);
 		extras.putBoolean(EXTRA_REMOVE, add);
-		getLoaderManager().initLoader(++loadersCount, extras, this);
+		getLoaderManager().initLoader(loadersCount++, extras, this);
 	}
-	
+
 	// the first loader is for all actions, the rest are for updating devices
 	private int loadersCount = 1;
-	private static final String LOADERS = "loaders";
+	private static final String EXTRA_LOADERS_COUNT = "loaders_count";
 
 	@Override
 	public void onSaveInstanceState(Bundle state) {
 		super.onSaveInstanceState(state);
-		state.putInt(LOADERS, loadersCount);
+		state.putInt(EXTRA_LOADERS_COUNT, loadersCount);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		adapter = new ActionsArrayAdapter(getActivity(), R.layout.action_item, actions);
+		adapter = new ActionsAdapter(getActivity(), actions);
 		setListAdapter(adapter);
 		LoaderManager loaderManager = getLoaderManager();
 		// attach the first loader for populating the publications
 		loaderManager.initLoader(0, null, this);
 		if (savedInstanceState != null) {
-			if (savedInstanceState.containsKey(LOADERS)) {
-				loadersCount = savedInstanceState.getInt(LOADERS);
+			if (savedInstanceState.containsKey(EXTRA_LOADERS_COUNT)) {
+				loadersCount = savedInstanceState.getInt(EXTRA_LOADERS_COUNT);
 			}
 		}
 		// attach additional tasks for updating devices
@@ -125,17 +144,19 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 		if (loadersCount > 1) {
 			getLoaderManager().destroyLoader(--loadersCount);
 		}
-		Log.d(TAG, "onLoadFinished : " + loadersCount + ", " + loader.getId());
 		this.publications = publications;
 		// reload the adapter for the first loader
 		if (loader.getId() == 0) {
-			adapter.clear();
-			for (String action : ActionsIntentService.ACTIONS) {
-				adapter.add(action);
+			if (this.publications != null) {
+				adapter.clear();
+				for (String action : ActionsIntentService.ACTIONS) {
+					adapter.add(action);
+				}
+				adapter.notifyDataSetChanged(this.publications);
+			} else {
+				Toast.makeText(getActivity(), getString(R.string.action_load_error), Toast.LENGTH_SHORT).show();
 			}
-			adapter.notifyDataSetChanged(this.publications);
 		} else {
-			Log.d(TAG, "onLoadFinished, done updating, has publications? " + (this.publications != null));
 			adapter.notifyDataSetChanged(this.publications, ((ActionsLoader) loader).getActionToEnable());
 		}
 	}

@@ -42,5 +42,7 @@
     <string name="updating_sync">Updating the sync settings, please wait.</string>
     <string name="sync_updated">The sync settings have been updated, thank you.</string>
     <string name="sync_error">There was an error updating the sync settings. Please check your connection and try again.</string>
+    <string name="action_load_error">There was an error getting the device settings.</string>
+    <string name="title_deregister">Deregister device?</string>
 
 </resources>

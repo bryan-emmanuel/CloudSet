@@ -23,23 +23,23 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:padding="6dip">
+    android:padding="6dip"
+    android:descendantFocusability="blocksDescendants">
     
-    <CheckBox android:id="@+id/enabled"
+    <ImageButton android:id="@+id/deregister"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:focusable="false"
-        android:clickable="false"/>
+        android:src="@android:drawable/ic_menu_delete"/>
 
-    <TextView android:id="@+id/action"
+    <TextView android:id="@+id/device"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:layout_toLeftOf="@id/enabled"
+        android:layout_toLeftOf="@id/deregister"
         android:layout_width="fill_parent"
-        android:layout_height="match_parent"
+        android:layout_height="fill_parent"
         android:layout_alignParentTop="true"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"

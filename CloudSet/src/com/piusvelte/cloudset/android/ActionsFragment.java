@@ -125,13 +125,13 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 		}
 		// attach additional tasks for updating devices
 		for (int i = 1; i < loadersCount; i++) {
-			loaderManager.initLoader(loadersCount, null, this);
+			loaderManager.initLoader(i, null, this);
 		}
 	}
 
 	@Override
 	public Loader<List<SimpleAction>> onCreateLoader(int arg0, Bundle args) {
-		if (loadersCount > 0) {
+		if (arg0 > 0) {
 			if ((args != null)
 					&& args.containsKey(EXTRA_ACTION)
 					&& args.containsKey(EXTRA_REMOVE)) {
@@ -153,17 +153,17 @@ public class ActionsFragment extends ListFragment implements LoaderManager.Loade
 		this.publications = publications;
 		// reload the adapter for the first loader
 		if (loader.getId() == 0) {
-			if (this.publications != null) {
+			if (publications != null) {
 				adapter.clear();
 				for (String action : ActionsIntentService.ACTIONS) {
 					adapter.add(action);
 				}
-				adapter.notifyDataSetChanged(this.publications);
+				adapter.notifyDataSetChanged(publications);
 			} else {
 				Toast.makeText(getActivity(), getString(R.string.action_load_error), Toast.LENGTH_SHORT).show();
 			}
 		} else {
-			adapter.notifyDataSetChanged(this.publications, ((ActionsLoader) loader).getActionToEnable());
+			adapter.notifyDataSetChanged(publications, ((ActionsLoader) loader).getActionToEnable());
 		}
 	}
 

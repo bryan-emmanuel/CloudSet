@@ -108,18 +108,15 @@ public class DevicesFragment extends ListFragment implements DevicesListListener
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		if (callback != null) {
-			String publisher;
-			String subscriber;
 			if (isSubscriptions) {
-				publisher = callback.getDeviceId(position);
-				subscriber = callback.getRegistration();
+				startActivity(new Intent(getActivity(), Actions.class)
+				.putExtra(Actions.EXTRA_PUBLISHER, callback.getDeviceId(position))
+				.putExtra(Actions.EXTRA_SUBSCRIBER, callback.getRegistration()));
 			} else {
-				publisher = callback.getRegistration();
-				subscriber = callback.getDeviceId(position);
+				startActivity(new Intent(getActivity(), Actions.class)
+				.putExtra(Actions.EXTRA_PUBLISHER, callback.getRegistration())
+				.putExtra(Actions.EXTRA_SUBSCRIBER, callback.getDeviceId(position)));
 			}
-			startActivity(new Intent(getActivity().getApplicationContext(), Actions.class)
-			.putExtra(Actions.EXTRA_PUBLISHER, publisher)
-			.putExtra(Actions.EXTRA_SUBSCRIBER, subscriber));
 		}
 	}
 

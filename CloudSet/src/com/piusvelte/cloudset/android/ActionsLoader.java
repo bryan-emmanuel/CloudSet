@@ -21,32 +21,26 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 	private Deviceendpoint endpoint;
 	private String subscriberId;
 	private String publisherId;
-	private List<SimpleAction> publications;
+	private List<SimpleAction> publications = null;
 	private String action = null;
 	private String actionToEnable = null;
 	private boolean remove = false;
 
 	public ActionsLoader(Context context, String subscriberId, String publisherId) {
 		super(context);
-
 		this.subscriberId = subscriberId;
 		this.publisherId = publisherId;
-
 		Context globalContext = getContext();
-
 		SharedPreferences sp = globalContext.getSharedPreferences(globalContext.getString(R.string.app_name), Context.MODE_PRIVATE);
 		String accountName = sp.getString(globalContext.getString(R.string.preference_account_name), null);
-
 		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(globalContext,
 				"server:client_id:" + globalContext.getString(R.string.client_id));
 		credential.setSelectedAccountName(accountName);
-
 		Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
 				AndroidHttp.newCompatibleTransport(),
 				new JacksonFactory(),
 				credential)
 		.setApplicationName(globalContext.getString(R.string.app_name));
-
 		endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 	}
 
@@ -71,6 +65,7 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 						if (publication.getName().equals(action)) {
 							endpoint.deviceEndpoint().unsubscribe(subscriberId, publication.getId()).execute();
 							publications.remove(i);
+							break;
 						}
 					}
 				} else {
@@ -78,14 +73,20 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 					publications.add(publication);
 				}
 			} catch (IOException e) {
-				Log.e(TAG, e.toString());
+				e.printStackTrace();
 			}
 			return publications;
 		} else {
+			Log.d(TAG, "subscriptions, " + subscriberId + ", " + publisherId);
 			try {
-				return endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
+				List<SimpleAction> publications = endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
+				if (publications != null) {
+					return publications;
+				} else {
+					return new ArrayList<SimpleAction>();
+				}
 			} catch (IOException e) {
-				Log.e(TAG, e.toString());
+				e.printStackTrace();
 			}
 			return null;
 		}

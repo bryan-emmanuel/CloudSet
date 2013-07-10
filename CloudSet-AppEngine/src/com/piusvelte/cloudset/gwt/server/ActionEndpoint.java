@@ -51,17 +51,20 @@ public class ActionEndpoint {
 
 			EntityManager mgr = getEntityManager();
 
-			List<String> subscriberIds = getSubscriberIds(getPublicationId(action.getPublisher(), action.getName()));
-			if (subscriberIds != null) {
-				try {
-					for (String subscriberId : subscriberIds) {
-						Device device = mgr.find(Device.class, subscriberId);
-						if (device != null) {
-							doSendViaGcm(user, action.getName(), action.getExtras(), sender, device);
+			Long publicationId = getPublicationId(action.getPublisher(), action.getName());
+			if (publicationId != null) {
+				List<String> subscriberIds = getSubscriberIds(publicationId);
+				if (subscriberIds != null) {
+					try {
+						for (String subscriberId : subscriberIds) {
+							Device device = mgr.find(Device.class, subscriberId);
+							if (device != null) {
+								doSendViaGcm(user, action.getName(), action.getExtras(), sender, device);
+							}
 						}
+					} finally {
+						mgr.close();
 					}
-				} finally {
-					mgr.close();
 				}
 			}
 		} else {

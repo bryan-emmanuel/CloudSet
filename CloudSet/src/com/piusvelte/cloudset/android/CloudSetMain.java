@@ -1,12 +1,12 @@
 /*
  * CloudSet - Android devices settings synchronization
  * Copyright (C) 2013 Bryan Emmanuel
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  *  Bryan Emmanuel piusvelte@gmail.com
  */
 package com.piusvelte.cloudset.android;
@@ -42,19 +42,13 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 
 public class CloudSetMain extends FragmentActivity implements
-ActionBar.TabListener,
-AccountsFragment.AccountsListener,
-DevicesListener,
-LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
+		ActionBar.TabListener, AccountsFragment.AccountsListener,
+		DevicesListener, LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 
 	private static final String TAG = "CloudSetMain";
 
@@ -82,35 +76,45 @@ LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// not called on screen rotate
-		GooglePlayServicesUtil.getOpenSourceSoftwareLicenseInfo(getApplicationContext());
+		GooglePlayServicesUtil
+				.getOpenSourceSoftwareLicenseInfo(getApplicationContext());
 		setContentView(R.layout.activity_main);
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-		sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+		sectionsPagerAdapter = new SectionsPagerAdapter(
+				getSupportFragmentManager());
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		viewPager.setAdapter(sectionsPagerAdapter);
-		viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-			@Override
-			public void onPageSelected(int position) {
-				actionBar.setSelectedNavigationItem(position);
-			}
-		});
+		viewPager
+				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+					@Override
+					public void onPageSelected(int position) {
+						actionBar.setSelectedNavigationItem(position);
+					}
+				});
+
 		for (int i = 0; i < sectionsPagerAdapter.getCount(); i++) {
 			actionBar.addTab(actionBar.newTab()
 					.setText(sectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
-		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
-		account = sp.getString(getString(R.string.preference_account_name), null);
-		registrationId = sp.getString(getString(R.string.preference_gcm_registration), null);
+
+		SharedPreferences sp = getSharedPreferences(
+				getString(R.string.app_name), MODE_PRIVATE);
+		account = sp.getString(getString(R.string.preference_account_name),
+				null);
+		registrationId = sp.getString(
+				getString(R.string.preference_gcm_registration), null);
 		setCurrentTab();
 		LoaderManager loaderManager = getSupportLoaderManager();
 		loaderManager.initLoader(0, null, this);
+
 		if (savedInstanceState != null) {
 			if (savedInstanceState.containsKey(EXTRA_LOADERS_COUNT)) {
 				loadersCount = savedInstanceState.getInt(EXTRA_LOADERS_COUNT);
 			}
 		}
+
 		for (int i = 1; i < loadersCount; i++) {
 			loaderManager.initLoader(i, null, this);
 		}
@@ -143,32 +147,48 @@ LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 	private void handleGCMIntent(Intent intent) {
 		if (intent != null) {
 			String action = intent.getAction();
+
 			if (action != null) {
 				if (action.equals(ACTION_GCM_ERROR)) {
-					Toast.makeText(getApplicationContext(), "Error occurred during device registration", Toast.LENGTH_SHORT).show();
+					Toast.makeText(getApplicationContext(),
+							"Error occurred during device registration",
+							Toast.LENGTH_SHORT).show();
 					account = null;
 					registrationId = null;
-					getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
-					.edit()
-					.putString(getString(R.string.preference_account_name), account)
-					.putString(getString(R.string.preference_gcm_registration), registrationId)
-					.commit();
+					getSharedPreferences(getString(R.string.app_name),
+							MODE_PRIVATE)
+							.edit()
+							.putString(
+									getString(R.string.preference_account_name),
+									account)
+							.putString(
+									getString(R.string.preference_gcm_registration),
+									registrationId).commit();
 					setCurrentTab();
-				} else if (action.equals(ACTION_GCM_REGISTERED) && intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
-					registrationId = intent.getStringExtra(EXTRA_DEVICE_REGISTRATION);
-					getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
-					.edit()
-					.putString(getString(R.string.preference_gcm_registration), registrationId)
-					.commit();
+				} else if (action.equals(ACTION_GCM_REGISTERED)
+						&& intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
+					registrationId = intent
+							.getStringExtra(EXTRA_DEVICE_REGISTRATION);
+					getSharedPreferences(getString(R.string.app_name),
+							MODE_PRIVATE)
+							.edit()
+							.putString(
+									getString(R.string.preference_gcm_registration),
+									registrationId).commit();
 					setCurrentTab();
-				} else if (action.equals(ACTION_GCM_UNREGISTERED) && intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
+				} else if (action.equals(ACTION_GCM_UNREGISTERED)
+						&& intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
 					account = null;
 					registrationId = null;
-					getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
-					.edit()
-					.putString(getString(R.string.preference_account_name), account)
-					.putString(getString(R.string.preference_gcm_registration), registrationId)
-					.commit();
+					getSharedPreferences(getString(R.string.app_name),
+							MODE_PRIVATE)
+							.edit()
+							.putString(
+									getString(R.string.preference_account_name),
+									account)
+							.putString(
+									getString(R.string.preference_gcm_registration),
+									registrationId).commit();
 					setCurrentTab();
 				}
 			}
@@ -194,36 +214,42 @@ LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int itemId = item.getItemId();
+
 		if (itemId == R.id.action_refresh) {
 			loadDevices();
 			return true;
 		} else if (item.getItemId() == R.id.action_about) {
 			(new AlertDialog.Builder(this))
-			.setTitle(R.string.about_title)
-			.setMessage(R.string.about_message)
-			.setPositiveButton(android.R.string.ok, new OnClickListener() {
+					.setTitle(R.string.about_title)
+					.setMessage(R.string.about_message)
+					.setPositiveButton(android.R.string.ok,
+							new OnClickListener() {
 
-				@Override
-				public void onClick(DialogInterface arg0, int arg1) {
-					arg0.cancel();
-				}
+								@Override
+								public void onClick(DialogInterface arg0,
+										int arg1) {
+									arg0.cancel();
+								}
 
-			})
-			.setCancelable(true)
-			.show();
+							}).setCancelable(true).show();
 			return true;
 		}
+
 		return super.onOptionsItemSelected(item);
 	}
 
 	private void updateDevicesFragments() {
 		if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) {
-			DevicesListListener listener = (DevicesListListener) getSupportFragmentManager().findFragmentByTag(getFragmentTag(FRAGMENT_SUBSCRIPTIONS));
+			DevicesListListener listener = (DevicesListListener) getSupportFragmentManager()
+					.findFragmentByTag(getFragmentTag(FRAGMENT_SUBSCRIPTIONS));
+
 			if (listener != null) {
 				listener.onDevicesLoaded(devices);
 			}
 		} else if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) {
-			DevicesListListener listener = (DevicesListListener) getSupportFragmentManager().findFragmentByTag(getFragmentTag(FRAGMENT_SUBSCRIBERS));
+			DevicesListListener listener = (DevicesListListener) getSupportFragmentManager()
+					.findFragmentByTag(getFragmentTag(FRAGMENT_SUBSCRIBERS));
+
 			if (listener != null) {
 				listener.onDevicesLoaded(devices);
 			}
@@ -280,6 +306,7 @@ LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 				fragment.setArguments(b);
 				return fragment;
 			}
+
 			return null;
 		}
 
@@ -291,6 +318,7 @@ LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 		@Override
 		public CharSequence getPageTitle(int position) {
 			Locale l = Locale.getDefault();
+
 			switch (position) {
 			case FRAGMENT_ACCOUNT:
 				return getString(R.string.title_accounts).toUpperCase(l);
@@ -299,6 +327,7 @@ LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 			case FRAGMENT_SUBSCRIBERS:
 				return getString(R.string.title_subscribers).toUpperCase(l);
 			}
+
 			return null;
 		}
 	}
@@ -313,9 +342,9 @@ LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 		this.account = account;
 		// store the account
 		getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE)
-		.edit()
-		.putString(getString(R.string.preference_account_name), account)
-		.commit();
+				.edit()
+				.putString(getString(R.string.preference_account_name), account)
+				.commit();
 		// register with GCM, this is an asynchronous operation
 		GCMIntentService.register(getApplicationContext());
 		// move to show "loading devices"
@@ -324,7 +353,7 @@ LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 
 	@Override
 	public boolean hasRegistration() {
-		return (account != null) && (registrationId != null);
+		return account != null && registrationId != null;
 	}
 
 	@Override
@@ -334,22 +363,26 @@ LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 
 	@Override
 	public String getDeviceId(int which) {
-		if ((devices != null) && (which < devices.size())) {
+		if (devices != null && which < devices.size()) {
 			return devices.get(which).getId();
 		}
+
 		return null;
 	}
 
 	@Override
 	public Loader<List<SimpleDevice>> onCreateLoader(int arg0, Bundle arg1) {
 		if (arg0 > 0) {
-			if ((arg1 != null) && (arg1.containsKey(EXTRA_DEREGISTER_ID))) {
-				return new DevicesLoader(this, account, registrationId, devices, arg1.getString(EXTRA_DEREGISTER_ID));
+			if (arg1 != null && arg1.containsKey(EXTRA_DEREGISTER_ID)) {
+				return new DevicesLoader(this, account, registrationId,
+						devices, arg1.getString(EXTRA_DEREGISTER_ID));
 			} else {
 				return null;
 			}
-		} else {
+		} else if (registrationId != null) {
 			return new DevicesLoader(this, account, registrationId);
+		} else {
+			return null;
 		}
 	}
 
@@ -384,7 +417,8 @@ LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 
 	@Override
 	public void confirmDeregistration(String id) {
-		new ConfirmDialog().setDeviceId(id).show(getSupportFragmentManager(), "confirm:deregister");
+		new ConfirmDialog().setDeviceId(id).show(getSupportFragmentManager(),
+				"confirm:deregister");
 	}
 
 }

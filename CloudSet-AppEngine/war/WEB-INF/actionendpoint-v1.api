@@ -31,8 +31,8 @@
       "path" : "publish",
       "httpMethod" : "POST",
       "scopes" : [ ],
-      "audiences" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com" ],
-      "clientIds" : [ "205428532443-dk41injj401udl6638qg4hb366gd8veg.apps.googleusercontent.com", "205428532443.apps.googleusercontent.com" ],
+      "audiences" : [ "" ],
+      "clientIds" : [ "", "" ],
       "rosyMethod" : "com.piusvelte.cloudset.gwt.server.ActionEndpoint.publish",
       "request" : {
         "body" : "autoTemplate(backendRequest)",

@@ -109,10 +109,9 @@ public class CloudSetMain extends FragmentActivity implements
 		LoaderManager loaderManager = getSupportLoaderManager();
 		loaderManager.initLoader(0, null, this);
 
-		if (savedInstanceState != null) {
-			if (savedInstanceState.containsKey(EXTRA_LOADERS_COUNT)) {
-				loadersCount = savedInstanceState.getInt(EXTRA_LOADERS_COUNT);
-			}
+		if (savedInstanceState != null
+				&& savedInstanceState.containsKey(EXTRA_LOADERS_COUNT)) {
+			loadersCount = savedInstanceState.getInt(EXTRA_LOADERS_COUNT);
 		}
 
 		for (int i = 1; i < loadersCount; i++) {
@@ -176,6 +175,7 @@ public class CloudSetMain extends FragmentActivity implements
 									getString(R.string.preference_gcm_registration),
 									registrationId).commit();
 					setCurrentTab();
+					loadDevices();
 				} else if (action.equals(ACTION_GCM_UNREGISTERED)
 						&& intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
 					account = null;
@@ -275,7 +275,11 @@ public class CloudSetMain extends FragmentActivity implements
 
 	public void loadDevices() {
 		if (hasRegistration()) {
-			getSupportLoaderManager().initLoader(0, null, this).forceLoad();
+			Loader<List<SimpleDevice>> loader = getSupportLoaderManager().initLoader(0, null, this);
+
+			if (loader != null) {
+				loader.forceLoad();
+			}
 		} else {
 			// set to new empty List for the adapter
 			devices = new ArrayList<SimpleDevice>();
@@ -392,13 +396,14 @@ public class CloudSetMain extends FragmentActivity implements
 		if (loadersCount > 1) {
 			getLoaderManager().destroyLoader(--loadersCount);
 		}
+
 		devices = arg1;
 		updateDevicesFragments();
 	}
 
 	@Override
 	public void onLoaderReset(Loader<List<SimpleDevice>> arg0) {
-		// TODO Auto-generated method stub
+		//NO-OP
 	}
 
 	@Override

@@ -75,7 +75,6 @@ public class CloudSetMain extends FragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// not called on screen rotate
 		GooglePlayServicesUtil
 				.getOpenSourceSoftwareLicenseInfo(getApplicationContext());
 		setContentView(R.layout.activity_main);

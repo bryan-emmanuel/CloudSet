@@ -28,7 +28,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.net.wifi.WifiManager;
-import android.os.Debug;
 import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
@@ -62,7 +61,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	private Deviceendpoint endpoint;
 
-	protected static final String PROJECT_NUMBER = "205428532443";
+	protected static final String PROJECT_NUMBER = "271877614630";
 
 	/**
 	 * Register the device for GCM.
@@ -106,7 +105,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 					.usingAudience(
 							context,
 							"server:client_id:"
-									+ context.getString(R.string.client_id));
+									+ context.getString(R.string.android_audience));
 			credential.setSelectedAccountName(accountName);
 
 			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
@@ -283,6 +282,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 				return;
 			}
 		}
+
+		endpoint = null;
 
 		sendGCMIntent(context, CloudSetMain.ACTION_GCM_UNREGISTERED, null);
 

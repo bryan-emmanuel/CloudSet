@@ -30,9 +30,10 @@
     "actionendpoint.actionEndpoint.publish" : {
       "path" : "publish",
       "httpMethod" : "POST",
-      "scopes" : [ ],
-      "audiences" : [ "" ],
-      "clientIds" : [ "", "" ],
+      "authLevel" : "NONE",
+      "scopes" : [ "https://www.googleapis.com/auth/userinfo.email" ],
+      "audiences" : [ "271877614630.apps.googleusercontent.com" ],
+      "clientIds" : [ "271877614630-u9e163vco9kt5c3l4kagm4sff7crp0mr.apps.googleusercontent.com" ],
       "rosyMethod" : "com.piusvelte.cloudset.gwt.server.ActionEndpoint.publish",
       "request" : {
         "body" : "autoTemplate(backendRequest)",

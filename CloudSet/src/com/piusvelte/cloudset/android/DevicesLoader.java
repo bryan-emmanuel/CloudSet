@@ -20,7 +20,6 @@
 package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -31,7 +30,6 @@ import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.SimpleDevice;
 
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
-import android.util.Log;
 
 public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
 
@@ -44,7 +42,7 @@ public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
 		super(context);
 		this.registrationId = registrationId;
 		Context globalContext = getContext();
-		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(globalContext.getApplicationContext(), "server:client_id:" + globalContext.getString(R.string.client_id));
+		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(globalContext.getApplicationContext(), "server:client_id:" + globalContext.getString(R.string.android_audience));
 		credential.setSelectedAccountName(account);
 		Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
 				AndroidHttp.newCompatibleTransport(),

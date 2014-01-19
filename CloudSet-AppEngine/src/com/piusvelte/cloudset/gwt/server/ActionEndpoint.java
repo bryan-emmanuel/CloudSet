@@ -1,12 +1,12 @@
 /*
  * CloudSet - Android devices settings synchronization
  * Copyright (C) 2013 Bryan Emmanuel
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  *  Bryan Emmanuel piusvelte@gmail.com
  */
 package com.piusvelte.cloudset.gwt.server;
@@ -38,7 +38,7 @@ import com.piusvelte.cloudset.gwt.shared.Extra;
 
 @Api(name = "actionendpoint",
 namespace = @ApiNamespace(ownerDomain = "piusvelte.com", ownerName = "piusvelte.com", packagePath = "cloudset.gwt.server"),
-clientIds = {Ids.WEB_CLIENT_ID, Ids.ANDROID_CLIENT_ID},
+clientIds = {Ids.ANDROID_CLIENT_ID},
 audiences = {Ids.ANDROID_AUDIENCE})
 public class ActionEndpoint {
 
@@ -124,7 +124,6 @@ public class ActionEndpoint {
 					device.setId(canonicalRegId);
 					endpoint.add(user, device);
 				} catch (OAuthRequestException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -134,7 +133,6 @@ public class ActionEndpoint {
 				try {
 					endpoint.remove(user, device.getId());
 				} catch (OAuthRequestException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

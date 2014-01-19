@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/B9iG8ArgKbINLuluI0Es0ekM98E\"",
+ "etag": "\"FWXGb4Q2eZqWRcG8B2Ixrr-vrqQ/M1ZL6mUlv2pwZosnjnSw-J7b_UQ\"",
  "discoveryVersion": "v1",
  "id": "actionendpoint:v1",
  "name": "actionendpoint",
@@ -62,6 +62,15 @@
    "location": "query"
   }
  },
+ "auth": {
+  "oauth2": {
+   "scopes": {
+    "https://www.googleapis.com/auth/userinfo.email": {
+     "description": "View your email address"
+    }
+   }
+  }
+ },
  "schemas": {
   "Action": {
    "id": "Action",
@@ -118,6 +127,9 @@
    },
    "parameterOrder": [
     "resource"
+   ],
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
    ]
   }
  }

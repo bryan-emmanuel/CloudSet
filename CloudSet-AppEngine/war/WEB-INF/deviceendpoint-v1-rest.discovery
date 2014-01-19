@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/BcnF-F2U4GbDF2X2W9KhKnuT0SE\"",
+ "etag": "\"FWXGb4Q2eZqWRcG8B2Ixrr-vrqQ/gcUXHr2WhlhVHRyYe7XAoD2VSM0\"",
  "discoveryVersion": "v1",
  "id": "deviceendpoint:v1",
  "name": "deviceendpoint",
@@ -62,6 +62,15 @@
    "type": "string",
    "description": "IP address of the site where the request originates. Use this if you want to enforce per-user limits.",
    "location": "query"
+  }
+ },
+ "auth": {
+  "oauth2": {
+   "scopes": {
+    "https://www.googleapis.com/auth/userinfo.email": {
+     "description": "View your email address"
+    }
+   }
   }
  },
  "schemas": {
@@ -159,11 +168,15 @@
      "path": "add",
      "httpMethod": "POST",
      "request": {
-      "$ref": "Device"
+      "$ref": "Device",
+      "parameterName": "resource"
      },
      "response": {
       "$ref": "Device"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
     },
     "get": {
      "id": "deviceendpoint.deviceEndpoint.get",
@@ -181,7 +194,10 @@
      ],
      "response": {
       "$ref": "Device"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
     },
     "list": {
      "id": "deviceendpoint.deviceEndpoint.list",
@@ -189,7 +205,10 @@
      "httpMethod": "GET",
      "response": {
       "$ref": "SimpleDeviceCollection"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
     },
     "patch": {
      "id": "deviceendpoint.deviceEndpoint.patch",
@@ -210,7 +229,10 @@
      },
      "response": {
       "$ref": "Device"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
     },
     "remove": {
      "id": "deviceendpoint.deviceEndpoint.remove",
@@ -228,7 +250,10 @@
      ],
      "response": {
       "$ref": "Device"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
     },
     "subscribe": {
      "id": "deviceendpoint.deviceEndpoint.subscribe",
@@ -258,7 +283,10 @@
      ],
      "response": {
       "$ref": "SimpleAction"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
     },
     "subscribers": {
      "id": "deviceendpoint.deviceEndpoint.subscribers",
@@ -276,7 +304,10 @@
      ],
      "response": {
       "$ref": "SimpleDeviceCollection"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
     },
     "subscriptions": {
      "id": "deviceendpoint.deviceEndpoint.subscriptions",
@@ -300,7 +331,10 @@
      ],
      "response": {
       "$ref": "SimpleActionCollection"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
     },
     "unsubscribe": {
      "id": "deviceendpoint.deviceEndpoint.unsubscribe",
@@ -322,6 +356,9 @@
      "parameterOrder": [
       "subscriber",
       "publication"
+     ],
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
      ]
     },
     "update": {
@@ -329,11 +366,15 @@
      "path": "device",
      "httpMethod": "PUT",
      "request": {
-      "$ref": "Device"
+      "$ref": "Device",
+      "parameterName": "resource"
      },
      "response": {
       "$ref": "Device"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
     }
    }
   }

@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"381e4s_8vUCNPclzPT4yxtto0eA/BcnF-F2U4GbDF2X2W9KhKnuT0SE\"",
+ "etag": "\"FWXGb4Q2eZqWRcG8B2Ixrr-vrqQ/gcUXHr2WhlhVHRyYe7XAoD2VSM0\"",
  "discoveryVersion": "v1",
  "id": "deviceendpoint:v1",
  "name": "deviceendpoint",
@@ -60,6 +60,15 @@
    "type": "string",
    "description": "IP address of the site where the request originates. Use this if you want to enforce per-user limits.",
    "location": "query"
+  }
+ },
+ "auth": {
+  "oauth2": {
+   "scopes": {
+    "https://www.googleapis.com/auth/userinfo.email": {
+     "description": "View your email address"
+    }
+   }
   }
  },
  "schemas": {
@@ -162,7 +171,10 @@
    ],
    "returns": {
     "$ref": "Device"
-   }
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
   },
   "deviceendpoint.deviceEndpoint.get": {
    "id": "deviceendpoint.deviceEndpoint.get",
@@ -178,14 +190,20 @@
    ],
    "returns": {
     "$ref": "Device"
-   }
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
   },
   "deviceendpoint.deviceEndpoint.list": {
    "id": "deviceendpoint.deviceEndpoint.list",
    "allowGet": true,
    "returns": {
     "$ref": "SimpleDeviceCollection"
-   }
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
   },
   "deviceendpoint.deviceEndpoint.patch": {
    "id": "deviceendpoint.deviceEndpoint.patch",
@@ -227,7 +245,10 @@
    ],
    "returns": {
     "$ref": "Device"
-   }
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
   },
   "deviceendpoint.deviceEndpoint.remove": {
    "id": "deviceendpoint.deviceEndpoint.remove",
@@ -242,7 +263,10 @@
    ],
    "returns": {
     "$ref": "Device"
-   }
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
   },
   "deviceendpoint.deviceEndpoint.subscribe": {
    "id": "deviceendpoint.deviceEndpoint.subscribe",
@@ -267,7 +291,10 @@
    ],
    "returns": {
     "$ref": "SimpleAction"
-   }
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
   },
   "deviceendpoint.deviceEndpoint.subscribers": {
    "id": "deviceendpoint.deviceEndpoint.subscribers",
@@ -282,7 +309,10 @@
    ],
    "returns": {
     "$ref": "SimpleDeviceCollection"
-   }
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
   },
   "deviceendpoint.deviceEndpoint.subscriptions": {
    "id": "deviceendpoint.deviceEndpoint.subscriptions",
@@ -302,7 +332,10 @@
    ],
    "returns": {
     "$ref": "SimpleActionCollection"
-   }
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
   },
   "deviceendpoint.deviceEndpoint.unsubscribe": {
    "id": "deviceendpoint.deviceEndpoint.unsubscribe",
@@ -320,6 +353,9 @@
    "parameterOrder": [
     "subscriber",
     "publication"
+   ],
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
    ]
   },
   "deviceendpoint.deviceEndpoint.update": {
@@ -334,7 +370,10 @@
    ],
    "returns": {
     "$ref": "Device"
-   }
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
   }
  }
 }

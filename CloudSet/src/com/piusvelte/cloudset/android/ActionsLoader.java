@@ -34,7 +34,7 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 		SharedPreferences sp = globalContext.getSharedPreferences(globalContext.getString(R.string.app_name), Context.MODE_PRIVATE);
 		String accountName = sp.getString(globalContext.getString(R.string.preference_account_name), null);
 		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(globalContext,
-				"server:client_id:" + globalContext.getString(R.string.client_id));
+				"server:client_id:" + globalContext.getString(R.string.android_audience));
 		credential.setSelectedAccountName(accountName);
 		Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
 				AndroidHttp.newCompatibleTransport(),
@@ -50,7 +50,7 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 		this.action = action;
 		this.remove = remove;
 	}
-	
+
 	public String getActionToEnable() {
 		return actionToEnable;
 	}

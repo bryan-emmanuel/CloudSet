@@ -70,7 +70,12 @@ public class CloudSetMain extends FragmentActivity implements
 
 	private String account;
 	private String registrationId;
-	private List<SimpleDevice> devices = new ArrayList<SimpleDevice>();
+	private List<SimpleDevice> devices;
+	// loader 0 if for registration, degregistration, and loading devices
+	// loaders 1+ are for created for deregistering additional devices
+	private ArrayList<Integer> loaderIds;
+	private static final String EXTRA_LOADER_IDS = "loader_ids";
+	private static final String EXTRA_DEREGISTER_ID = "deregister_id";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -105,33 +110,46 @@ public class CloudSetMain extends FragmentActivity implements
 		registrationId = sp.getString(
 				getString(R.string.preference_gcm_registration), null);
 		setCurrentTab();
+
+		// create the loader for registration, deregistration, and loading devices
 		LoaderManager loaderManager = getSupportLoaderManager();
 		loaderManager.initLoader(0, null, this);
 
 		if (savedInstanceState != null
-				&& savedInstanceState.containsKey(EXTRA_LOADERS_COUNT)) {
-			loadersCount = savedInstanceState.getInt(EXTRA_LOADERS_COUNT);
+				&& savedInstanceState.containsKey(EXTRA_LOADER_IDS)) {
+			loaderIds = savedInstanceState.getIntegerArrayList(EXTRA_LOADER_IDS);
+		} else {
+			loaderIds = new ArrayList<Integer>();
 		}
 
-		for (int i = 1; i < loadersCount; i++) {
-			loaderManager.initLoader(i, null, this);
+		for (int i = 0, s = loaderIds.size(); i < s; i++) {
+			// reconnect to additional loaders for deregistering additional devices
+			loaderManager.initLoader(loaderIds.get(i), null, this);
 		}
 	}
-
-	private int loadersCount = 1;
-	private static final String EXTRA_LOADERS_COUNT = "loaders_count";
-	private static final String EXTRA_DEREGISTER_ID = "deregister_id";
 
 	@Override
 	public void onSaveInstanceState(Bundle state) {
 		super.onSaveInstanceState(state);
-		state.putInt(EXTRA_LOADERS_COUNT, loadersCount);
+		state.putIntegerArrayList(EXTRA_LOADER_IDS, loaderIds);
 	}
 
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		handleGCMIntent(intent);
+	}
+
+	private int getNextLoaderId() {
+		int id = 1;
+
+		while (loaderIds.contains(id)) {
+			id++;
+		}
+
+		loaderIds.add(id);
+
+		return id;
 	}
 
 	private void setCurrentTab() {
@@ -174,7 +192,7 @@ public class CloudSetMain extends FragmentActivity implements
 									getString(R.string.preference_gcm_registration),
 									registrationId).commit();
 					setCurrentTab();
-					loadDevices();
+					loadDevices(false);
 				} else if (action.equals(ACTION_GCM_UNREGISTERED)
 						&& intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
 					account = null;
@@ -215,7 +233,7 @@ public class CloudSetMain extends FragmentActivity implements
 		int itemId = item.getItemId();
 
 		if (itemId == R.id.action_refresh) {
-			loadDevices();
+			loadDevices(false);
 			return true;
 		} else if (item.getItemId() == R.id.action_about) {
 			(new AlertDialog.Builder(this))
@@ -237,20 +255,28 @@ public class CloudSetMain extends FragmentActivity implements
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void updateDevicesFragments() {
-		if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS) {
-			DevicesListListener listener = (DevicesListListener) getSupportFragmentManager()
-					.findFragmentByTag(getFragmentTag(FRAGMENT_SUBSCRIPTIONS));
+	private boolean isCurrentTabDevices() {
+		return viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS || viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS;
+	}
 
-			if (listener != null) {
-				listener.onDevicesLoaded(devices);
+	private DevicesListListener getDevicesListener() {
+		if (isCurrentTabDevices()) {
+			Fragment f = getSupportFragmentManager().findFragmentByTag(getFragmentTag(viewPager.getCurrentItem()));
+
+			if (f instanceof DevicesListListener) {
+				return (DevicesListListener) f;
 			}
-		} else if (viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS) {
-			DevicesListListener listener = (DevicesListListener) getSupportFragmentManager()
-					.findFragmentByTag(getFragmentTag(FRAGMENT_SUBSCRIBERS));
+		}
 
-			if (listener != null) {
-				listener.onDevicesLoaded(devices);
+		return null;
+	}
+
+	private void setLoadedDevices() {
+		if (isCurrentTabDevices()) {
+			DevicesListListener l = getDevicesListener();
+
+			if (l != null) {
+				l.onDevicesLoaded(devices);
 			}
 		}
 	}
@@ -259,30 +285,59 @@ public class CloudSetMain extends FragmentActivity implements
 	public void onTabSelected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
 		viewPager.setCurrentItem(tab.getPosition());
-		updateDevicesFragments();
+
+		if (isCurrentTabDevices()) {
+			if (hasRegistration()) {
+				loadDevices(true);
+			} else {
+				DevicesListListener l = getDevicesListener();
+
+				if (l != null) {
+					l.onDevicesLoadMessage(getString(R.string.no_account));
+				}
+			}
+		}
 	}
 
 	@Override
 	public void onTabUnselected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
+		// NO-OP
 	}
 
 	@Override
 	public void onTabReselected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
+		// NO-OP
 	}
 
-	public void loadDevices() {
+	@Override
+	public void loadDevices(boolean useCache) {
 		if (hasRegistration()) {
-			Loader<List<SimpleDevice>> loader = getSupportLoaderManager().initLoader(0, null, this);
+			if (useCache && devices != null) {
+				setLoadedDevices();
+			} else {
+				Loader<List<SimpleDevice>> loader = getSupportLoaderManager()
+						.initLoader(0, null, this);
 
-			if (loader != null) {
-				loader.forceLoad();
+				if (loader != null) {
+					loader.forceLoad();
+				}
+
+				DevicesListListener l = getDevicesListener();
+
+				if (l != null) {
+					l.onDevicesLoadMessage(getString(R.string.loading_devices));
+				}
 			}
 		} else {
 			// set to new empty List for the adapter
-			devices = new ArrayList<SimpleDevice>();
-			updateDevicesFragments();
+			devices = null;
+			DevicesListListener l = getDevicesListener();
+
+			if (l != null) {
+				l.onDevicesLoadMessage(getString(R.string.no_account));
+			}
 		}
 	}
 
@@ -350,8 +405,6 @@ public class CloudSetMain extends FragmentActivity implements
 				.commit();
 		// register with GCM, this is an asynchronous operation
 		GCMIntentService.register(getApplicationContext());
-		// move to show "loading devices"
-		viewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
 	}
 
 	@Override
@@ -374,15 +427,17 @@ public class CloudSetMain extends FragmentActivity implements
 	}
 
 	@Override
-	public Loader<List<SimpleDevice>> onCreateLoader(int arg0, Bundle arg1) {
-		if (arg0 > 0) {
-			if (arg1 != null && arg1.containsKey(EXTRA_DEREGISTER_ID)) {
+	public Loader<List<SimpleDevice>> onCreateLoader(int which, Bundle args) {
+		if (which > 0) {
+			// create a loader for deregistering an additional device
+			if (args != null && args.containsKey(EXTRA_DEREGISTER_ID)) {
 				return new DevicesLoader(this, account, registrationId,
-						devices, arg1.getString(EXTRA_DEREGISTER_ID));
+						devices, args.getString(EXTRA_DEREGISTER_ID));
 			} else {
 				return null;
 			}
 		} else if (registrationId != null) {
+			// create loader 0 for loading devices
 			return new DevicesLoader(this, account, registrationId);
 		} else {
 			return null;
@@ -390,24 +445,31 @@ public class CloudSetMain extends FragmentActivity implements
 	}
 
 	@Override
-	public void onLoadFinished(Loader<List<SimpleDevice>> arg0,
-			List<SimpleDevice> arg1) {
-		if (loadersCount > 1) {
-			getLoaderManager().destroyLoader(--loadersCount);
+	public void onLoadFinished(Loader<List<SimpleDevice>> loader,
+			List<SimpleDevice> devices) {
+		if (loader.getId() > 0) {
+			getSupportLoaderManager().destroyLoader(loader.getId());
+			loaderIds.remove((Integer) loader.getId());
 		}
 
-		devices = arg1;
-		updateDevicesFragments();
+		this.devices = devices;
+
+		if (devices != null) {
+			// either the inital load, or an updated list after deregistering an additional device
+			setLoadedDevices();
+		} else {
+			// network error
+			DevicesListListener l = getDevicesListener();
+
+			if (l != null) {
+				l.onDevicesLoadMessage(getString(R.string.connection_error));
+			}
+		}
 	}
 
 	@Override
 	public void onLoaderReset(Loader<List<SimpleDevice>> arg0) {
-		//NO-OP
-	}
-
-	@Override
-	public List<SimpleDevice> getDevices() {
-		return devices;
+		// NO-OP
 	}
 
 	@Override
@@ -415,7 +477,7 @@ public class CloudSetMain extends FragmentActivity implements
 		if (id != null) {
 			Bundle extras = new Bundle();
 			extras.putString(EXTRA_DEREGISTER_ID, id);
-			getSupportLoaderManager().initLoader(loadersCount++, extras, this);
+			getSupportLoaderManager().initLoader(getNextLoaderId(), extras, this);
 		}
 	}
 
@@ -423,6 +485,11 @@ public class CloudSetMain extends FragmentActivity implements
 	public void confirmDeregistration(String id) {
 		new ConfirmDialog().setDeviceId(id).show(getSupportFragmentManager(),
 				"confirm:deregister");
+	}
+
+	@Override
+	public void doSignIn() {
+		viewPager.setCurrentItem(FRAGMENT_ACCOUNT);
 	}
 
 }

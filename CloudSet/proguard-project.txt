@@ -22,6 +22,14 @@
 #    protected Object[][] getContents();
 #}
 
+-dontobfuscate
+-optimizationpasses 5
+-dontusemixedcaseclassnames
+-dontskipnonpubliclibraryclasses
+-dontpreverify
+-verbose
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*,!code/allocation/variable
+
 -keep class * extends java.util.ListResourceBundle {
     protected Object[][] getContents();
 }

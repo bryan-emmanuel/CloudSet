@@ -42,22 +42,28 @@ public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
 		super(context);
 		this.registrationId = registrationId;
 		Context globalContext = getContext();
-		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(globalContext.getApplicationContext(), "server:client_id:" + globalContext.getString(R.string.android_audience));
+		GoogleAccountCredential credential = GoogleAccountCredential
+				.usingAudience(
+						globalContext.getApplicationContext(),
+						"server:client_id:"
+								+ globalContext
+										.getString(R.string.android_audience));
 		credential.setSelectedAccountName(account);
 		Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
-				AndroidHttp.newCompatibleTransport(),
-				new JacksonFactory(),
-				credential)
-		.setApplicationName(globalContext.getString(R.string.app_name));
-		deviceendpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+				AndroidHttp.newCompatibleTransport(), new JacksonFactory(),
+				credential).setApplicationName(globalContext
+				.getString(R.string.app_name));
+		deviceendpoint = CloudEndpointUtils.updateBuilder(endpointBuilder)
+				.build();
 	}
 
-	public DevicesLoader(Context context, String account, String registrationId, List<SimpleDevice> devices, String deregisterId) {
+	public DevicesLoader(Context context, String account,
+			String registrationId, List<SimpleDevice> devices,
+			String deregisterId) {
 		this(context, account, registrationId);
 		this.devices = devices;
 		this.deregisterId = deregisterId;
 	}
-
 
 	private List<SimpleDevice> devices = null;
 
@@ -66,22 +72,28 @@ public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
 		if (deregisterId != null) {
 			try {
 				deviceendpoint.deviceEndpoint().remove(deregisterId).execute();
-				for (int i = 0, l = devices.size(); i < l; i++) {
-					if (devices.get(i).getId().equals(deregisterId)) {
-						devices.remove(i);
-						break;
+
+				if (devices != null) {
+					for (int i = 0, l = devices.size(); i < l; i++) {
+						if (devices.get(i).getId().equals(deregisterId)) {
+							devices.remove(i);
+							break;
+						}
 					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
 			return devices;
 		} else if (registrationId != null) {
 			try {
-				return deviceendpoint.deviceEndpoint().subscribers(registrationId).execute().getItems();
+				return deviceendpoint.deviceEndpoint()
+						.subscribers(registrationId).execute().getItems();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
 			return null;
 		} else {
 			return null;
@@ -92,6 +104,7 @@ public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
 	public void deliverResult(List<SimpleDevice> devices) {
 		deregisterId = null;
 		this.devices = devices;
+
 		if (isStarted()) {
 			super.deliverResult(devices);
 		}

@@ -77,7 +77,6 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 			}
 			return publications;
 		} else {
-			Log.d(TAG, "subscriptions, " + subscriberId + ", " + publisherId);
 			try {
 				List<SimpleAction> publications = endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
 				if (publications != null) {

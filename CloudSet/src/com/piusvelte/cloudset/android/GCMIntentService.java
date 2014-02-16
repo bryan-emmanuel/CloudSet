@@ -20,7 +20,9 @@
 package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -37,6 +39,8 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.piusvelte.cloudset.gwt.server.deviceendpoint.Deviceendpoint;
 import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.Device;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.SimpleAction;
+import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.SimpleDevice;
 
 /**
  * This class is started up as a service of the Android application. It listens
@@ -69,10 +73,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 * @param mContext
 	 *            the activity's context.
 	 */
-	public static void register(Context mContext) {
-		GCMRegistrar.checkDevice(mContext);
-		GCMRegistrar.checkManifest(mContext);
-		GCMRegistrar.register(mContext, PROJECT_NUMBER);
+	public static void register(Context context) {
+		GCMRegistrar.checkDevice(context);
+		GCMRegistrar.checkManifest(context);
+		GCMRegistrar.register(context, PROJECT_NUMBER);
 	}
 
 	/**
@@ -81,8 +85,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 * @param mContext
 	 *            the activity's context.
 	 */
-	public static void unregister(Context mContext) {
-		GCMRegistrar.unregister(mContext);
+	public static void unregister(Context context) {
+		GCMRegistrar.unregister(context);
 	}
 
 	public GCMIntentService() {
@@ -105,7 +109,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 					.usingAudience(
 							context,
 							"server:client_id:"
-									+ context.getString(R.string.android_audience));
+									+ context
+											.getString(R.string.android_audience));
 			credential.setSelectedAccountName(accountName);
 
 			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
@@ -130,7 +135,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	public void onError(Context context, String errorId) {
-		sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR, null);
+		// NO-OP
 	}
 
 	/**
@@ -215,49 +220,122 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 *            the Context
 	 */
 	@Override
-	public void onRegistered(Context context, String registration) {
+	public void onRegistered(Context context, String newRegistration) {
+		String oldRegistration = getRegistration();
+		if (oldRegistration == null) {
+			if (isRegisteredWithServer(context, newRegistration)) {
+				storeRegistration(newRegistration);
+			} else {
+				registerWithServer(context, newRegistration);
+			}
+		} else if (!oldRegistration.equals(newRegistration)) {
+			registerWithServer(context, newRegistration);
+			migrateDevice(context, oldRegistration, newRegistration);
+		}
 
+	}
+
+	private Device createDevice(String registration)
+			throws UnsupportedEncodingException {
+		return new Device().setId(registration)
+				.setTimestamp(System.currentTimeMillis())
+				.setModel(URLEncoder.encode(android.os.Build.MODEL, "UTF-8"));
+	}
+
+	private boolean isRegisteredWithServer(Context context, String registration) {
 		try {
-			/*
-			 * Using cloud endpoints, see if the device has already been
-			 * registered with the backend
-			 */
 			Device subscriber = getEndpoint(context).deviceEndpoint()
 					.get(registration).execute();
 
-			if (subscriber != null && registration.equals(subscriber.getId())) {
-				sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED,
-						registration);
-				return;
-			}
+			return subscriber != null
+					&& registration.equals(subscriber.getId());
 		} catch (IOException e) {
 			// Ignore
 		}
 
-		// if not already registered with appengine, do so now
-		try {
-			Device unregisteredDevice = new Device()
-					.setId(registration)
-					.setTimestamp(System.currentTimeMillis())
-					.setModel(
-							URLEncoder.encode(android.os.Build.MODEL, "UTF-8"));
+		return false;
+	}
 
+	private void registerWithServer(Context context, String registration) {
+		try {
 			Device registeredDevice = getEndpoint(context).deviceEndpoint()
-					.add(unregisteredDevice).execute();
+					.add(createDevice(registration)).execute();
 
 			if (registeredDevice != null
 					&& registration.equals(registeredDevice.getId())) {
-				sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED,
-						registration);
-			} else {
-				sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR, null);
+				storeRegistration(registration);
 			}
 		} catch (IOException e) {
 			Log.e(GCMIntentService.class.getName(),
 					"Exception received when attempting to register with server at "
 							+ getEndpoint(context).getRootUrl(), e);
+		}
+	}
 
-			sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR, null);
+	private void migrateDevice(Context context, String oldRegistration, String newRegistration) {
+		try {
+			Device oldDevice = getEndpoint(context).deviceEndpoint()
+					.get(oldRegistration).execute();
+
+			if (oldDevice != null) {
+				List<SimpleDevice> subscribers = getEndpoint(context)
+						.deviceEndpoint().subscribers(oldRegistration)
+						.execute().getItems();
+
+				if (subscribers != null) {
+					for (SimpleDevice subscriber : subscribers) {
+						migrateSubscriber(context, oldRegistration,
+								newRegistration, subscriber.getId());
+						migratePublisher(context, oldRegistration,
+								newRegistration, subscriber.getId());
+					}
+				}
+
+				getEndpoint(context).deviceEndpoint()
+						.remove(oldRegistration).execute();
+			}
+		} catch (IOException e) {
+			// Ignore
+		}
+	}
+
+	private void migrateSubscriber(Context context, String oldSubscriber,
+			String newSubscriber, String publisher) {
+		try {
+			List<SimpleAction> subscriptions = getEndpoint(context)
+					.deviceEndpoint().subscriptions(oldSubscriber, publisher)
+					.execute().getItems();
+
+			if (subscriptions != null) {
+				for (SimpleAction subscription : subscriptions) {
+					getEndpoint(context)
+							.deviceEndpoint()
+							.subscribe(newSubscriber, publisher,
+									subscription.getName()).execute();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void migratePublisher(Context context, String oldPublisher,
+			String newPublisher, String subscriber) {
+		try {
+			List<SimpleAction> subscriptions = getEndpoint(context)
+					.deviceEndpoint().subscriptions(subscriber, oldPublisher)
+					.execute().getItems();
+
+			if (subscriptions != null) {
+				for (SimpleAction subscription : subscriptions) {
+					getEndpoint(context)
+							.deviceEndpoint()
+							.subscribe(subscriber, newPublisher,
+									subscription.getName()).execute();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -284,15 +362,18 @@ public class GCMIntentService extends GCMBaseIntentService {
 		}
 
 		endpoint = null;
-
-		sendGCMIntent(context, CloudSetMain.ACTION_GCM_UNREGISTERED, null);
-
 	}
 
-	private void sendGCMIntent(Context context, String action,
-			String registration) {
-		startActivity(new Intent(context, CloudSetMain.class).setAction(action)
-				.putExtra(CloudSetMain.EXTRA_DEVICE_REGISTRATION, registration)
-				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+	private String getRegistration() {
+		return getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
+				.getString(getString(R.string.preference_gcm_registration),
+						null);
+	}
+
+	private void storeRegistration(String registration) {
+		getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
+				.edit()
+				.putString(getString(R.string.preference_gcm_registration),
+						registration).commit();
 	}
 }

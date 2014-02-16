@@ -19,14 +19,14 @@
  */
 package com.piusvelte.cloudset.android;
 
-public interface DevicesListener {
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 
-	public String getRegistration();
-	public String getDeviceId(int which);
-	public void confirmDeregistration(String id);
-	public void deregisterDevice(String id);
-	public void loadDevices(boolean useCache);
-	public boolean hasAccount();
-	public void doSignIn();
+public class UpdateReceiver extends BroadcastReceiver {
 
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		context.startService(intent.setClass(context, UpdateIntentService.class));
+	}
 }

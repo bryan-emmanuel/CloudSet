@@ -46,8 +46,12 @@ public class ActionsIntentService extends IntentService {
 	public static final String VOLUME_CHANGED_ACTION = "android.media.VOLUME_CHANGED_ACTION";
 	public static final String EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
 	public static final String EXTRA_VOLUME_STREAM_VALUE = "android.media.EXTRA_VOLUME_STREAM_VALUE";
-	public static final String[] ACTIONS = new String[]{WifiManager.WIFI_STATE_CHANGED_ACTION, BluetoothAdapter.ACTION_STATE_CHANGED, VOLUME_CHANGED_ACTION, AudioManager.RINGER_MODE_CHANGED_ACTION};
-	public static final String[] ACTION_NAMES = new String[]{"Wi-Fi", "Bluetooth", "Volume", "Ringer"};
+	public static final String[] ACTIONS = new String[] {
+			WifiManager.WIFI_STATE_CHANGED_ACTION,
+			BluetoothAdapter.ACTION_STATE_CHANGED, VOLUME_CHANGED_ACTION,
+			AudioManager.RINGER_MODE_CHANGED_ACTION };
+	public static final String[] ACTION_NAMES = new String[] { "Wi-Fi",
+			"Bluetooth", "Volume", "Ringer" };
 
 	private static PowerManager.WakeLock sWakeLock;
 	private static final Object LOCK = ActionsIntentService.class;
@@ -58,12 +62,15 @@ public class ActionsIntentService extends IntentService {
 	}
 
 	public static void serviceIntent(Context context, Intent intent) {
-		synchronized(LOCK) {
+		synchronized (LOCK) {
 			if (sWakeLock == null) {
-				PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-				sWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CloudSet");
+				PowerManager pm = (PowerManager) context
+						.getSystemService(Context.POWER_SERVICE);
+				sWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+						"CloudSet");
 			}
 		}
+
 		sWakeLock.acquire();
 		intent.setClassName(context, ActionsIntentService.class.getName());
 		context.startService(intent);
@@ -75,10 +82,12 @@ public class ActionsIntentService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		String action = intent.getAction();
 		if (action != null) {
-			Log.d(TAG, "onHandleIntent: " + action);
 			if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-				int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-				if ((state == BluetoothAdapter.STATE_ON) || (state == BluetoothAdapter.STATE_OFF)) {
+				int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+						BluetoothAdapter.ERROR);
+
+				if ((state == BluetoothAdapter.STATE_ON)
+						|| (state == BluetoothAdapter.STATE_OFF)) {
 					List<Extra> extras = new ArrayList<Extra>();
 					extras.add(buildExtra(BluetoothAdapter.EXTRA_STATE, state));
 					publish(action, extras);
@@ -86,10 +95,14 @@ public class ActionsIntentService extends IntentService {
 					sWakeLock.release();
 				}
 			} else if (action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION)) {
-				int state = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN);
-				if ((state == WifiManager.WIFI_STATE_ENABLED) || (state == WifiManager.WIFI_STATE_DISABLED)) {
+				int state = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,
+						WifiManager.WIFI_STATE_UNKNOWN);
+
+				if ((state == WifiManager.WIFI_STATE_ENABLED)
+						|| (state == WifiManager.WIFI_STATE_DISABLED)) {
 					List<Extra> extras = new ArrayList<Extra>();
-					extras.add(buildExtra(WifiManager.WIFI_STATE_CHANGED_ACTION, state));
+					extras.add(buildExtra(
+							WifiManager.WIFI_STATE_CHANGED_ACTION, state));
 					publish(action, extras);
 				} else {
 					sWakeLock.release();
@@ -97,6 +110,7 @@ public class ActionsIntentService extends IntentService {
 			} else if (action.equals(VOLUME_CHANGED_ACTION)) {
 				int type = intent.getIntExtra(EXTRA_VOLUME_STREAM_TYPE, -1);
 				int value = intent.getIntExtra(EXTRA_VOLUME_STREAM_VALUE, -1);
+
 				if ((type > -1) && (value > -1)) {
 					List<Extra> extras = new ArrayList<Extra>();
 					extras.add(buildExtra(EXTRA_VOLUME_STREAM_TYPE, type));
@@ -107,7 +121,9 @@ public class ActionsIntentService extends IntentService {
 				}
 			} else if (action.equals(AudioManager.RINGER_MODE_CHANGED_ACTION)) {
 				List<Extra> extras = new ArrayList<Extra>();
-				extras.add(buildExtra(AudioManager.EXTRA_RINGER_MODE, intent.getIntExtra(AudioManager.EXTRA_RINGER_MODE, AudioManager.RINGER_MODE_NORMAL)));
+				extras.add(buildExtra(AudioManager.EXTRA_RINGER_MODE, intent
+						.getIntExtra(AudioManager.EXTRA_RINGER_MODE,
+								AudioManager.RINGER_MODE_NORMAL)));
 				publish(action, extras);
 			} else {
 				sWakeLock.release();
@@ -131,37 +147,42 @@ public class ActionsIntentService extends IntentService {
 	private void publish(String action, List<Extra> extras) {
 		String accountName = null;
 		String registration = null;
-		SharedPreferences sp = getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE);
-		accountName = sp.getString(getString(R.string.preference_account_name), null);
-		registration = sp.getString(getString(R.string.preference_gcm_registration), null);
+		SharedPreferences sp = getSharedPreferences(
+				getString(R.string.app_name), MODE_PRIVATE);
+		accountName = sp.getString(getString(R.string.preference_account_name),
+				null);
+		registration = sp.getString(
+				getString(R.string.preference_gcm_registration), null);
 
 		if ((accountName != null) && (registration != null)) {
-
 			Action publication = new Action();
 			publication.setPublisher(registration);
 			publication.setName(action);
 			publication.setExtras(extras);
 
-			GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(this, "server:client_id:" + getString(R.string.android_audience));
+			GoogleAccountCredential credential = GoogleAccountCredential
+					.usingAudience(this, "server:client_id:"
+							+ getString(R.string.android_audience));
 			credential.setSelectedAccountName(accountName);
 
 			Actionendpoint.Builder endpointBuilder = new Actionendpoint.Builder(
-					AndroidHttp.newCompatibleTransport(),
-					new JacksonFactory(),
+					AndroidHttp.newCompatibleTransport(), new JacksonFactory(),
 					credential)
-			.setApplicationName(getString(R.string.app_name));
-			endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+					.setApplicationName(getString(R.string.app_name));
+			endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder)
+					.build();
 
 			(new AsyncTask<Action, Void, Void>() {
 
 				@Override
 				protected Void doInBackground(Action... publications) {
 					try {
-						endpoint.actionEndpoint().publish(publications[0]).execute();
+						endpoint.actionEndpoint().publish(publications[0])
+								.execute();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+
 					return null;
 				}
 
@@ -171,7 +192,6 @@ public class ActionsIntentService extends IntentService {
 				}
 
 			}).execute(publication);
-
 		} else {
 			sWakeLock.release();
 		}

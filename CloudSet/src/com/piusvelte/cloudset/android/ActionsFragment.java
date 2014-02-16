@@ -181,9 +181,11 @@ public class ActionsFragment extends ListFragment implements
 		if (loader.getId() == 0) {
 			if (publications != null) {
 				adapter.clear();
+
 				for (String action : ActionsIntentService.ACTIONS) {
 					adapter.add(action);
 				}
+
 				adapter.notifyDataSetChanged(publications);
 			} else {
 				Toast.makeText(getActivity(),

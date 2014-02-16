@@ -73,7 +73,7 @@ public class DevicesFragment extends ListFragment implements
 				false);
 		empty = (TextView) rootView.findViewById(android.R.id.empty);
 
-		if (callback != null && callback.hasRegistration()) {
+		if (callback != null && callback.hasAccount()) {
 			empty.setText(R.string.loading_devices);
 			empty.setOnClickListener(new OnClickListener() {
 

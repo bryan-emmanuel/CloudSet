@@ -54,7 +54,7 @@ public class AccountsFragment extends ListFragment {
 
 		public void setAccount(String account);
 
-		public boolean hasRegistration();
+		public boolean hasAccount();
 
 	}
 
@@ -101,7 +101,8 @@ public class AccountsFragment extends ListFragment {
 
 			@Override
 			public void onClick(View v) {
-				GCMIntentService.unregister(getActivity().getApplicationContext());
+				callback.setAccount(null);
+				setContent();
 			}
 
 		});
@@ -118,9 +119,13 @@ public class AccountsFragment extends ListFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
+		setContent();
+	}
+
+	private void setContent() {
 		View v = getView();
 
-		if (callback.hasRegistration()) {
+		if (callback.hasAccount()) {
 			v.findViewById(android.R.id.list).setVisibility(View.GONE);
 			v.findViewById(android.R.id.empty).setVisibility(View.GONE);
 			TextView tv = (TextView) v.findViewById(R.id.account);
@@ -137,5 +142,4 @@ public class AccountsFragment extends ListFragment {
 			getAccountNames();
 		}
 	}
-
 }

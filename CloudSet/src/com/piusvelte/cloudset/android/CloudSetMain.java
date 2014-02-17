@@ -31,7 +31,6 @@ import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
@@ -44,17 +43,12 @@ import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 public class CloudSetMain extends FragmentActivity implements
 		ActionBar.TabListener, AccountsFragment.AccountsListener,
 		DevicesListener, LoaderManager.LoaderCallbacks<List<SimpleDevice>> {
 
 	private static final String TAG = "CloudSetMain";
-
-	SectionsPagerAdapter sectionsPagerAdapter;
-
-	ViewPager viewPager;
 
 	public static final String ACTION_GCM_REGISTERED = "com.piusvelte.cloudset.android.action.GCM_REGISTERED";
 	public static final String ACTION_GCM_UNREGISTERED = "com.piusvelte.cloudset.android.action.GCM_UNREGISTERED";
@@ -68,8 +62,14 @@ public class CloudSetMain extends FragmentActivity implements
 	private static final int FRAGMENT_SUBSCRIPTIONS = 1;
 	private static final int FRAGMENT_SUBSCRIBERS = 2;
 
+	protected static final String PREFERENCE_ACCOUNT_NAME = "account_name";
+	protected static final String PREFERENCE_DEVICE_ID = "device_id";
+	protected static final int INVALID_DEVICE_ID = -1;
+
+	private SectionsPagerAdapter sectionsPagerAdapter;
+	private ViewPager viewPager;
 	private String account;
-	private String registrationId;
+	private Long deviceId;
 	private List<SimpleDevice> devices;
 	// loader 0 if for registration, degregistration, and loading devices
 	// loaders 1+ are for created for deregistering additional devices
@@ -105,25 +105,26 @@ public class CloudSetMain extends FragmentActivity implements
 
 		SharedPreferences sp = getSharedPreferences(
 				getString(R.string.app_name), MODE_PRIVATE);
-		account = sp.getString(getString(R.string.preference_account_name),
-				null);
-		registrationId = sp.getString(
-				getString(R.string.preference_gcm_registration), null);
+		account = sp.getString(PREFERENCE_ACCOUNT_NAME, null);
+		deviceId = sp.getLong(PREFERENCE_DEVICE_ID, INVALID_DEVICE_ID);
 		setCurrentTab();
 
-		// create the loader for registration, deregistration, and loading devices
+		// create the loader for registration, deregistration, and loading
+		// devices
 		LoaderManager loaderManager = getSupportLoaderManager();
 		loaderManager.initLoader(0, null, this);
 
 		if (savedInstanceState != null
 				&& savedInstanceState.containsKey(EXTRA_LOADER_IDS)) {
-			loaderIds = savedInstanceState.getIntegerArrayList(EXTRA_LOADER_IDS);
+			loaderIds = savedInstanceState
+					.getIntegerArrayList(EXTRA_LOADER_IDS);
 		} else {
 			loaderIds = new ArrayList<Integer>();
 		}
 
 		for (int i = 0, s = loaderIds.size(); i < s; i++) {
-			// reconnect to additional loaders for deregistering additional devices
+			// reconnect to additional loaders for deregistering additional
+			// devices
 			loaderManager.initLoader(loaderIds.get(i), null, this);
 		}
 	}
@@ -132,12 +133,6 @@ public class CloudSetMain extends FragmentActivity implements
 	public void onSaveInstanceState(Bundle state) {
 		super.onSaveInstanceState(state);
 		state.putIntegerArrayList(EXTRA_LOADER_IDS, loaderIds);
-	}
-
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		handleGCMIntent(intent);
 	}
 
 	private int getNextLoaderId() {
@@ -153,62 +148,10 @@ public class CloudSetMain extends FragmentActivity implements
 	}
 
 	private void setCurrentTab() {
-		if (hasRegistration()) {
+		if (hasAccount()) {
 			viewPager.setCurrentItem(FRAGMENT_SUBSCRIPTIONS);
 		} else {
 			viewPager.setCurrentItem(FRAGMENT_ACCOUNT);
-		}
-	}
-
-	private void handleGCMIntent(Intent intent) {
-		if (intent != null) {
-			String action = intent.getAction();
-
-			if (action != null) {
-				if (action.equals(ACTION_GCM_ERROR)) {
-					Toast.makeText(getApplicationContext(),
-							"Error occurred during device registration",
-							Toast.LENGTH_SHORT).show();
-					account = null;
-					registrationId = null;
-					getSharedPreferences(getString(R.string.app_name),
-							MODE_PRIVATE)
-							.edit()
-							.putString(
-									getString(R.string.preference_account_name),
-									account)
-							.putString(
-									getString(R.string.preference_gcm_registration),
-									registrationId).commit();
-					setCurrentTab();
-				} else if (action.equals(ACTION_GCM_REGISTERED)
-						&& intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
-					registrationId = intent
-							.getStringExtra(EXTRA_DEVICE_REGISTRATION);
-					getSharedPreferences(getString(R.string.app_name),
-							MODE_PRIVATE)
-							.edit()
-							.putString(
-									getString(R.string.preference_gcm_registration),
-									registrationId).commit();
-					setCurrentTab();
-					loadDevices(false);
-				} else if (action.equals(ACTION_GCM_UNREGISTERED)
-						&& intent.hasExtra(EXTRA_DEVICE_REGISTRATION)) {
-					account = null;
-					registrationId = null;
-					getSharedPreferences(getString(R.string.app_name),
-							MODE_PRIVATE)
-							.edit()
-							.putString(
-									getString(R.string.preference_account_name),
-									account)
-							.putString(
-									getString(R.string.preference_gcm_registration),
-									registrationId).commit();
-					setCurrentTab();
-				}
-			}
 		}
 	}
 
@@ -256,12 +199,14 @@ public class CloudSetMain extends FragmentActivity implements
 	}
 
 	private boolean isCurrentTabDevices() {
-		return viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS || viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS;
+		return viewPager.getCurrentItem() == FRAGMENT_SUBSCRIPTIONS
+				|| viewPager.getCurrentItem() == FRAGMENT_SUBSCRIBERS;
 	}
 
 	private DevicesListListener getDevicesListener() {
 		if (isCurrentTabDevices()) {
-			Fragment f = getSupportFragmentManager().findFragmentByTag(getFragmentTag(viewPager.getCurrentItem()));
+			Fragment f = getSupportFragmentManager().findFragmentByTag(
+					getFragmentTag(viewPager.getCurrentItem()));
 
 			if (f instanceof DevicesListListener) {
 				return (DevicesListListener) f;
@@ -287,7 +232,7 @@ public class CloudSetMain extends FragmentActivity implements
 		viewPager.setCurrentItem(tab.getPosition());
 
 		if (isCurrentTabDevices()) {
-			if (hasRegistration()) {
+			if (hasAccount()) {
 				loadDevices(true);
 			} else {
 				DevicesListListener l = getDevicesListener();
@@ -313,19 +258,17 @@ public class CloudSetMain extends FragmentActivity implements
 
 	@Override
 	public void loadDevices(boolean useCache) {
-		if (hasRegistration()) {
+		if (hasAccount()) {
 			if (useCache && devices != null) {
 				setLoadedDevices();
 			} else {
 				Loader<List<SimpleDevice>> loader = getSupportLoaderManager()
 						.initLoader(0, null, this);
-
 				if (loader != null) {
 					loader.forceLoad();
 				}
 
 				DevicesListListener l = getDevicesListener();
-
 				if (l != null) {
 					l.onDevicesLoadMessage(getString(R.string.loading_devices));
 				}
@@ -398,27 +341,46 @@ public class CloudSetMain extends FragmentActivity implements
 	@Override
 	public void setAccount(String account) {
 		this.account = account;
-		// store the account
-		getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE)
-				.edit()
-				.putString(getString(R.string.preference_account_name), account)
-				.commit();
-		// register with GCM, this is an asynchronous operation
-		GCMIntentService.register(getApplicationContext());
+		if (account != null) {
+			// store the account
+			getSharedPreferences(getString(R.string.app_name),
+					Context.MODE_PRIVATE).edit()
+					.putString(PREFERENCE_ACCOUNT_NAME, account).commit();
+			setCurrentTab();
+			// add the device
+			getSupportLoaderManager().initLoader(getNextLoaderId(), null, this);
+
+			DevicesListListener l = getDevicesListener();
+			if (l != null) {
+				l.onDevicesLoadMessage(getString(R.string.loading_devices));
+			}
+
+			// register with GCM, this is an asynchronous operation
+			GCMIntentService.register(getApplicationContext());
+		} else {
+			devices = null;
+			removeDevice(deviceId);
+			account = null;
+			deviceId = null;
+			getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
+					.edit().putString(PREFERENCE_ACCOUNT_NAME, account)
+					.putLong(PREFERENCE_DEVICE_ID, deviceId).commit();
+			GCMIntentService.unregister(getApplicationContext());
+		}
 	}
 
 	@Override
-	public boolean hasRegistration() {
-		return account != null && registrationId != null;
+	public boolean hasAccount() {
+		return account != null;
 	}
 
 	@Override
-	public String getRegistration() {
-		return registrationId;
+	public Long getDeviceId() {
+		return deviceId;
 	}
 
 	@Override
-	public String getDeviceId(int which) {
+	public Long getDeviceId(int which) {
 		if (devices != null && which < devices.size()) {
 			return devices.get(which).getId();
 		}
@@ -429,16 +391,16 @@ public class CloudSetMain extends FragmentActivity implements
 	@Override
 	public Loader<List<SimpleDevice>> onCreateLoader(int which, Bundle args) {
 		if (which > 0) {
-			// create a loader for deregistering an additional device
 			if (args != null && args.containsKey(EXTRA_DEREGISTER_ID)) {
-				return new DevicesLoader(this, account, registrationId,
-						devices, args.getString(EXTRA_DEREGISTER_ID));
+				// create a loader for deregistering an additional device
+				return new DevicesLoader(this, account,
+						args.getLong(EXTRA_DEREGISTER_ID), devices);
 			} else {
-				return null;
+				return new DevicesLoader(this, account);
 			}
-		} else if (registrationId != null) {
+		} else if (deviceId != null) {
 			// create loader 0 for loading devices
-			return new DevicesLoader(this, account, registrationId);
+			return new DevicesLoader(this, account, deviceId);
 		} else {
 			return null;
 		}
@@ -455,7 +417,9 @@ public class CloudSetMain extends FragmentActivity implements
 		this.devices = devices;
 
 		if (devices != null) {
-			// either the inital load, or an updated list after deregistering an additional device
+			// either the initial load, or an updated list after deregistering
+			// an
+			// additional device
 			setLoadedDevices();
 		} else {
 			// network error
@@ -473,16 +437,17 @@ public class CloudSetMain extends FragmentActivity implements
 	}
 
 	@Override
-	public void deregisterDevice(String id) {
+	public void removeDevice(Long id) {
 		if (id != null) {
 			Bundle extras = new Bundle();
-			extras.putString(EXTRA_DEREGISTER_ID, id);
-			getSupportLoaderManager().initLoader(getNextLoaderId(), extras, this);
+			extras.putLong(EXTRA_DEREGISTER_ID, id);
+			getSupportLoaderManager().initLoader(getNextLoaderId(), extras,
+					this);
 		}
 	}
 
 	@Override
-	public void confirmDeregistration(String id) {
+	public void confirmRemoval(Long id) {
 		new ConfirmDialog().setDeviceId(id).show(getSupportFragmentManager(),
 				"confirm:deregister");
 	}

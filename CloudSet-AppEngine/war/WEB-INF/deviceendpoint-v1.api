@@ -38,7 +38,7 @@
       "request" : {
         "parameters" : {
           "publisher" : {
-            "type" : "string",
+            "type" : "int64",
             "required" : true
           }
         },
@@ -59,7 +59,7 @@
       "request" : {
         "parameters" : {
           "id" : {
-            "type" : "string",
+            "type" : "int64",
             "required" : true
           }
         },
@@ -80,11 +80,11 @@
       "request" : {
         "parameters" : {
           "subscriber" : {
-            "type" : "string",
+            "type" : "int64",
             "required" : true
           },
           "publisher" : {
-            "type" : "string",
+            "type" : "int64",
             "required" : true
           },
           "action" : {
@@ -109,11 +109,11 @@
       "request" : {
         "parameters" : {
           "subscriber" : {
-            "type" : "string",
+            "type" : "int64",
             "required" : true
           },
           "publisher" : {
-            "type" : "string",
+            "type" : "int64",
             "required" : true
           }
         },
@@ -165,7 +165,7 @@
       "request" : {
         "parameters" : {
           "subscriber" : {
-            "type" : "string",
+            "type" : "int64",
             "required" : true
           },
           "publication" : {
@@ -190,7 +190,7 @@
       "request" : {
         "parameters" : {
           "id" : {
-            "type" : "string",
+            "type" : "int64",
             "required" : true
           }
         },
@@ -224,7 +224,8 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "int64"
           },
           "model" : {
             "type" : "string"
@@ -248,6 +249,10 @@
         "type" : "object",
         "properties" : {
           "id" : {
+            "type" : "string",
+            "format" : "int64"
+          },
+          "gcmRegistration" : {
             "type" : "string"
           },
           "timestamp" : {

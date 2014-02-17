@@ -1,12 +1,12 @@
 /*
  * CloudSet - Android devices settings synchronization
  * Copyright (C) 2013 Bryan Emmanuel
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  *  Bryan Emmanuel piusvelte@gmail.com
  */
 package com.piusvelte.cloudset.android;
@@ -33,7 +33,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 public class DevicesAdapter extends ArrayAdapter<SimpleDevice> {
-	
+
 	private static final String TAG = "DevicesAdapter";
 
 	public DevicesAdapter(Context context, List<SimpleDevice> devices) {
@@ -48,26 +48,26 @@ public class DevicesAdapter extends ArrayAdapter<SimpleDevice> {
 		} else {
 			row = (View) convertView;
 		}
-		
+
 		SimpleDevice simpleDevice = this.getItem(position);
-		
+
 		TextView device = (TextView) row.findViewById(R.id.device);
 		try {
 			device.setText(URLDecoder.decode(simpleDevice.getModel(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			device.setText(simpleDevice.getModel());
 		}
-		
+
 		row.findViewById(R.id.deregister).setOnClickListener(new OnDeregisterClick(this, position));
-		
+
 		return row;
 	}
-	
+
 	public class OnDeregisterClick implements View.OnClickListener {
-		
+
 		private ArrayAdapter<SimpleDevice> adapter;
 		private int which;
-		
+
 		public OnDeregisterClick(ArrayAdapter<SimpleDevice> adapter, int which) {
 			this.adapter = adapter;
 			this.which = which;
@@ -78,13 +78,13 @@ public class DevicesAdapter extends ArrayAdapter<SimpleDevice> {
 			DevicesListener listener;
 			try {
 				listener = (DevicesListener) adapter.getContext();
-				listener.confirmDeregistration(adapter.getItem(which).getId());
+				listener.confirmRemoval(adapter.getItem(which).getId());
 			} catch (ClassCastException e) {
 				throw new ClassCastException(adapter.getContext().toString()
 						+ " must implement DevicesListener");
 			}
 		}
-		
+
 	}
 
 }

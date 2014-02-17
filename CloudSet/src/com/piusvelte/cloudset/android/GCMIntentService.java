@@ -20,6 +20,7 @@
 package com.piusvelte.cloudset.android;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 import android.bluetooth.BluetoothAdapter;
@@ -69,10 +70,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 * @param mContext
 	 *            the activity's context.
 	 */
-	public static void register(Context mContext) {
-		GCMRegistrar.checkDevice(mContext);
-		GCMRegistrar.checkManifest(mContext);
-		GCMRegistrar.register(mContext, PROJECT_NUMBER);
+	public static void register(Context context) {
+		GCMRegistrar.checkDevice(context);
+		GCMRegistrar.checkManifest(context);
+		GCMRegistrar.register(context, PROJECT_NUMBER);
 	}
 
 	/**
@@ -81,8 +82,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 * @param mContext
 	 *            the activity's context.
 	 */
-	public static void unregister(Context mContext) {
-		GCMRegistrar.unregister(mContext);
+	public static void unregister(Context context) {
+		GCMRegistrar.unregister(context);
 	}
 
 	public GCMIntentService() {
@@ -95,17 +96,17 @@ public class GCMIntentService extends GCMBaseIntentService {
 			SharedPreferences sp = context.getSharedPreferences(
 					context.getString(R.string.app_name), MODE_PRIVATE);
 
-			if (sp.contains(context.getString(R.string.preference_account_name))) {
+			if (sp.contains(CloudSetMain.PREFERENCE_ACCOUNT_NAME)) {
 				accountName = sp.getString(
-						context.getString(R.string.preference_account_name),
-						null);
+						CloudSetMain.PREFERENCE_ACCOUNT_NAME, null);
 			}
 
 			GoogleAccountCredential credential = GoogleAccountCredential
 					.usingAudience(
 							context,
 							"server:client_id:"
-									+ context.getString(R.string.android_audience));
+									+ context
+											.getString(R.string.android_audience));
 			credential.setSelectedAccountName(accountName);
 
 			Deviceendpoint.Builder endpointBuilder = new Deviceendpoint.Builder(
@@ -130,7 +131,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	public void onError(Context context, String errorId) {
-		sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR, null);
+		// NO-OP
 	}
 
 	/**
@@ -216,49 +217,44 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	public void onRegistered(Context context, String registration) {
+		SharedPreferences sp = getSharedPreferences(
+				getString(R.string.app_name), MODE_PRIVATE);
+		Long deviceId = sp.getLong(CloudSetMain.PREFERENCE_DEVICE_ID,
+				CloudSetMain.INVALID_DEVICE_ID);
 
-		try {
-			/*
-			 * Using cloud endpoints, see if the device has already been
-			 * registered with the backend
-			 */
-			Device subscriber = getEndpoint(context).deviceEndpoint()
-					.get(registration).execute();
-
-			if (subscriber != null && registration.equals(subscriber.getId())) {
-				sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED,
-						registration);
-				return;
+		if (deviceId == CloudSetMain.INVALID_DEVICE_ID) {
+			// this should only happen if this device upgraded to 1.9 after being registered on an older version
+			try {
+				Device device = getEndpoint(context).deviceEndpoint()
+						.add(createDevice(registration)).execute();
+				if (device != null) {
+					sp.edit()
+							.putLong(CloudSetMain.PREFERENCE_DEVICE_ID,
+									device.getId()).commit();
+				}
+			} catch (IOException e) {
+				// Ignore
 			}
-		} catch (IOException e) {
-			// Ignore
-		}
-
-		// if not already registered with appengine, do so now
-		try {
-			Device unregisteredDevice = new Device()
-					.setId(registration)
-					.setTimestamp(System.currentTimeMillis())
-					.setModel(
-							URLEncoder.encode(android.os.Build.MODEL, "UTF-8"));
-
-			Device registeredDevice = getEndpoint(context).deviceEndpoint()
-					.add(unregisteredDevice).execute();
-
-			if (registeredDevice != null
-					&& registration.equals(registeredDevice.getId())) {
-				sendGCMIntent(context, CloudSetMain.ACTION_GCM_REGISTERED,
-						registration);
-			} else {
-				sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR, null);
+		} else {
+			try {
+				Device device = getEndpoint(context).deviceEndpoint()
+						.get(deviceId).execute();
+				if (device != null) {
+					device.setGcmRegistration(registration);
+					getEndpoint(context).deviceEndpoint().update(device)
+							.execute();
+				}
+			} catch (IOException e) {
+				// Ignore
 			}
-		} catch (IOException e) {
-			Log.e(GCMIntentService.class.getName(),
-					"Exception received when attempting to register with server at "
-							+ getEndpoint(context).getRootUrl(), e);
-
-			sendGCMIntent(context, CloudSetMain.ACTION_GCM_ERROR, null);
 		}
+	}
+
+	private Device createDevice(String registration)
+			throws UnsupportedEncodingException {
+		return new Device().setGcmRegistration(registration)
+				.setTimestamp(System.currentTimeMillis())
+				.setModel(URLEncoder.encode(android.os.Build.MODEL, "UTF-8"));
 	}
 
 	/**
@@ -270,29 +266,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	protected void onUnregistered(Context context, String registrationId) {
-
-		if (registrationId != null && registrationId.length() > 0) {
-			try {
-				getEndpoint(context).deviceEndpoint().remove(registrationId)
-						.execute();
-			} catch (IOException e) {
-				Log.e(GCMIntentService.class.getName(),
-						"Exception received when attempting to unregister with server at "
-								+ getEndpoint(context).getRootUrl(), e);
-				return;
-			}
-		}
-
 		endpoint = null;
-
-		sendGCMIntent(context, CloudSetMain.ACTION_GCM_UNREGISTERED, null);
-
-	}
-
-	private void sendGCMIntent(Context context, String action,
-			String registration) {
-		startActivity(new Intent(context, CloudSetMain.class).setAction(action)
-				.putExtra(CloudSetMain.EXTRA_DEVICE_REGISTRATION, registration)
-				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 	}
 }

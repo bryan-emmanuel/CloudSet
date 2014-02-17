@@ -57,7 +57,7 @@ public class ActionsFragment extends ListFragment implements
 		super.onResume();
 	}
 
-	ActionsListener callback;
+	private ActionsListener callback;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -88,9 +88,8 @@ public class ActionsFragment extends ListFragment implements
 
 	public interface ActionsListener {
 
-		public String getSubscriberId();
-
-		public String getPublisherId();
+		public Long getSubscriberId();
+		public Long getPublisherId();
 
 	}
 
@@ -181,9 +180,11 @@ public class ActionsFragment extends ListFragment implements
 		if (loader.getId() == 0) {
 			if (publications != null) {
 				adapter.clear();
+
 				for (String action : ActionsIntentService.ACTIONS) {
 					adapter.add(action);
 				}
+
 				adapter.notifyDataSetChanged(publications);
 			} else {
 				Toast.makeText(getActivity(),

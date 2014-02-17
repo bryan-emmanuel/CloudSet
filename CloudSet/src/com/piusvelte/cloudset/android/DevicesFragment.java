@@ -73,7 +73,7 @@ public class DevicesFragment extends ListFragment implements
 				false);
 		empty = (TextView) rootView.findViewById(android.R.id.empty);
 
-		if (callback != null && callback.hasRegistration()) {
+		if (callback != null && callback.hasAccount()) {
 			empty.setText(R.string.loading_devices);
 			empty.setOnClickListener(new OnClickListener() {
 
@@ -141,19 +141,20 @@ public class DevicesFragment extends ListFragment implements
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		if (callback != null) {
+			Long publisherId;
+			Long subscriberId;
+
 			if (isSubscriptions) {
-				startActivity(new Intent(getActivity(), Actions.class)
-						.putExtra(Actions.EXTRA_PUBLISHER,
-								callback.getDeviceId(position)).putExtra(
-								Actions.EXTRA_SUBSCRIBER,
-								callback.getRegistration()));
+				publisherId = callback.getDeviceId(position);
+				subscriberId = callback.getDeviceId();
 			} else {
-				startActivity(new Intent(getActivity(), Actions.class)
-						.putExtra(Actions.EXTRA_PUBLISHER,
-								callback.getRegistration()).putExtra(
-								Actions.EXTRA_SUBSCRIBER,
-								callback.getDeviceId(position)));
+				publisherId = callback.getDeviceId();
+				subscriberId = callback.getDeviceId(position);
 			}
+
+			startActivity(new Intent(getActivity(), Actions.class).putExtra(
+					Actions.EXTRA_PUBLISHER, publisherId).putExtra(
+					Actions.EXTRA_SUBSCRIBER, subscriberId));
 		}
 	}
 

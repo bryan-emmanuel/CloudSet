@@ -34,7 +34,7 @@ public class MainLayoutPanel extends Composite {
 
 	public MainLayoutPanel() {
 		initWidget(uiBinder.createAndBindUi(this));
-		
+
 		contentHeaderPanel.add(new Label("Cloud Set synchronizes setting across Android devices. Please sign in to see and manage your registered devices"));
 
 		webClientService.getUserNickname(
@@ -67,7 +67,7 @@ public class MainLayoutPanel extends Composite {
 
 					@Override
 					public void onFailure(Throwable caught) {
-						//TODO
+						// TODO
 					}
 
 					@Override
@@ -77,7 +77,7 @@ public class MainLayoutPanel extends Composite {
 
 				});
 	}
-	
+
 	@UiField
 	FlowPanel contentHeaderPanel;
 
@@ -89,7 +89,7 @@ public class MainLayoutPanel extends Composite {
 
 	@UiField
 	FlowPanel actionsList;
-	
+
 	int selectedPublisher = 0;
 	int selectedSubscriber = 0;
 
@@ -103,9 +103,9 @@ public class MainLayoutPanel extends Composite {
 	public class PublisherClickHandler implements ClickHandler {
 
 		private int index;
-		private String deviceId;
+		private Long deviceId;
 
-		public PublisherClickHandler(int index, String deviceId) {
+		public PublisherClickHandler(int index, Long deviceId) {
 			this.index = index;
 			this.deviceId = deviceId;
 		}
@@ -124,7 +124,7 @@ public class MainLayoutPanel extends Composite {
 
 		@Override
 		public void onFailure(Throwable caught) {
-			// TODO Auto-generated method stub
+			// NO-OP
 		}
 
 		@Override
@@ -144,7 +144,7 @@ public class MainLayoutPanel extends Composite {
 						new PublisherClickHandler(selectedPublisher, device.getId())));
 				publishersList.getWidget(selectedPublisher).setStyleName("selectedDevice");
 				for (int i = 1, s = result.size(); i < s; i++) {
-					device = result.get(i); 
+					device = result.get(i);
 					publishersList.add(new Button(URL.decode(device.getModel()).replace("+", " "),
 							new PublisherClickHandler(i, device.getId())));
 				}
@@ -157,17 +157,17 @@ public class MainLayoutPanel extends Composite {
 	}
 
 	// Syncing Devices
-	public void loadSubscribers(String deviceId) {
+	public void loadSubscribers(Long deviceId) {
 		webClientService.getSubscribers(deviceId, new SubscribersCallback(deviceId));
 	}
 
 	public class SubscriberClickHandler implements ClickHandler {
 
 		private int index;
-		private String publisherId;
-		private String subscriberId;
+		private Long publisherId;
+		private Long subscriberId;
 
-		public SubscriberClickHandler(int index, String publisherId, String subscriberId) {
+		public SubscriberClickHandler(int index, Long publisherId, Long subscriberId) {
 			this.index = index;
 			this.publisherId = publisherId;
 			this.subscriberId = subscriberId;
@@ -185,9 +185,9 @@ public class MainLayoutPanel extends Composite {
 
 	public class SubscribersCallback implements AsyncCallback<List<SimpleDevice>> {
 
-		private String deviceId;
+		private Long deviceId;
 
-		public SubscribersCallback(String deviceId) {
+		public SubscribersCallback(Long deviceId) {
 			this.deviceId = deviceId;
 		}
 
@@ -207,7 +207,7 @@ public class MainLayoutPanel extends Composite {
 						new SubscriberClickHandler(selectedSubscriber, deviceId, device.getId())));
 				subscribersList.getWidget(selectedSubscriber).setStyleName("selectedDevice");
 				for (int i = 1, s = result.size(); i < s; i++) {
-					device = result.get(i); 
+					device = result.get(i);
 					subscribersList.add(new Button(URL.decode(device.getModel()).replace("+", " "),
 							new SubscriberClickHandler(i, deviceId, device.getId())));
 				}
@@ -226,18 +226,18 @@ public class MainLayoutPanel extends Composite {
 	"android.media.RINGER_MODE_CHANGED"};
 	public static final String[] ACTION_NAMES = new String[]{"Wi-Fi", "Bluetooth", "Volume", "Ringer"};
 
-	public void loadActions(String publisherId, String subscriberId) {
+	public void loadActions(Long publisherId, Long subscriberId) {
 		webClientService.getSubscriptions(subscriberId, publisherId, new ActionsCallback(publisherId, subscriberId));
 	}
 
 	public class ActionValueChangeHandler implements ValueChangeHandler<Boolean> {
 
-		private String publisherId;
-		private String subscriberId;
+		private Long publisherId;
+		private Long subscriberId;
 		private String action;
 		private Long publicationId;
 
-		public ActionValueChangeHandler(String publisherId, String subscriberId, String action, Long publicationId) {
+		public ActionValueChangeHandler(Long publisherId, Long subscriberId, String action, Long publicationId) {
 			this.action = action;
 			this.publicationId = publicationId;
 			this.publisherId = publisherId;
@@ -257,10 +257,10 @@ public class MainLayoutPanel extends Composite {
 
 	public class ActionsCallback implements AsyncCallback<List<SimpleAction>> {
 
-		private String publisherId;
-		private String subscriberId;
+		private Long publisherId;
+		private Long subscriberId;
 
-		public ActionsCallback(String publisherId, String subscriberId) {
+		public ActionsCallback(Long publisherId, Long subscriberId) {
 			this.publisherId = publisherId;
 			this.subscriberId = subscriberId;
 		}
@@ -294,10 +294,10 @@ public class MainLayoutPanel extends Composite {
 
 	public class SubscribeCallback implements AsyncCallback<SimpleAction> {
 
-		private String publisherId;
-		private String subscriberId;
+		private Long publisherId;
+		private Long subscriberId;
 
-		public SubscribeCallback(String publisherId, String subscriberId) {
+		public SubscribeCallback(Long publisherId, Long subscriberId) {
 			this.publisherId = publisherId;
 			this.subscriberId = subscriberId;
 		}
@@ -316,10 +316,10 @@ public class MainLayoutPanel extends Composite {
 
 	public class UnsubscribeCallback implements AsyncCallback<Void> {
 
-		private String publisherId;
-		private String subscriberId;
+		private Long publisherId;
+		private Long subscriberId;
 
-		public UnsubscribeCallback(String publisherId, String subscriberId) {
+		public UnsubscribeCallback(Long publisherId, Long subscriberId) {
 			this.publisherId = publisherId;
 			this.subscriberId = subscriberId;
 		}

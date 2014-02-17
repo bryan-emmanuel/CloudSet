@@ -21,12 +21,12 @@ package com.piusvelte.cloudset.android;
 
 public interface DevicesListener {
 
-	public String getRegistration();
-	public String getDeviceId(int which);
-	public void confirmDeregistration(String id);
-	public void deregisterDevice(String id);
+	public Long getDeviceId();
+	public Long getDeviceId(int which);
+	public void removeDevice(Long id);
+	public void confirmRemoval(Long id);
 	public void loadDevices(boolean useCache);
-	public boolean hasRegistration();
+	public boolean hasAccount();
 	public void doSignIn();
 
 }

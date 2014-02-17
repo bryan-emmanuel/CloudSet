@@ -13,26 +13,25 @@ import com.piusvelte.cloudset.gwt.server.deviceendpoint.model.SimpleAction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v4.content.AsyncTaskLoader;
-import android.util.Log;
 
 public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 
 	private static final String TAG = "ActionsLoader";
 	private Deviceendpoint endpoint;
-	private String subscriberId;
-	private String publisherId;
+	private Long subscriberId;
+	private Long publisherId;
 	private List<SimpleAction> publications = null;
 	private String action = null;
 	private String actionToEnable = null;
 	private boolean remove = false;
 
-	public ActionsLoader(Context context, String subscriberId, String publisherId) {
+	public ActionsLoader(Context context, Long subscriberId, Long publisherId) {
 		super(context);
 		this.subscriberId = subscriberId;
 		this.publisherId = publisherId;
 		Context globalContext = getContext();
 		SharedPreferences sp = globalContext.getSharedPreferences(globalContext.getString(R.string.app_name), Context.MODE_PRIVATE);
-		String accountName = sp.getString(globalContext.getString(R.string.preference_account_name), null);
+		String accountName = sp.getString(CloudSetMain.PREFERENCE_ACCOUNT_NAME, null);
 		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(globalContext,
 				"server:client_id:" + globalContext.getString(R.string.android_audience));
 		credential.setSelectedAccountName(accountName);
@@ -44,7 +43,7 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 		endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 	}
 
-	public ActionsLoader(Context context, String subscriberId, String publisherId, List<SimpleAction> publications, String action, boolean remove) {
+	public ActionsLoader(Context context, Long subscriberId, Long publisherId, List<SimpleAction> publications, String action, boolean remove) {
 		this(context, subscriberId, publisherId);
 		this.publications = publications;
 		this.action = action;
@@ -77,7 +76,6 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 			}
 			return publications;
 		} else {
-			Log.d(TAG, "subscriptions, " + subscriberId + ", " + publisherId);
 			try {
 				List<SimpleAction> publications = endpoint.deviceEndpoint().subscriptions(subscriberId, publisherId).execute().getItems();
 				if (publications != null) {
@@ -106,7 +104,7 @@ public class ActionsLoader extends AsyncTaskLoader<List<SimpleAction>> {
 	@Override
 	protected void onStartLoading() {
 		// onStart, check if updating
-		if ((action != null) || takeContentChanged() || (publications == null)) {
+		if (action != null || takeContentChanged() || publications == null) {
 			// update a device
 			forceLoad();
 		} else if (publications != null) {

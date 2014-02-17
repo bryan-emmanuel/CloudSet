@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"FWXGb4Q2eZqWRcG8B2Ixrr-vrqQ/gcUXHr2WhlhVHRyYe7XAoD2VSM0\"",
+ "etag": "\"FWXGb4Q2eZqWRcG8B2Ixrr-vrqQ/crdZw1oQXJAqhk_FC1Y6dA3lpJI\"",
  "discoveryVersion": "v1",
  "id": "deviceendpoint:v1",
  "name": "deviceendpoint",
@@ -79,8 +79,12 @@
     "account": {
      "type": "string"
     },
-    "id": {
+    "gcmRegistration": {
      "type": "string"
+    },
+    "id": {
+     "type": "string",
+     "format": "int64"
     },
     "model": {
      "type": "string"
@@ -138,7 +142,8 @@
    "type": "object",
    "properties": {
     "id": {
-     "type": "string"
+     "type": "string",
+     "format": "int64"
     },
     "model": {
      "type": "string"
@@ -182,7 +187,8 @@
    "parameters": {
     "id": {
      "type": "string",
-     "required": true
+     "required": true,
+     "format": "int64"
     }
    },
    "parameterOrder": [
@@ -212,8 +218,12 @@
     "account": {
      "type": "string"
     },
-    "id": {
+    "gcmRegistration": {
      "type": "string"
+    },
+    "id": {
+     "type": "string",
+     "format": "int64"
     },
     "model": {
      "type": "string"
@@ -255,7 +265,8 @@
    "parameters": {
     "id": {
      "type": "string",
-     "required": true
+     "required": true,
+     "format": "int64"
     }
    },
    "parameterOrder": [
@@ -277,11 +288,13 @@
     },
     "publisher": {
      "type": "string",
-     "required": true
+     "required": true,
+     "format": "int64"
     },
     "subscriber": {
      "type": "string",
-     "required": true
+     "required": true,
+     "format": "int64"
     }
    },
    "parameterOrder": [
@@ -301,7 +314,8 @@
    "parameters": {
     "publisher": {
      "type": "string",
-     "required": true
+     "required": true,
+     "format": "int64"
     }
    },
    "parameterOrder": [
@@ -319,11 +333,13 @@
    "parameters": {
     "publisher": {
      "type": "string",
-     "required": true
+     "required": true,
+     "format": "int64"
     },
     "subscriber": {
      "type": "string",
-     "required": true
+     "required": true,
+     "format": "int64"
     }
    },
    "parameterOrder": [
@@ -347,7 +363,8 @@
     },
     "subscriber": {
      "type": "string",
-     "required": true
+     "required": true,
+     "format": "int64"
     }
    },
    "parameterOrder": [

@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"FWXGb4Q2eZqWRcG8B2Ixrr-vrqQ/M1ZL6mUlv2pwZosnjnSw-J7b_UQ\"",
+ "etag": "\"FWXGb4Q2eZqWRcG8B2Ixrr-vrqQ/0QZhaYxp1Wylxft-K80HOJ4h-kM\"",
  "discoveryVersion": "v1",
  "id": "actionendpoint:v1",
  "name": "actionendpoint",
@@ -90,12 +90,14 @@
      "type": "string"
     },
     "publisher": {
-     "type": "string"
+     "type": "string",
+     "format": "int64"
     },
     "subscribers": {
      "type": "array",
      "items": {
-      "type": "string"
+      "type": "string",
+      "format": "int64"
      }
     },
     "timestamp": {

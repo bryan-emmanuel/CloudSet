@@ -1,12 +1,12 @@
 /*
  * CloudSet - Android devices settings synchronization
  * Copyright (C) 2013 Bryan Emmanuel
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  *  Bryan Emmanuel piusvelte@gmail.com
  */
 package com.piusvelte.cloudset.android;
@@ -31,8 +31,8 @@ public class Actions extends FragmentActivity implements ActionsFragment.Actions
 	public static final String EXTRA_PUBLISHER = "com.piusvelte.cloudset.android.EXTRA_PUBLISHER";
 	public static final String EXTRA_SUBSCRIBER = "com.piusvelte.cloudset.android.EXTRA_SUBSCRIBER";
 
-	private String publisherId;
-	private String subscriberId;
+	private Long publisherId;
+	private Long subscriberId;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -47,12 +47,12 @@ public class Actions extends FragmentActivity implements ActionsFragment.Actions
 		if (intent != null) {
 			Bundle extras = intent.getExtras();
 			if ((extras != null) && extras.containsKey(EXTRA_PUBLISHER) && extras.containsKey(EXTRA_SUBSCRIBER)) {
-				publisherId = extras.getString(EXTRA_PUBLISHER);
-				subscriberId = extras.getString(EXTRA_SUBSCRIBER);
+				publisherId = extras.getLong(EXTRA_PUBLISHER);
+				subscriberId = extras.getLong(EXTRA_SUBSCRIBER);
 			}
 		}
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -71,12 +71,12 @@ public class Actions extends FragmentActivity implements ActionsFragment.Actions
 	}
 
 	@Override
-	public String getSubscriberId() {
+	public Long getSubscriberId() {
 		return subscriberId;
 	}
 
 	@Override
-	public String getPublisherId() {
+	public Long getPublisherId() {
 		return publisherId;
 	}
 

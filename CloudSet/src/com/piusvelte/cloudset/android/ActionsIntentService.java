@@ -39,7 +39,6 @@ import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.PowerManager;
-import android.util.Log;
 
 public class ActionsIntentService extends IntentService {
 
@@ -145,18 +144,15 @@ public class ActionsIntentService extends IntentService {
 	}
 
 	private void publish(String action, List<Extra> extras) {
-		String accountName = null;
-		String registration = null;
 		SharedPreferences sp = getSharedPreferences(
 				getString(R.string.app_name), MODE_PRIVATE);
-		accountName = sp.getString(getString(R.string.preference_account_name),
+		String accountName = sp.getString(CloudSetMain.PREFERENCE_ACCOUNT_NAME,
 				null);
-		registration = sp.getString(
-				getString(R.string.preference_gcm_registration), null);
+		Long deviceId = sp.getLong(CloudSetMain.PREFERENCE_DEVICE_ID, CloudSetMain.INVALID_DEVICE_ID);
 
-		if ((accountName != null) && (registration != null)) {
+		if (accountName != null && deviceId != CloudSetMain.INVALID_DEVICE_ID) {
 			Action publication = new Action();
-			publication.setPublisher(registration);
+			publication.setPublisher(deviceId);
 			publication.setName(action);
 			publication.setExtras(extras);
 

@@ -45,18 +45,16 @@ public class ActionEndpoint {
 	private static final DeviceEndpoint endpoint = new DeviceEndpoint();
 
 	public void publish(User user, Action action) throws IOException, OAuthRequestException {
-
 		if (user != null) {
 			Sender sender = new Sender(Ids.API_KEY);
-
 			EntityManager mgr = getEntityManager();
-
 			Long publicationId = getPublicationId(action.getPublisher(), action.getName());
 			if (publicationId != null) {
-				List<String> subscriberIds = getSubscriberIds(publicationId);
+				List<Long> subscriberIds = getSubscriberIds(publicationId);
+
 				if (subscriberIds != null) {
 					try {
-						for (String subscriberId : subscriberIds) {
+						for (Long subscriberId : subscriberIds) {
 							Device device = mgr.find(Device.class, subscriberId);
 							if (device != null) {
 								doSendViaGcm(user, action.getName(), action.getExtras(), sender, device);
@@ -72,28 +70,33 @@ public class ActionEndpoint {
 		}
 	}
 
-	private List<String> getSubscriberIds(Long publicationId) {
+	private List<Long> getSubscriberIds(Long publicationId) {
 		EntityManager mgr = getEntityManager();
 		Action publication = null;
-		List<String> subscriberIds = null;
+		List<Long> subscriberIds = null;
+
 		try {
 			publication = mgr.find(Action.class, publicationId);
 			subscriberIds = publication.getSubscribers();
 		} finally {
 			mgr.close();
 		}
+
 		return subscriberIds;
 	}
 
-	private Long getPublicationId(String publisherId, String name) {
+	private Long getPublicationId(Long publisherId, String name) {
 		EntityManager mgr = getEntityManager();
 		Device publisher = null;
 		Long publicationId = null;
+
 		try {
 			publisher = mgr.find(Device.class, publisherId);
 			List<Long> actionIds = publisher.getPublications();
+
 			for (Long actionId : actionIds) {
 				Action action = mgr.find(Action.class, actionId);
+
 				if ((action != null) && (action.getName().equals(name))) {
 					action.setTimestamp(System.currentTimeMillis());
 					publicationId = action.getId();
@@ -103,32 +106,37 @@ public class ActionEndpoint {
 		} finally {
 			mgr.close();
 		}
+
 		return publicationId;
 	}
 
 	private static Result doSendViaGcm(User user, String action, List<Extra> extras, Sender sender, Device device) throws IOException {
 		Message.Builder builder = new Message.Builder();
 		builder.addData("action", action);
+
 		if (extras != null) {
 			for (Extra extra : extras) {
 				builder.addData(extra.getName(), extra.getValue());
 			}
 		}
+
 		Message msg = builder.build();
-		Result result = sender.send(msg, device.getId(), 5);
+		String gcmRegistration = device.getGcmRegistration();
+		Result result = sender.send(msg, gcmRegistration, 5);
 		if (result.getMessageId() != null) {
 			String canonicalRegId = result.getCanonicalRegistrationId();
-			if (canonicalRegId != null) {
+
+			if (canonicalRegId != null && !canonicalRegId.equals(gcmRegistration)) {
 				try {
-					endpoint.remove(user, device.getId());
-					device.setId(canonicalRegId);
-					endpoint.add(user, device);
+					device.setGcmRegistration(canonicalRegId);
+					endpoint.update(user, device);
 				} catch (OAuthRequestException e) {
 					e.printStackTrace();
 				}
 			}
 		} else {
 			String error = result.getErrorCodeName();
+
 			if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
 				try {
 					endpoint.remove(user, device.getId());

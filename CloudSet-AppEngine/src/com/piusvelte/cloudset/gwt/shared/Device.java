@@ -1,12 +1,12 @@
 /*
  * CloudSet - Android devices settings synchronization
  * Copyright (C) 2013 Bryan Emmanuel
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  *  Bryan Emmanuel piusvelte@gmail.com
  */
 package com.piusvelte.cloudset.gwt.shared;
@@ -24,21 +24,29 @@ import java.util.List;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
+/**
+ * Devices publish actions, and subscribe to the actions of other devices
+ * @author bemmanuel
+ *
+ */
 @Entity
 public class Device implements IsSerializable {
 
-	// Devices publish actions, and subscribe to the actions of other devices
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
 	/*
 	 * The Google Cloud Messaging registration token for the device. This token
 	 * indicates that the device is able to receive messages sent via GCM.
 	 */
-	@Id
-	private String id;
+	private String gcmRegistration;
 
 	private long timestamp;
 
@@ -110,11 +118,11 @@ public class Device implements IsSerializable {
 		this.model = model;
 	}
 
-	public String getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -140,5 +148,13 @@ public class Device implements IsSerializable {
 
 	public void setAccount(String account) {
 		this.account = account;
+	}
+
+	public String getGcmRegistration() {
+		return gcmRegistration;
+	}
+
+	public void setGcmRegistration(String gcmRegistration) {
+		this.gcmRegistration = gcmRegistration;
 	}
 }

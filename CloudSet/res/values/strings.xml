@@ -34,8 +34,6 @@
     <string name="loading_devices">Loading devices</string>
     <string name="no_devices">No other devices to sync, click to reload if you have at least one other device registered with CloudSet</string>
     <string name="loading_actions">Loading actions</string>
-    <string name="preference_account_name">account_name</string>
-    <string name="preference_gcm_registration">gcm_registration</string>
     <string name="btn_deregister">Deregister</string>
     <string name="about_title">About</string>
     <string name="about_message">CloudSet syncs settings between Android devices.\u000A\u000ASource:\u000A\u000Ahttps://github.com/piusvelte/CloudSet\u000A\u000ALicense:\u000A\u000ACloudSet - Android devices settings synchronization\u000A\u000ACopyright &#169; 2013 Bryan Emmanuel\u000A\u000AThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\u000A\u000AThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\u000A\u000AYou should have received a copy of the GNU General Public License along with this program.  If not, see \u003C\u000Ahttp://www.gnu.org/licenses/\u003E.\u000A\u000ABryan Emmanuel piusvelte@gmail.com</string>

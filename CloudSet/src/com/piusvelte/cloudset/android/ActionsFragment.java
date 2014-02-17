@@ -57,7 +57,7 @@ public class ActionsFragment extends ListFragment implements
 		super.onResume();
 	}
 
-	ActionsListener callback;
+	private ActionsListener callback;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -88,9 +88,8 @@ public class ActionsFragment extends ListFragment implements
 
 	public interface ActionsListener {
 
-		public String getSubscriberId();
-
-		public String getPublisherId();
+		public Long getSubscriberId();
+		public Long getPublisherId();
 
 	}
 

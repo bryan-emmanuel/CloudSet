@@ -50,8 +50,7 @@ public class UpdateIntentService extends IntentService {
 
 	private boolean hasPackageUpdated(String action, SharedPreferences sp) {
 		return Intent.ACTION_PACKAGE_REPLACED.equals(action)
-				&& sp.getString(getString(R.string.preference_account_name),
-						null) != null;
+				&& sp.getString(CloudSetMain.PREFERENCE_ACCOUNT_NAME, null) != null;
 	}
 
 	private boolean hasSystemUpdated(String action, SharedPreferences sp) {

@@ -62,12 +62,14 @@
             "format" : "int64"
           },
           "publisher" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "int64"
           },
           "subscribers" : {
             "type" : "array",
             "items" : {
-              "type" : "string"
+              "type" : "string",
+              "format" : "int64"
             }
           },
           "extras" : {

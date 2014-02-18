@@ -24,7 +24,6 @@ import com.piusvelte.cloudset.gwt.shared.Action;
 import com.piusvelte.cloudset.gwt.shared.Device;
 import com.piusvelte.cloudset.gwt.shared.SimpleAction;
 import com.piusvelte.cloudset.gwt.shared.SimpleDevice;
-
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.appengine.api.oauth.OAuthRequestException;
@@ -44,6 +43,8 @@ namespace = @ApiNamespace(ownerDomain = "piusvelte.com", ownerName = "piusvelte.
 clientIds = {Ids.ANDROID_CLIENT_ID},
 audiences = {Ids.ANDROID_AUDIENCE})
 public class DeviceEndpoint {
+
+	public static final Long INVALID_DEVICE_ID = Long.valueOf(-1L);
 
 	@SuppressWarnings({ "unchecked" })
 	public List<SimpleDevice> list(
@@ -156,7 +157,7 @@ public class DeviceEndpoint {
 				// filter on the publisher
 				for (Long subscription : subscriptions) {
 					Action action = mgr.find(Action.class, subscription);
-					if ((action != null) && (action.getPublisher().equals(publisherId))) {
+					if (action != null && action.getPublisher().equals(publisherId)) {
 						SimpleAction simpleAction = new SimpleAction();
 						simpleAction.setId(action.getId());
 						simpleAction.setName(action.getName());
@@ -178,7 +179,7 @@ public class DeviceEndpoint {
 			Action action;
 			SimpleAction simpleAction = new SimpleAction();
 			Long publicationId = getPublicationId(publisherId, actionName);
-			if (publicationId != null) {
+			if (!publicationId.equals(INVALID_DEVICE_ID)) {
 				addPublicationToSubscriptions(subscriberId, publicationId);
 				action = addSubscriberToPublication(publicationId, subscriberId);
 				simpleAction.setId(action.getId());
@@ -335,7 +336,7 @@ public class DeviceEndpoint {
 			for (Long actionId : actionIds) {
 				Action a = mgr.find(Action.class, actionId);
 
-				if ((a != null) && (a.getName().equals(actionName))) {
+				if (a != null && a.getName().equals(actionName)) {
 					action = a;
 					break;
 				}

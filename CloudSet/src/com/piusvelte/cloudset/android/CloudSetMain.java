@@ -64,7 +64,7 @@ public class CloudSetMain extends FragmentActivity implements
 
 	protected static final String PREFERENCE_ACCOUNT_NAME = "account_name";
 	protected static final String PREFERENCE_DEVICE_ID = "device_id";
-	protected static final int INVALID_DEVICE_ID = -1;
+	protected static final Long INVALID_DEVICE_ID = Long.valueOf(-1L);
 
 	private SectionsPagerAdapter sectionsPagerAdapter;
 	private ViewPager viewPager;
@@ -361,7 +361,7 @@ public class CloudSetMain extends FragmentActivity implements
 			devices = null;
 			removeDevice(deviceId);
 			account = null;
-			deviceId = null;
+			deviceId = INVALID_DEVICE_ID;
 			getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
 					.edit().putString(PREFERENCE_ACCOUNT_NAME, account)
 					.putLong(PREFERENCE_DEVICE_ID, deviceId).commit();
@@ -398,7 +398,7 @@ public class CloudSetMain extends FragmentActivity implements
 			} else {
 				return new DevicesLoader(this, account);
 			}
-		} else if (deviceId != null) {
+		} else if (deviceId != null && !INVALID_DEVICE_ID.equals(deviceId)) {
 			// create loader 0 for loading devices
 			return new DevicesLoader(this, account, deviceId);
 		} else {
@@ -438,7 +438,7 @@ public class CloudSetMain extends FragmentActivity implements
 
 	@Override
 	public void removeDevice(Long id) {
-		if (id != null) {
+		if (id != null && !INVALID_DEVICE_ID.equals(deviceId)) {
 			Bundle extras = new Bundle();
 			extras.putLong(EXTRA_DEREGISTER_ID, id);
 			getSupportLoaderManager().initLoader(getNextLoaderId(), extras,

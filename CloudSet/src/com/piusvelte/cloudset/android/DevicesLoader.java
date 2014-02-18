@@ -89,9 +89,9 @@ public class DevicesLoader extends AsyncTaskLoader<List<SimpleDevice>> {
 			addDevice();
 			action = Action.NONE;
 			return getSubscribers();
-		} else if (action == Action.GET_SUBSCRIBERS && deviceId != null) {
+		} else if (action == Action.GET_SUBSCRIBERS && deviceId != null && !CloudSetMain.INVALID_DEVICE_ID.equals(deviceId)) {
 			return getSubscribers();
-		} else if (action == Action.REMOVE_DEVICE && deviceId != null) {
+		} else if (action == Action.REMOVE_DEVICE && deviceId != null && !CloudSetMain.INVALID_DEVICE_ID.equals(deviceId)) {
 			try {
 				deviceendpoint.deviceEndpoint().remove(deviceId).execute();
 

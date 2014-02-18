@@ -1,13 +1,13 @@
 {
   "files": [
     {
-      "downloadUrl": "/downloads/deviceendpoint/v1/20140217030530/java/1.16.0-rc/piusvelte.com-deviceendpoint-v1-20140217030530-java-1.16.0-rc-sources.jar", 
-      "path": "piusvelte.com-deviceendpoint-v1-20140217030530-java-1.16.0-rc-sources.jar", 
+      "downloadUrl": "/downloads/deviceendpoint/v1/20140218014845/java/1.16.0-rc/piusvelte.com-deviceendpoint-v1-20140218014845-java-1.16.0-rc-sources.jar", 
+      "path": "piusvelte.com-deviceendpoint-v1-20140218014845-java-1.16.0-rc-sources.jar", 
       "type": "source", 
-      "timestamp": "2014-02-17 03:05"
+      "timestamp": "2014-02-18 01:48"
     }, 
     {
-      "path": "piusvelte.com-deviceendpoint-v1-20140217030530-java-1.16.0-rc.jar.properties", 
+      "path": "piusvelte.com-deviceendpoint-v1-20140218014845-java-1.16.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -702,5 +702,5 @@
   "packagePath": "cloudset.gwt.server", 
   "language_version": "1.16.0-rc", 
   "id": "deviceendpoint:v1", 
-  "revision": 20140217030530
+  "revision": 20140218014845
 }

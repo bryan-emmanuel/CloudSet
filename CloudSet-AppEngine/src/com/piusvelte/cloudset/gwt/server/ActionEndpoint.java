@@ -42,6 +42,8 @@ clientIds = {Ids.ANDROID_CLIENT_ID},
 audiences = {Ids.ANDROID_AUDIENCE})
 public class ActionEndpoint {
 
+	private static final String EXTRA_ACTION = "action";
+
 	private static final DeviceEndpoint endpoint = new DeviceEndpoint();
 
 	public void publish(User user, Action action) throws IOException, OAuthRequestException {
@@ -49,9 +51,9 @@ public class ActionEndpoint {
 			Sender sender = new Sender(Ids.API_KEY);
 			EntityManager mgr = getEntityManager();
 			Long publicationId = getPublicationId(action.getPublisher(), action.getName());
-			if (publicationId != null) {
-				List<Long> subscriberIds = getSubscriberIds(publicationId);
 
+			if (!publicationId.equals(DeviceEndpoint.INVALID_DEVICE_ID)) {
+				List<Long> subscriberIds = getSubscriberIds(publicationId);
 				if (subscriberIds != null) {
 					try {
 						for (Long subscriberId : subscriberIds) {
@@ -88,7 +90,7 @@ public class ActionEndpoint {
 	private Long getPublicationId(Long publisherId, String name) {
 		EntityManager mgr = getEntityManager();
 		Device publisher = null;
-		Long publicationId = null;
+		Long publicationId = DeviceEndpoint.INVALID_DEVICE_ID;
 
 		try {
 			publisher = mgr.find(Device.class, publisherId);
@@ -97,7 +99,7 @@ public class ActionEndpoint {
 			for (Long actionId : actionIds) {
 				Action action = mgr.find(Action.class, actionId);
 
-				if ((action != null) && (action.getName().equals(name))) {
+				if (action != null && action.getName().equals(name)) {
 					action.setTimestamp(System.currentTimeMillis());
 					publicationId = action.getId();
 					break;
@@ -112,7 +114,7 @@ public class ActionEndpoint {
 
 	private static Result doSendViaGcm(User user, String action, List<Extra> extras, Sender sender, Device device) throws IOException {
 		Message.Builder builder = new Message.Builder();
-		builder.addData("action", action);
+		builder.addData(EXTRA_ACTION, action);
 
 		if (extras != null) {
 			for (Extra extra : extras) {

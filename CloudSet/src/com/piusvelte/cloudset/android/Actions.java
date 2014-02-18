@@ -56,7 +56,7 @@ public class Actions extends FragmentActivity implements ActionsFragment.Actions
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if (publisherId == null) {
+		if (publisherId == null || publisherId.equals(CloudSetMain.INVALID_DEVICE_ID)) {
 			finish();
 		}
 	}

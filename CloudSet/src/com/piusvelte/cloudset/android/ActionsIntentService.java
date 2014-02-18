@@ -150,7 +150,7 @@ public class ActionsIntentService extends IntentService {
 				null);
 		Long deviceId = sp.getLong(CloudSetMain.PREFERENCE_DEVICE_ID, CloudSetMain.INVALID_DEVICE_ID);
 
-		if (accountName != null && deviceId != CloudSetMain.INVALID_DEVICE_ID) {
+		if (accountName != null && !deviceId.equals(CloudSetMain.INVALID_DEVICE_ID)) {
 			Action publication = new Action();
 			publication.setPublisher(deviceId);
 			publication.setName(action);

@@ -141,7 +141,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 	public void onMessage(Context context, Intent intent) {
 		// intent contains the actions extras, "action", and "value"
 		String action = intent.getStringExtra("action");
-
 		if (action != null) {
 			if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
 				BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
@@ -222,7 +221,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Long deviceId = sp.getLong(CloudSetMain.PREFERENCE_DEVICE_ID,
 				CloudSetMain.INVALID_DEVICE_ID);
 
-		if (deviceId == CloudSetMain.INVALID_DEVICE_ID) {
+		if (deviceId.equals(CloudSetMain.INVALID_DEVICE_ID)) {
 			// this should only happen if this device upgraded to 1.9 after being registered on an older version
 			try {
 				Device device = getEndpoint(context).deviceEndpoint()

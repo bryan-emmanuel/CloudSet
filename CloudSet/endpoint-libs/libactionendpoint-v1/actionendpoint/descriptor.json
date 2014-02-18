@@ -1,13 +1,13 @@
 {
   "files": [
     {
-      "downloadUrl": "/downloads/actionendpoint/v1/20140217030522/java/1.16.0-rc/piusvelte.com-actionendpoint-v1-20140217030522-java-1.16.0-rc-sources.jar", 
-      "path": "piusvelte.com-actionendpoint-v1-20140217030522-java-1.16.0-rc-sources.jar", 
+      "downloadUrl": "/downloads/actionendpoint/v1/20140218014836/java/1.16.0-rc/piusvelte.com-actionendpoint-v1-20140218014836-java-1.16.0-rc-sources.jar", 
+      "path": "piusvelte.com-actionendpoint-v1-20140218014836-java-1.16.0-rc-sources.jar", 
       "type": "source", 
-      "timestamp": "2014-02-17 03:05"
+      "timestamp": "2014-02-18 01:48"
     }, 
     {
-      "path": "piusvelte.com-actionendpoint-v1-20140217030522-java-1.16.0-rc.jar.properties", 
+      "path": "piusvelte.com-actionendpoint-v1-20140218014836-java-1.16.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -702,5 +702,5 @@
   "packagePath": "cloudset.gwt.server", 
   "language_version": "1.16.0-rc", 
   "id": "actionendpoint:v1", 
-  "revision": 20140217030522
+  "revision": 20140218014836
 }
